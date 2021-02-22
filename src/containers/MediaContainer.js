@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { PropTypes } from "prop-types";
 import * as faceapi from "face-api.js";
+import getFeatureAttributes from "../utils/getFeatureAttributes";
+// import Canvas from "../components/Canvas";
 
 class MediaBridge extends Component {
   constructor(props) {
@@ -8,8 +10,8 @@ class MediaBridge extends Component {
     this.state = {
       bridge: "",
       user: "",
-      detections: null,
     };
+    this.detections = null;
     this.onRemoteHangup = this.onRemoteHangup.bind(this);
     this.onMessage = this.onMessage.bind(this);
     this.sendData = this.sendData.bind(this);
@@ -22,10 +24,10 @@ class MediaBridge extends Component {
     this.showEmotion = this.showEmotion.bind(this);
     this.detectFace = this.detectFace.bind(this);
     this.loadModel = this.loadModel.bind(this);
+    this.drawCanvas = this.drawCanvas.bind(this);
   }
   componentDidMount() {
     this.loadModel();
-
     this.props.media(this);
     this.props.getUserMedia.then(
       (stream) => (this.localVideo.srcObject = this.localStream = stream)
@@ -35,6 +37,7 @@ class MediaBridge extends Component {
     this.localVideo.addEventListener("play", () => {
       this.showEmotion();
     });
+    //Canvas
   }
   componentWillUnmount() {
     this.props.media(null);
@@ -56,6 +59,14 @@ class MediaBridge extends Component {
   }
   detectFace() {
     console.log("localVideo", this.localVideo);
+    const canvasTmp = faceapi.createCanvasFromMedia(this.localVideo);
+    const displaySize = {
+      width: canvasTmp.width,
+      height: canvasTmp.height,
+    };
+    console.log("display", displaySize);
+    faceapi.matchDimensions(this.canvasRef, displaySize);
+
     return new Promise(
       function (resolve) {
         setInterval(async () => {
@@ -66,9 +77,50 @@ class MediaBridge extends Component {
             )
             .withFaceLandmarks()
             .withFaceExpressions();
-          console.log("detections", this.detections);
+          // console.log("detections", this.detections);
+          this.faceAttributes = getFeatureAttributes(this.detections);
+          this.drawCanvas();
         }, 1000);
       }.bind(this)
+    );
+  }
+
+  drawCanvas() {
+    const ctx = this.canvasRef.getContext("2d");
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+    const {
+      leftEyeAttributes,
+      rightEyeAttributes,
+      mouthAttributes,
+      noseAttributes,
+    } = this.faceAttributes;
+    console.log("clear", leftEyeAttributes);
+    console.log("video context", this.canvasRef.width, this.canvasRef.height);
+    console.log("video size", this.localVideo);
+    // ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+    ctx.clearRect(
+      leftEyeAttributes.leftTop.x - 10,
+      Math.min(leftEyeAttributes.leftTop.y, leftEyeAttributes.rightBottom.y) -
+        20,
+      leftEyeAttributes.rightBottom.x - leftEyeAttributes.leftTop.x + 20,
+      Math.abs(leftEyeAttributes.leftTop.y - leftEyeAttributes.rightBottom.y) +
+        20
+    );
+    ctx.clearRect(
+      rightEyeAttributes.leftTop.x - 10,
+      Math.min(rightEyeAttributes.leftTop.y, rightEyeAttributes.rightBottom.y) -
+        20,
+      rightEyeAttributes.rightBottom.x - rightEyeAttributes.leftTop.x + 20,
+      Math.abs(
+        rightEyeAttributes.leftTop.y - rightEyeAttributes.rightBottom.y
+      ) + 20
+    );
+    ctx.clearRect(
+      mouthAttributes.left.x,
+      mouthAttributes.top.y - 10,
+      mouthAttributes.right.x - mouthAttributes.left.x,
+      mouthAttributes.bottom.y - mouthAttributes.top.y
     );
   }
   onRemoteHangup() {
@@ -180,6 +232,7 @@ class MediaBridge extends Component {
   render() {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>
+        <canvas className="canvas" ref={(ref) => (this.canvasRef = ref)} />
         <video
           className="remote-video"
           ref={(ref) => (this.remoteVideo = ref)}
