@@ -23,6 +23,29 @@ https://localhost:3000
 
 https://www.haoailan.online:3000
 
+## Version Release
+
+### 22/02/2021
+
+Update:
+
+- Code update: Rebuild project with React
+- Add Feature: Function: only show partial face
+
+---
+
+## Todo List
+
+**Website**
+
+- Function: pixelate video
+- Function: create API to control function(toggle video and audio change)
+- Recognition: Update API or Method to detect face and expression(face++/Microsoft CV API)
+
+**Mobile**
+
+- Demo with basic screens
+
 ### License
 
 MIT License
