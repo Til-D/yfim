@@ -4,6 +4,7 @@ import CommunicationContainer from "./CommunicationContainer";
 import { connect } from "react-redux";
 import store from "../store";
 import io from "socket.io-client";
+import ToolBar from "./ToolBar";
 
 class RoomPage extends Component {
   constructor(props) {
@@ -33,6 +34,7 @@ class RoomPage extends Component {
           media={this.media}
           getUserMedia={this.getUserMedia}
         />
+        <ToolBar />
       </div>
     );
   }
