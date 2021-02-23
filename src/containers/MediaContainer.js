@@ -11,6 +11,23 @@ class MediaBridge extends Component {
       bridge: "",
       user: "",
     };
+    this.controlParams = {
+      occlusion_mask: false, //Switch
+      feature_show: {
+        eyes: {
+          toggle: true,
+          sliderIndex: 0,
+        },
+        mouth: {
+          toggle: true,
+          sliderIndex: 0,
+        },
+        nose: {
+          toggle: true,
+          sliderIndex: 0,
+        },
+      },
+    };
     this.detections = null;
     this.onRemoteHangup = this.onRemoteHangup.bind(this);
     this.onMessage = this.onMessage.bind(this);
@@ -96,31 +113,24 @@ class MediaBridge extends Component {
       noseAttributes,
     } = this.faceAttributes;
     console.log("clear", leftEyeAttributes);
-    console.log("video context", this.canvasRef.width, this.canvasRef.height);
-    console.log("video size", this.localVideo);
     // ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
     ctx.clearRect(
-      leftEyeAttributes.leftTop.x - 10,
-      Math.min(leftEyeAttributes.leftTop.y, leftEyeAttributes.rightBottom.y) -
-        20,
-      leftEyeAttributes.rightBottom.x - leftEyeAttributes.leftTop.x + 20,
-      Math.abs(leftEyeAttributes.leftTop.y - leftEyeAttributes.rightBottom.y) +
-        20
+      leftEyeAttributes.x,
+      leftEyeAttributes.y - 50,
+      leftEyeAttributes.x_max - leftEyeAttributes.x,
+      leftEyeAttributes.y_max - leftEyeAttributes.y + 20
     );
     ctx.clearRect(
-      rightEyeAttributes.leftTop.x - 10,
-      Math.min(rightEyeAttributes.leftTop.y, rightEyeAttributes.rightBottom.y) -
-        20,
-      rightEyeAttributes.rightBottom.x - rightEyeAttributes.leftTop.x + 20,
-      Math.abs(
-        rightEyeAttributes.leftTop.y - rightEyeAttributes.rightBottom.y
-      ) + 20
+      rightEyeAttributes.x,
+      rightEyeAttributes.y - 50,
+      rightEyeAttributes.x_max - rightEyeAttributes.x,
+      rightEyeAttributes.y_max - rightEyeAttributes.y + 20
     );
     ctx.clearRect(
-      mouthAttributes.left.x,
-      mouthAttributes.top.y - 10,
-      mouthAttributes.right.x - mouthAttributes.left.x,
-      mouthAttributes.bottom.y - mouthAttributes.top.y
+      mouthAttributes.x,
+      mouthAttributes.y - 10,
+      mouthAttributes.x_max - mouthAttributes.x,
+      mouthAttributes.y_max - mouthAttributes.y + 20
     );
   }
   onRemoteHangup() {

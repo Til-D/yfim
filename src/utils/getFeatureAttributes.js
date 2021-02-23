@@ -4,25 +4,31 @@ export default (detections) => {
   const rightEye = landmarks.getRightEye();
   const nose = landmarks.getNose();
   const mouth = landmarks.getMouth();
+  console.log("nose", nose);
+  console.log("mouth", mouth);
   const leftEyeAttributes = {
-    leftTop: leftEye[0],
-    rightBottom: leftEye[3],
+    x: leftEye[0].x,
+    y: Math.min(leftEye[1].y, leftEye[2].y),
+    x_max: leftEye[3].x,
+    y_max: Math.max(leftEye[4].y, leftEye[5].y),
   };
   const rightEyeAttributes = {
-    leftTop: rightEye[0],
-    rightBottom: rightEye[3],
+    x: rightEye[0].x,
+    y: Math.min(rightEye[1].y, rightEye[2].y),
+    x_max: rightEye[3].x,
+    y_max: Math.max(rightEye[4].y, rightEye[5].y),
   };
   const noseAttributes = {
-    top: nose[0],
-    leftBottom: nose[4],
-    rightBottom: nose[8],
-    bottom: nose[6],
+    x: Math.min(nose[4].x, nose[3].x),
+    y: nose[0].y,
+    x_max: nose[8].x,
+    y_max: Math.max(nose[4].y, nose[5].y),
   };
   const mouthAttributes = {
-    left: mouth[0],
-    top: mouth[4],
-    right: mouth[6],
-    bottom: mouth[10],
+    x: mouth[0].x,
+    y: mouth[4].y,
+    x_max: mouth[6].x,
+    y_max: mouth[11].y,
   };
   return {
     leftEyeAttributes,
