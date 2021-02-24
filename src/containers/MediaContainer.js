@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { PropTypes } from "prop-types";
 import * as faceapi from "face-api.js";
 import getFeatureAttributes from "../utils/getFeatureAttributes";
-// import Canvas from "../components/Canvas";
+import ToolBar from "../components/ToolBar";
 
 class MediaBridge extends Component {
   constructor(props) {
@@ -42,6 +42,7 @@ class MediaBridge extends Component {
     this.detectFace = this.detectFace.bind(this);
     this.loadModel = this.loadModel.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
+    this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
     this.loadModel();
@@ -74,6 +75,7 @@ class MediaBridge extends Component {
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
     await faceapi.loadFaceExpressionModel(MODEL_URL);
   }
+
   detectFace() {
     console.log("localVideo", this.localVideo);
     const canvasTmp = faceapi.createCanvasFromMedia(this.localVideo);
@@ -96,43 +98,55 @@ class MediaBridge extends Component {
             .withFaceExpressions();
           // console.log("detections", this.detections);
           this.faceAttributes = getFeatureAttributes(this.detections);
-          this.drawCanvas();
+          if (this.controlParams.occlusion_mask) this.drawCanvas(true);
+          else this.drawCanvas(false);
         }, 1000);
       }.bind(this)
     );
   }
-
-  drawCanvas() {
+  // Draw a mask over face/screen
+  drawCanvas(drawable) {
     const ctx = this.canvasRef.getContext("2d");
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, this.canvasRef.width, this.canvasRef.height);
-    const {
-      leftEyeAttributes,
-      rightEyeAttributes,
-      mouthAttributes,
-      noseAttributes,
-    } = this.faceAttributes;
-    console.log("clear", leftEyeAttributes);
-    // ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
-    ctx.clearRect(
-      leftEyeAttributes.x,
-      leftEyeAttributes.y - 50,
-      leftEyeAttributes.x_max - leftEyeAttributes.x,
-      leftEyeAttributes.y_max - leftEyeAttributes.y + 20
-    );
-    ctx.clearRect(
-      rightEyeAttributes.x,
-      rightEyeAttributes.y - 50,
-      rightEyeAttributes.x_max - rightEyeAttributes.x,
-      rightEyeAttributes.y_max - rightEyeAttributes.y + 20
-    );
-    ctx.clearRect(
-      mouthAttributes.x,
-      mouthAttributes.y - 10,
-      mouthAttributes.x_max - mouthAttributes.x,
-      mouthAttributes.y_max - mouthAttributes.y + 20
-    );
+    if (!drawable) {
+      ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+    } else {
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+      const {
+        leftEyeAttributes,
+        rightEyeAttributes,
+        mouthAttributes,
+        noseAttributes,
+      } = this.faceAttributes;
+      // ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+      ctx.clearRect(
+        leftEyeAttributes.x,
+        leftEyeAttributes.y,
+        leftEyeAttributes.x_max - leftEyeAttributes.x,
+        leftEyeAttributes.y_max - leftEyeAttributes.y + 20
+      );
+      ctx.clearRect(
+        rightEyeAttributes.x,
+        rightEyeAttributes.y,
+        rightEyeAttributes.x_max - rightEyeAttributes.x,
+        rightEyeAttributes.y_max - rightEyeAttributes.y + 20
+      );
+      ctx.clearRect(
+        mouthAttributes.x,
+        mouthAttributes.y,
+        mouthAttributes.x_max - mouthAttributes.x,
+        mouthAttributes.y_max - mouthAttributes.y + 20
+      );
+    }
   }
+
+  // Configure settings
+  setControlParams(params) {
+    this.controlParams = {
+      ...params,
+    };
+  }
+
   onRemoteHangup() {
     this.setState({ user: "host", bridge: "host-hangup" });
   }
@@ -255,6 +269,10 @@ class MediaBridge extends Component {
           autoPlay
           muted
         ></video>
+        <ToolBar
+          initParams={this.controlParams}
+          handleToggle={this.setControlParams}
+        />
       </div>
     );
   }

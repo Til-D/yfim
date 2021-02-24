@@ -4,7 +4,16 @@ import CommunicationContainer from "./CommunicationContainer";
 import { connect } from "react-redux";
 import store from "../store";
 import io from "socket.io-client";
-import ToolBar from "./ToolBar";
+
+const useStyles = (theme) => ({
+  toolBar: {
+    position: "absolute",
+    zIndex: 120,
+    left: 0,
+    bottom: 0,
+    display: "flex",
+  },
+});
 
 class RoomPage extends Component {
   constructor(props) {
@@ -22,6 +31,7 @@ class RoomPage extends Component {
     this.props.addRoom();
   }
   render() {
+    const { classes } = this.props;
     return (
       <div>
         <MediaContainer
@@ -34,7 +44,6 @@ class RoomPage extends Component {
           media={this.media}
           getUserMedia={this.getUserMedia}
         />
-        <ToolBar />
       </div>
     );
   }
