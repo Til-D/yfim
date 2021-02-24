@@ -4,7 +4,7 @@ import store from "../store";
 import { connect } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Switch from "./Switch";
-import { Typography } from "@material-ui/core";
+import { Typography, Slider } from "@material-ui/core";
 const useStyles = makeStyles((theme) => ({
   toolBar: {
     zIndex: 20,
@@ -15,7 +15,8 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "col",
   },
   toggleSwitch: {
-    // flexDirection: "row",
+    // display: "flex",
+    flexDirection: "row",
   },
 }));
 
@@ -61,6 +62,30 @@ const ToolBar = (props) => {
             });
           }}
         />
+        <Slider
+          id="eyeSlider"
+          defaultValue={params.feature_show.eyes.sliderIndex}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            console.log("value change", val);
+            const payload = {
+              toggle: params.feature_show.eyes.toggle,
+              sliderIndex: val,
+            };
+            props.updateEye(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                eyes: payload,
+              },
+            });
+          }}
+        />
       </div>
       <div className={classes.toggleSwitch}>
         <Typography style={{ color: "black" }}>Mouth</Typography>
@@ -82,6 +107,30 @@ const ToolBar = (props) => {
             });
           }}
         />
+        <Slider
+          id="mouthSlider"
+          defaultValue={params.feature_show.mouth.sliderIndex}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            console.log("value change", val);
+            const payload = {
+              toggle: params.feature_show.mouth.toggle,
+              sliderIndex: val,
+            };
+            props.updateMouth(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                mouth: payload,
+              },
+            });
+          }}
+        />
       </div>
       <div className={classes.toggleSwitch}>
         <Typography style={{ color: "black" }}>Nose</Typography>
@@ -92,6 +141,30 @@ const ToolBar = (props) => {
             const payload = {
               toggle: !params.feature_show.nose.toggle,
               sliderIndex: params.feature_show.nose.sliderIndex,
+            };
+            props.updateNose(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                nose: payload,
+              },
+            });
+          }}
+        />
+        <Slider
+          id="noseSlider"
+          defaultValue={params.feature_show.nose.sliderIndex}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            console.log("value change", val);
+            const payload = {
+              toggle: params.feature_show.nose.toggle,
+              sliderIndex: val,
             };
             props.updateNose(payload);
             setParams({
