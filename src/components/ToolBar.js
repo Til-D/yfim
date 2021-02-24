@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { PropTypes } from "prop-types";
-
+import store from "../store";
+import { connect } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Switch from "./Switch";
 import { Typography } from "@material-ui/core";
@@ -20,9 +21,9 @@ const useStyles = makeStyles((theme) => ({
 
 const ToolBar = (props) => {
   const classes = useStyles();
-  const { initParams, handleToggle } = props;
-  const [params, setParams] = useState(initParams);
-
+  const { controlParams } = props;
+  const [params, setParams] = useState(controlParams);
+  console.log("params", params);
   return (
     <div className={classes.toolBar}>
       <div className={classes.toggleSwitch}>
@@ -31,14 +32,9 @@ const ToolBar = (props) => {
           id="mask"
           isOn={params.occlusion_mask}
           handler={() => {
-            console.log(params);
             // modify current state
+            props.updateMask(!params.occlusion_mask);
             setParams({
-              ...params,
-              occlusion_mask: !params.occlusion_mask,
-            });
-            // change parents' state
-            handleToggle({
               ...params,
               occlusion_mask: !params.occlusion_mask,
             });
@@ -73,4 +69,8 @@ const ToolBar = (props) => {
   );
 };
 
-export default ToolBar;
+const mapStateToProps = (store) => ({ controlParams: store.controlParams });
+const mapDispatchToProps = (dispatch) => ({
+  updateMask: (payload) => store.dispatch({ type: "UPDATE_MASK", payload }),
+});
+export default connect(mapStateToProps, mapDispatchToProps)(ToolBar);

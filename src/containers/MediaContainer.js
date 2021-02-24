@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import { PropTypes } from "prop-types";
+import store from "../store";
 import * as faceapi from "face-api.js";
 import getFeatureAttributes from "../utils/getFeatureAttributes";
 import ToolBar from "../components/ToolBar";
+import { connect } from "react-redux";
 
 class MediaBridge extends Component {
   constructor(props) {
@@ -11,23 +13,7 @@ class MediaBridge extends Component {
       bridge: "",
       user: "",
     };
-    this.controlParams = {
-      occlusion_mask: false, //Switch
-      feature_show: {
-        eyes: {
-          toggle: true,
-          sliderIndex: 0,
-        },
-        mouth: {
-          toggle: true,
-          sliderIndex: 0,
-        },
-        nose: {
-          toggle: true,
-          sliderIndex: 0,
-        },
-      },
-    };
+    this.controlParams = props.controlParams;
     this.detections = null;
     this.onRemoteHangup = this.onRemoteHangup.bind(this);
     this.onMessage = this.onMessage.bind(this);
@@ -42,7 +28,7 @@ class MediaBridge extends Component {
     this.detectFace = this.detectFace.bind(this);
     this.loadModel = this.loadModel.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
-    this.setControlParams = this.setControlParams.bind(this);
+    // this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
     this.loadModel();
@@ -98,7 +84,7 @@ class MediaBridge extends Component {
             .withFaceExpressions();
           // console.log("detections", this.detections);
           this.faceAttributes = getFeatureAttributes(this.detections);
-          if (this.controlParams.occlusion_mask) this.drawCanvas(true);
+          if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
           else this.drawCanvas(false);
         }, 1000);
       }.bind(this)
@@ -140,12 +126,12 @@ class MediaBridge extends Component {
     }
   }
 
-  // Configure settings
-  setControlParams(params) {
-    this.controlParams = {
-      ...params,
-    };
-  }
+  // // Configure settings
+  // setControlParams(params) {
+  //   this.controlParams = {
+  //     ...params,
+  //   };
+  // }
 
   onRemoteHangup() {
     this.setState({ user: "host", bridge: "host-hangup" });
@@ -269,10 +255,7 @@ class MediaBridge extends Component {
           autoPlay
           muted
         ></video>
-        <ToolBar
-          initParams={this.controlParams}
-          handleToggle={this.setControlParams}
-        />
+        <ToolBar />
       </div>
     );
   }
@@ -282,4 +265,6 @@ MediaBridge.propTypes = {
   getUserMedia: PropTypes.object.isRequired,
   media: PropTypes.func.isRequired,
 };
-export default MediaBridge;
+const mapStateToProps = (store) => ({ controlParams: store.controlParams });
+const mapDispatchToProps = (dispatch) => {};
+export default connect(mapStateToProps, mapDispatchToProps)(MediaBridge);
