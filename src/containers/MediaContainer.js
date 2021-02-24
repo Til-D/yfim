@@ -111,27 +111,75 @@ class MediaBridge extends Component {
         noseAttributes,
       } = this.faceAttributes;
       // ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
-      eyesCtrl.toggle &&
+      if (eyesCtrl.toggle) {
+        const leftCenter = {
+          x: (leftEyeAttributes.x + leftEyeAttributes.x_max) / 2,
+          y: (leftEyeAttributes.y + leftEyeAttributes.y_max) / 2,
+        };
+        const leftWidth =
+          (eyesCtrl.sliderIndex *
+            (leftEyeAttributes.x_max - leftEyeAttributes.x)) /
+          2;
+        const leftHeight =
+          (eyesCtrl.sliderIndex *
+            (leftEyeAttributes.y_max - leftEyeAttributes.y)) /
+          2;
+
         ctx.clearRect(
-          leftEyeAttributes.x,
-          leftEyeAttributes.y,
-          leftEyeAttributes.x_max - leftEyeAttributes.x,
-          leftEyeAttributes.y_max - leftEyeAttributes.y + 20
+          leftCenter.x - leftWidth / 2,
+          leftCenter.y - leftHeight / 2,
+          leftWidth,
+          leftHeight
         );
-      eyesCtrl.toggle &&
+
+        const rightCenter = {
+          x: (rightEyeAttributes.x + rightEyeAttributes.x_max) / 2,
+          y: (rightEyeAttributes.y + rightEyeAttributes.y_max) / 2,
+        };
+        const rightWidth =
+          (eyesCtrl.sliderIndex *
+            (rightEyeAttributes.x_max - rightEyeAttributes.x)) /
+          2;
+        const rightHeight =
+          (eyesCtrl.sliderIndex *
+            (rightEyeAttributes.y_max - rightEyeAttributes.y)) /
+          2;
+
         ctx.clearRect(
-          rightEyeAttributes.x,
-          rightEyeAttributes.y,
-          rightEyeAttributes.x_max - rightEyeAttributes.x,
-          rightEyeAttributes.y_max - rightEyeAttributes.y + 20
+          rightCenter.x - rightWidth / 2,
+          rightCenter.y - rightHeight / 2,
+          rightWidth,
+          rightHeight
         );
-      mouthCtrl.toggle &&
+      }
+      //  ctx.clearRect(
+      //   leftEyeAttributes.x,
+      //   leftEyeAttributes.y,
+      //   leftEyeAttributes.x_max - leftEyeAttributes.x,
+      //   leftEyeAttributes.y_max - leftEyeAttributes.y + 20
+      // );
+
+      if (mouthCtrl.toggle) {
+        const center = {
+          x: (mouthAttributes.x + mouthAttributes.x_max) / 2,
+          y: (mouthAttributes.y + mouthAttributes.y_max) / 2,
+        };
+        const width =
+          (mouthCtrl.sliderIndex *
+            (mouthAttributes.x_max - mouthAttributes.x)) /
+          2;
+        const height =
+          (mouthCtrl.sliderIndex *
+            (mouthAttributes.y_max - mouthAttributes.y)) /
+          2;
+
         ctx.clearRect(
-          mouthAttributes.x,
-          mouthAttributes.y,
-          mouthAttributes.x_max - mouthAttributes.x,
-          mouthAttributes.y_max - mouthAttributes.y + 20
+          center.x - width / 2,
+          center.y - height / 2,
+          width,
+          height
         );
+      }
     }
   }
 
