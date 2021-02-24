@@ -4,8 +4,6 @@ export default (detections) => {
   const rightEye = landmarks.getRightEye();
   const nose = landmarks.getNose();
   const mouth = landmarks.getMouth();
-  console.log("nose", nose);
-  console.log("mouth", mouth);
   const leftEyeAttributes = {
     x: leftEye[0].x,
     y: Math.min(leftEye[1].y, leftEye[2].y),

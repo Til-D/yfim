@@ -34,6 +34,7 @@
     "face-api.js": "^0.22.2",
     "react": "^16.4.0",
     "react-dom": ">=16.7.0",
+    "react-mfb": "^0.6.0",
     "react-redux": "^5.0.7",
     "react-router-dom": "^4.3.1",
     "react-tooltip": "^4.2.14",

@@ -5,6 +5,16 @@ import { connect } from "react-redux";
 import store from "../store";
 import io from "socket.io-client";
 
+const useStyles = (theme) => ({
+  toolBar: {
+    position: "absolute",
+    zIndex: 120,
+    left: 0,
+    bottom: 0,
+    display: "flex",
+  },
+});
+
 class RoomPage extends Component {
   constructor(props) {
     super(props);
@@ -21,6 +31,7 @@ class RoomPage extends Component {
     this.props.addRoom();
   }
   render() {
+    const { classes } = this.props;
     return (
       <div>
         <MediaContainer

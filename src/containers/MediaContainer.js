@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import { PropTypes } from "prop-types";
+import store from "../store";
 import * as faceapi from "face-api.js";
 import getFeatureAttributes from "../utils/getFeatureAttributes";
-// import Canvas from "../components/Canvas";
+import ToolBar from "../components/ToolBar";
+import { connect } from "react-redux";
 
 class MediaBridge extends Component {
   constructor(props) {
@@ -11,23 +13,7 @@ class MediaBridge extends Component {
       bridge: "",
       user: "",
     };
-    this.controlParams = {
-      occlusion_mask: false, //Switch
-      feature_show: {
-        eyes: {
-          toggle: true,
-          sliderIndex: 0,
-        },
-        mouth: {
-          toggle: true,
-          sliderIndex: 0,
-        },
-        nose: {
-          toggle: true,
-          sliderIndex: 0,
-        },
-      },
-    };
+    this.controlParams = props.controlParams;
     this.detections = null;
     this.onRemoteHangup = this.onRemoteHangup.bind(this);
     this.onMessage = this.onMessage.bind(this);
@@ -42,6 +28,7 @@ class MediaBridge extends Component {
     this.detectFace = this.detectFace.bind(this);
     this.loadModel = this.loadModel.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
+    // this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
     this.loadModel();
@@ -74,6 +61,7 @@ class MediaBridge extends Component {
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
     await faceapi.loadFaceExpressionModel(MODEL_URL);
   }
+
   detectFace() {
     console.log("localVideo", this.localVideo);
     const canvasTmp = faceapi.createCanvasFromMedia(this.localVideo);
@@ -96,43 +84,112 @@ class MediaBridge extends Component {
             .withFaceExpressions();
           // console.log("detections", this.detections);
           this.faceAttributes = getFeatureAttributes(this.detections);
-          this.drawCanvas();
+          if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
+          else this.drawCanvas(false);
         }, 1000);
       }.bind(this)
     );
   }
-
-  drawCanvas() {
+  // Draw a mask over face/screen
+  drawCanvas(drawable) {
     const ctx = this.canvasRef.getContext("2d");
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, this.canvasRef.width, this.canvasRef.height);
     const {
-      leftEyeAttributes,
-      rightEyeAttributes,
-      mouthAttributes,
-      noseAttributes,
-    } = this.faceAttributes;
-    console.log("clear", leftEyeAttributes);
-    // ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
-    ctx.clearRect(
-      leftEyeAttributes.x,
-      leftEyeAttributes.y - 50,
-      leftEyeAttributes.x_max - leftEyeAttributes.x,
-      leftEyeAttributes.y_max - leftEyeAttributes.y + 20
-    );
-    ctx.clearRect(
-      rightEyeAttributes.x,
-      rightEyeAttributes.y - 50,
-      rightEyeAttributes.x_max - rightEyeAttributes.x,
-      rightEyeAttributes.y_max - rightEyeAttributes.y + 20
-    );
-    ctx.clearRect(
-      mouthAttributes.x,
-      mouthAttributes.y - 10,
-      mouthAttributes.x_max - mouthAttributes.x,
-      mouthAttributes.y_max - mouthAttributes.y + 20
-    );
+      eyes: eyesCtrl,
+      mouth: mouthCtrl,
+      nose: noseCtrl,
+    } = this.props.controlParams.feature_show;
+    // console.log({ eyesCtrl, mouthCtrl, noseCtrl });
+    if (!drawable) {
+      ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+    } else {
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+      const {
+        leftEyeAttributes,
+        rightEyeAttributes,
+        mouthAttributes,
+        noseAttributes,
+      } = this.faceAttributes;
+      // ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+      if (eyesCtrl.toggle) {
+        const leftCenter = {
+          x: (leftEyeAttributes.x + leftEyeAttributes.x_max) / 2,
+          y: (leftEyeAttributes.y + leftEyeAttributes.y_max) / 2,
+        };
+        const leftWidth =
+          (eyesCtrl.sliderIndex *
+            (leftEyeAttributes.x_max - leftEyeAttributes.x)) /
+          2;
+        const leftHeight =
+          (eyesCtrl.sliderIndex *
+            (leftEyeAttributes.y_max - leftEyeAttributes.y)) /
+          2;
+
+        ctx.clearRect(
+          leftCenter.x - leftWidth / 2,
+          leftCenter.y - leftHeight / 2,
+          leftWidth,
+          leftHeight
+        );
+
+        const rightCenter = {
+          x: (rightEyeAttributes.x + rightEyeAttributes.x_max) / 2,
+          y: (rightEyeAttributes.y + rightEyeAttributes.y_max) / 2,
+        };
+        const rightWidth =
+          (eyesCtrl.sliderIndex *
+            (rightEyeAttributes.x_max - rightEyeAttributes.x)) /
+          2;
+        const rightHeight =
+          (eyesCtrl.sliderIndex *
+            (rightEyeAttributes.y_max - rightEyeAttributes.y)) /
+          2;
+
+        ctx.clearRect(
+          rightCenter.x - rightWidth / 2,
+          rightCenter.y - rightHeight / 2,
+          rightWidth,
+          rightHeight
+        );
+      }
+      //  ctx.clearRect(
+      //   leftEyeAttributes.x,
+      //   leftEyeAttributes.y,
+      //   leftEyeAttributes.x_max - leftEyeAttributes.x,
+      //   leftEyeAttributes.y_max - leftEyeAttributes.y + 20
+      // );
+
+      if (mouthCtrl.toggle) {
+        const center = {
+          x: (mouthAttributes.x + mouthAttributes.x_max) / 2,
+          y: (mouthAttributes.y + mouthAttributes.y_max) / 2,
+        };
+        const width =
+          (mouthCtrl.sliderIndex *
+            (mouthAttributes.x_max - mouthAttributes.x)) /
+          2;
+        const height =
+          (mouthCtrl.sliderIndex *
+            (mouthAttributes.y_max - mouthAttributes.y)) /
+          2;
+
+        ctx.clearRect(
+          center.x - width / 2,
+          center.y - height / 2,
+          width,
+          height
+        );
+      }
+    }
   }
+
+  // // Configure settings
+  // setControlParams(params) {
+  //   this.controlParams = {
+  //     ...params,
+  //   };
+  // }
+
   onRemoteHangup() {
     this.setState({ user: "host", bridge: "host-hangup" });
   }
@@ -255,6 +312,7 @@ class MediaBridge extends Component {
           autoPlay
           muted
         ></video>
+        <ToolBar />
       </div>
     );
   }
@@ -264,4 +322,6 @@ MediaBridge.propTypes = {
   getUserMedia: PropTypes.object.isRequired,
   media: PropTypes.func.isRequired,
 };
-export default MediaBridge;
+const mapStateToProps = (store) => ({ controlParams: store.controlParams });
+const mapDispatchToProps = (dispatch) => {};
+export default connect(mapStateToProps, mapDispatchToProps)(MediaBridge);
