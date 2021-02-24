@@ -93,6 +93,12 @@ class MediaBridge extends Component {
   // Draw a mask over face/screen
   drawCanvas(drawable) {
     const ctx = this.canvasRef.getContext("2d");
+    const {
+      eyes: eyesCtrl,
+      mouth: mouthCtrl,
+      nose: noseCtrl,
+    } = this.props.controlParams.feature_show;
+    // console.log({ eyesCtrl, mouthCtrl, noseCtrl });
     if (!drawable) {
       ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
     } else {
@@ -105,24 +111,27 @@ class MediaBridge extends Component {
         noseAttributes,
       } = this.faceAttributes;
       // ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
-      ctx.clearRect(
-        leftEyeAttributes.x,
-        leftEyeAttributes.y,
-        leftEyeAttributes.x_max - leftEyeAttributes.x,
-        leftEyeAttributes.y_max - leftEyeAttributes.y + 20
-      );
-      ctx.clearRect(
-        rightEyeAttributes.x,
-        rightEyeAttributes.y,
-        rightEyeAttributes.x_max - rightEyeAttributes.x,
-        rightEyeAttributes.y_max - rightEyeAttributes.y + 20
-      );
-      ctx.clearRect(
-        mouthAttributes.x,
-        mouthAttributes.y,
-        mouthAttributes.x_max - mouthAttributes.x,
-        mouthAttributes.y_max - mouthAttributes.y + 20
-      );
+      eyesCtrl.toggle &&
+        ctx.clearRect(
+          leftEyeAttributes.x,
+          leftEyeAttributes.y,
+          leftEyeAttributes.x_max - leftEyeAttributes.x,
+          leftEyeAttributes.y_max - leftEyeAttributes.y + 20
+        );
+      eyesCtrl.toggle &&
+        ctx.clearRect(
+          rightEyeAttributes.x,
+          rightEyeAttributes.y,
+          rightEyeAttributes.x_max - rightEyeAttributes.x,
+          rightEyeAttributes.y_max - rightEyeAttributes.y + 20
+        );
+      mouthCtrl.toggle &&
+        ctx.clearRect(
+          mouthAttributes.x,
+          mouthAttributes.y,
+          mouthAttributes.x_max - mouthAttributes.x,
+          mouthAttributes.y_max - mouthAttributes.y + 20
+        );
     }
   }
 

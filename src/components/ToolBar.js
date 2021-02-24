@@ -41,30 +41,69 @@ const ToolBar = (props) => {
           }}
         />
       </div>
-      {/* <div className={classes.toggleSwitch}>
+      <div className={classes.toggleSwitch}>
         <Typography style={{ color: "black" }}>Eyes</Typography>
         <Switch
           id="eyes"
-          isOn={eyeSwitch}
-          handleToggle={() => setEyeSwitch(!eyeSwitch)}
+          isOn={params.feature_show.eyes.toggle}
+          handler={() => {
+            const payload = {
+              toggle: !params.feature_show.eyes.toggle,
+              sliderIndex: params.feature_show.eyes.sliderIndex,
+            };
+            props.updateEye(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                eyes: payload,
+              },
+            });
+          }}
         />
       </div>
       <div className={classes.toggleSwitch}>
         <Typography style={{ color: "black" }}>Mouth</Typography>
         <Switch
           id="mouth"
-          isOn={mouthSwitch}
-          handleToggle={() => setMouthSwitch(!mouthSwitch)}
+          isOn={params.feature_show.mouth.toggle}
+          handler={() => {
+            const payload = {
+              toggle: !params.feature_show.mouth.toggle,
+              sliderIndex: params.feature_show.mouth.sliderIndex,
+            };
+            props.updateMouth(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                mouth: payload,
+              },
+            });
+          }}
         />
       </div>
       <div className={classes.toggleSwitch}>
         <Typography style={{ color: "black" }}>Nose</Typography>
         <Switch
           id="nose"
-          isOn={noseSwitch}
-          handleToggle={() => setNoseSwitch(!noseSwitch)}
+          isOn={params.feature_show.nose.toggle}
+          handler={() => {
+            const payload = {
+              toggle: !params.feature_show.nose.toggle,
+              sliderIndex: params.feature_show.nose.sliderIndex,
+            };
+            props.updateNose(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                nose: payload,
+              },
+            });
+          }}
         />
-      </div> */}
+      </div>
     </div>
   );
 };
@@ -72,5 +111,8 @@ const ToolBar = (props) => {
 const mapStateToProps = (store) => ({ controlParams: store.controlParams });
 const mapDispatchToProps = (dispatch) => ({
   updateMask: (payload) => store.dispatch({ type: "UPDATE_MASK", payload }),
+  updateEye: (payload) => store.dispatch({ type: "UPDATE_EYE", payload }),
+  updateMouth: (payload) => store.dispatch({ type: "UPDATE_MOUTH", payload }),
+  updateNose: (payload) => store.dispatch({ type: "UPDATE_NOSE", payload }),
 });
 export default connect(mapStateToProps, mapDispatchToProps)(ToolBar);
