@@ -32,19 +32,40 @@ Update:
 - Code update: Rebuild project with React
 - Add Feature: Function: only show partial face
 
+### 1/3/2021
+
+Update:
+
+- Add Feature: Create a control panel for occlusion mask control
+
 ---
 
 ## Todo List
 
 **Website**
 
-- Function: pixelate video
+- Function: pixelate video, vertical or horizontal, freezing
+- Structure: Keep in mind and build
 - Function: create API to control function(toggle video and audio change)
 - Recognition: Update API or Method to detect face and expression(face++/Microsoft CV API)
 
 **Mobile**
 
 - Demo with basic screens
+
+## To Discuss
+
+**Website**
+
+- What should be controlled
+- Same or different
+- What to be used as the mask, color/picture
+- popup anything?
+
+**Game**
+
+- What is the accepted delay, compare with what time
+- What to popup?
 
 ### License
 
