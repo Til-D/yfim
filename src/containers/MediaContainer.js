@@ -97,7 +97,9 @@ class MediaBridge extends Component {
       eyes: eyesCtrl,
       mouth: mouthCtrl,
       nose: noseCtrl,
+      bar: barCtrl,
     } = this.props.controlParams.feature_show;
+    console.log("bar", barCtrl);
     // console.log({ eyesCtrl, mouthCtrl, noseCtrl });
     if (!drawable) {
       ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
@@ -179,6 +181,25 @@ class MediaBridge extends Component {
           width,
           height
         );
+      }
+      if (barCtrl.toggle) {
+        let spanx = this.canvasRef.width / 10;
+        let spany = this.canvasRef.height / 10;
+        if (barCtrl.direction) {
+          ctx.clearRect(
+            barCtrl.position * spanx,
+            0,
+            spanx * barCtrl.sliderIndex,
+            this.canvasRef.height
+          );
+        } else {
+          ctx.clearRect(
+            0,
+            barCtrl.position * spany,
+            this.canvasRef.width,
+            spany * barCtrl.sliderIndex
+          );
+        }
       }
     }
   }

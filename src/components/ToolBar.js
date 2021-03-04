@@ -177,6 +177,93 @@ const ToolBar = (props) => {
           }}
         />
       </div>
+      <div className={classes.toggleSwitch}>
+        <Typography style={{ color: "black" }}>bar</Typography>
+        <Switch
+          id="bar"
+          isOn={params.feature_show.bar.toggle}
+          handler={() => {
+            const payload = {
+              ...params.feature_show.bar,
+              toggle: !params.feature_show.bar.toggle,
+            };
+            props.updateBar(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                bar: payload,
+              },
+            });
+          }}
+        />
+        <Typography style={{ color: "black" }}>direction</Typography>
+        <Switch
+          id="barDirection"
+          isOn={params.feature_show.bar.direction}
+          handler={() => {
+            const payload = {
+              ...params.feature_show.bar,
+              direction: !params.feature_show.bar.direction,
+            };
+            props.updateBar(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                bar: payload,
+              },
+            });
+          }}
+        />
+        <Slider
+          id="barSlider"
+          defaultValue={params.feature_show.bar.sliderIndex}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            console.log("value change", val);
+            const payload = {
+              ...params.feature_show.bar,
+              sliderIndex: val,
+            };
+            props.updateBar(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                bar: payload,
+              },
+            });
+          }}
+        />
+        <Slider
+          id="barPositionSlider"
+          defaultValue={params.feature_show.bar.position}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            const payload = {
+              ...params.feature_show.bar,
+              position: val,
+            };
+            props.updateBar(payload);
+            setParams({
+              ...params,
+              feature_show: {
+                ...params.feature_show,
+                bar: payload,
+              },
+            });
+          }}
+        />
+      </div>
     </div>
   );
 };
@@ -187,5 +274,6 @@ const mapDispatchToProps = (dispatch) => ({
   updateEye: (payload) => store.dispatch({ type: "UPDATE_EYE", payload }),
   updateMouth: (payload) => store.dispatch({ type: "UPDATE_MOUTH", payload }),
   updateNose: (payload) => store.dispatch({ type: "UPDATE_NOSE", payload }),
+  updateBar: (payload) => store.dispatch({ type: "UPDATE_BAR", payload }),
 });
 export default connect(mapStateToProps, mapDispatchToProps)(ToolBar);

@@ -13,6 +13,12 @@ const initState = {
       toggle: true,
       sliderIndex: 0,
     },
+    bar: {
+      toggle: true,
+      direction: true,
+      sliderIndex: 0,
+      position: 0,
+    },
   },
 };
 
@@ -48,6 +54,15 @@ const updateControlParams = (state = initState, action) => {
         feature_show: {
           ...state.feature_show,
           nose: action.payload,
+        },
+      };
+    }
+    case "UPDATE_BAR": {
+      return {
+        ...state,
+        feature_show: {
+          ...state.feature_show,
+          bar: action.payload,
         },
       };
     }
