@@ -99,7 +99,6 @@ class MediaBridge extends Component {
       nose: noseCtrl,
       bar: barCtrl,
     } = this.props.controlParams.feature_show;
-    console.log("bar", barCtrl);
     // console.log({ eyesCtrl, mouthCtrl, noseCtrl });
     if (!drawable) {
       ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);

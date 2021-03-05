@@ -24,7 +24,6 @@ const ToolBar = (props) => {
   const classes = useStyles();
   const { controlParams } = props;
   const [params, setParams] = useState(controlParams);
-  console.log("params", params);
   return (
     <div className={classes.toolBar}>
       <div className={classes.toggleSwitch}>

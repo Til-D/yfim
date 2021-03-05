@@ -2,20 +2,20 @@ const initState = {
   occlusion_mask: false, //Switch
   feature_show: {
     eyes: {
-      toggle: true,
+      toggle: false,
       sliderIndex: 0,
     },
     mouth: {
-      toggle: true,
+      toggle: false,
       sliderIndex: 0,
     },
     nose: {
-      toggle: true,
+      toggle: false,
       sliderIndex: 0,
     },
     bar: {
-      toggle: true,
-      direction: true,
+      toggle: false,
+      direction: false,
       sliderIndex: 0,
       position: 0,
     },
