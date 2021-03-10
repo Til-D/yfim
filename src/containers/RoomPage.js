@@ -35,6 +35,7 @@ class RoomPage extends Component {
     return (
       <div>
         <MediaContainer
+          room={this.props.match.params.room}
           media={(media) => (this.media = media)}
           socket={this.socket}
           getUserMedia={this.getUserMedia}
