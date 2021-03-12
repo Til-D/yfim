@@ -4,17 +4,22 @@ import { surveyJSON } from "./Survey_JSON";
 import * as Survey from "survey-react";
 
 function SurveyPage(props) {
-  const [surveyOn, setSurveyOn] = useState(true);
+  const [surveyOn, setSurveyOn] = useState(false);
   const [user, setUser] = useState("host");
   console.log("survey", props);
   const socket = io.connect();
+  socket.emit("survey-connect", { room: props.match.params.room });
+  // socket.join(props.match.params.room);
   // Need to move this to control panel
-  const handleStart = () => {
-    socket.emit("survey-start", { room: props.match.params.room });
-  };
   const restart = () => {
     setSurveyOn(true);
   };
+
+  useEffect(() => {
+    socket.on("survey-start", () => {
+      setSurveyOn(true);
+    });
+  });
 
   Survey.StylesManager.applyTheme("winter");
   const model = new Survey.Model(surveyJSON);
@@ -42,16 +47,17 @@ function SurveyPage(props) {
   }
   return (
     <div>
-      <div>Control Tools</div>
-      <div>Hello, welcome to {props.match.params.room}</div>
-      <button onClick={handleStart} className="primary-button">
-        Survey Start
-      </button>
-      <button onClick={restart} className="primary-button">
+      <div>Hello, welcome to Survey Page of {props.match.params.room}</div>
+
+      {/* <button onClick={restart} className="primary-button">
         Survey On
-      </button>
+      </button> */}
       {surveyOn && (
-        <Survey.Survey model={model} onComplete={sendDataToServer} />
+        <Survey.SurveyWindow
+          model={model}
+          isExpanded={true}
+          onComplete={sendDataToServer}
+        />
       )}
     </div>
   );

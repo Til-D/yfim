@@ -24,6 +24,12 @@ const initState = {
 
 const updateControlParams = (state = initState, action) => {
   switch (action.type) {
+    case "UPDATE_ALL": {
+      console.log(action.payload);
+      return {
+        ...action.payload,
+      };
+    }
     case "UPDATE_MASK": {
       return {
         ...state,

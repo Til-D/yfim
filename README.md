@@ -19,6 +19,15 @@ The app can be accessed at:
 https://localhost:3000
 ```
 
+## Structure
+
+    /r/:room            -- Chating room
+    /survey/:room       -- Survey for user
+    /game/:room         -- Similar to Survey page
+    /dashboard          -- Control every room
+        /control/:room  -- control : survey,game,...
+    /ambient/:room      -- Showing picture
+
 ## Demo
 
 https://www.haoailan.online:3000

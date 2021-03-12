@@ -36,6 +36,7 @@ class MediaBridge extends Component {
     this.loadModel = this.loadModel.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
     this.onSurveyStart = this.onSurveyStart.bind(this);
+    this.onControl = this.onControl.bind(this);
     // this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
@@ -48,6 +49,7 @@ class MediaBridge extends Component {
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
     this.props.socket.on("survey-start", this.onSurveyStart);
+    this.props.socket.on("control", this.onControl);
     this.localVideo.addEventListener("play", () => {
       this.showEmotion();
     });
@@ -85,14 +87,20 @@ class MediaBridge extends Component {
       mydate.getHours() + "/" + mydate.getMinutes() + "/" + mydate.getSeconds();
     this.record.record_detail.push(datestr);
   }
+  onControl(control_data) {
+    const { user, controlData } = control_data;
+    if (user == this.state.user) {
+      this.props.updateAll(controlData);
+    }
+
+    console.log("control", controlData);
+  }
   detectFace() {
-    console.log("localVideo", this.localVideo);
     const canvasTmp = faceapi.createCanvasFromMedia(this.localVideo);
     const displaySize = {
       width: canvasTmp.width,
       height: canvasTmp.height,
     };
-    console.log("display", displaySize);
     faceapi.matchDimensions(this.canvasRef, displaySize);
 
     return new Promise(
@@ -106,7 +114,11 @@ class MediaBridge extends Component {
             .withFaceLandmarks()
             .withFaceExpressions();
           // console.log("detections", this.detections);
-          this.faceAttributes = getFeatureAttributes(this.detections);
+          try {
+            this.faceAttributes = getFeatureAttributes(this.detections);
+          } catch (err) {
+            console.log(err);
+          }
 
           if (this.state.survey) {
             this.record.record_detail.push(this.detections.expressions);
@@ -364,7 +376,7 @@ class MediaBridge extends Component {
           autoPlay
           muted
         ></video>
-        <ToolBar />
+        {/* <ToolBar /> */}
       </div>
     );
   }
@@ -375,5 +387,7 @@ MediaBridge.propTypes = {
   media: PropTypes.func.isRequired,
 };
 const mapStateToProps = (store) => ({ controlParams: store.controlParams });
-const mapDispatchToProps = (dispatch) => {};
+const mapDispatchToProps = (dispatch) => ({
+  updateAll: (payload) => store.dispatch({ type: "UPDATE_ALL", payload }),
+});
 export default connect(mapStateToProps, mapDispatchToProps)(MediaBridge);

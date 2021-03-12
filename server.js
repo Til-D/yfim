@@ -94,6 +94,7 @@ io.sockets.on("connection", (socket) => {
     console.log("survey start", data);
     const params_room = data.room;
     socket.broadcast.to(params_room).emit("survey-start");
+    socket.broadcast.to("survey-" + params_room).emit("survey-start");
   });
   socket.on("survey-end", (data) => {
     const params_room = data.room;
@@ -107,7 +108,18 @@ io.sockets.on("connection", (socket) => {
     restore_emotion(params_room, params_data);
     console.log(params_data);
   });
+  socket.on("control", (data) => {
+    const params_room = data.room;
+    const params_data = data.data;
+    console.log("control data:", data);
+    socket.broadcast.to(params_room).emit("control", params_data);
+  });
+  socket.on("survey-connect", (data) => {
+    const params_room = data.room;
+    socket.join("survey-" + params_room);
+  });
 });
+
 async function restore_emotion(roomid, data) {
   const tableName = "emotion-" + roomid + "-" + data.user;
   try {
