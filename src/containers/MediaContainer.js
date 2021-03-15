@@ -5,6 +5,8 @@ import * as faceapi from "face-api.js";
 import getFeatureAttributes from "../utils/getFeatureAttributes";
 import ToolBar from "../components/ToolBar";
 import { connect } from "react-redux";
+import { surveyJSON } from "../components/Survey_JSON";
+import * as Survey from "survey-react";
 
 class MediaBridge extends Component {
   constructor(props) {
@@ -13,7 +15,6 @@ class MediaBridge extends Component {
       bridge: "",
       user: "host",
       survey: false,
-      // record_count: 0,
     };
     this.record = {
       user: this.state.user,
@@ -37,6 +38,10 @@ class MediaBridge extends Component {
     this.drawCanvas = this.drawCanvas.bind(this);
     this.onSurveyStart = this.onSurveyStart.bind(this);
     this.onControl = this.onControl.bind(this);
+    this.sendDataToServer = this.sendDataToServer.bind(this);
+
+    Survey.StylesManager.applyTheme("winter");
+    this.model = new Survey.Model(surveyJSON);
     // this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
@@ -91,6 +96,19 @@ class MediaBridge extends Component {
     const { user, controlData } = control_data;
     if (user == this.state.user) {
       this.props.updateAll(controlData);
+      if (controlData.video == false) {
+        this.localVideo.pause();
+      } else this.localVideo.play();
+      if (controlData.audio == false) {
+        this.localVideo.muted = true;
+      } else this.localVideo.muted = false;
+    } else {
+      if (controlData.video == false) {
+        this.remoteVideo.pause();
+      } else this.remoteVideo.play();
+      if (controlData.audio == false) {
+        this.remoteVideo.muted = true;
+      } else this.remoteVideo.muted = false;
     }
 
     console.log("control", controlData);
@@ -123,7 +141,7 @@ class MediaBridge extends Component {
           if (this.state.survey) {
             this.record.record_detail.push(this.detections.expressions);
             this.record.record_count += 1;
-            if (this.record.record_count == 5) {
+            if (this.record.record_count == 10) {
               this.setState({ ...this.state, survey: false });
               // survey end and restore data in database
               this.props.socket.emit("emotion-send", {
@@ -150,7 +168,6 @@ class MediaBridge extends Component {
       nose: noseCtrl,
       bar: barCtrl,
     } = this.props.controlParams.feature_show;
-    // console.log({ eyesCtrl, mouthCtrl, noseCtrl });
     if (!drawable) {
       ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
     } else {
@@ -303,6 +320,26 @@ class MediaBridge extends Component {
   handleError(e) {
     console.log(e);
   }
+  sendDataToServer(survey) {
+    //   callback function
+    alert("The results are:" + JSON.stringify(survey.data));
+    let mydate = new Date();
+    var datestr = "";
+    datestr +=
+      mydate.getHours() + "/" + mydate.getMinutes() + "/" + mydate.getSeconds();
+
+    const sendData = {
+      user: this.state.user,
+      submit_time: datestr,
+      result: survey.data,
+    };
+    this.props.socket.emit("survey-end", {
+      room: this.props.room,
+      data: sendData,
+    });
+    // this.setState({ survey: false });
+    this.model = new Survey.Model(surveyJSON);
+  }
   init() {
     // wait for local media to be ready
     const attachMediaIfReady = () => {
@@ -371,12 +408,20 @@ class MediaBridge extends Component {
         ></video>
         <video
           className="local-video"
-          id="localVideo"
           ref={(ref) => (this.localVideo = ref)}
           autoPlay
           muted
         ></video>
         {/* <ToolBar /> */}
+        <div style={{ zIndex: 100, position: "absolute" }}>
+          {this.state.survey && (
+            <Survey.SurveyWindow
+              model={this.model}
+              isExpanded={true}
+              onComplete={this.sendDataToServer}
+            />
+          )}
+        </div>
       </div>
     );
   }
@@ -386,8 +431,14 @@ MediaBridge.propTypes = {
   getUserMedia: PropTypes.object.isRequired,
   media: PropTypes.func.isRequired,
 };
-const mapStateToProps = (store) => ({ controlParams: store.controlParams });
+const mapStateToProps = (store) => ({
+  video: store.video,
+  audio: store.audio,
+  controlParams: store.controlParams,
+});
 const mapDispatchToProps = (dispatch) => ({
   updateAll: (payload) => store.dispatch({ type: "UPDATE_ALL", payload }),
+  setVideo: (boo) => store.dispatch({ type: "SET_VIDEO", video: boo }),
+  setAudio: (boo) => store.dispatch({ type: "SET_AUDIO", audio: boo }),
 });
 export default connect(mapStateToProps, mapDispatchToProps)(MediaBridge);

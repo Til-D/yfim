@@ -4,16 +4,8 @@ import CommunicationContainer from "./CommunicationContainer";
 import { connect } from "react-redux";
 import store from "../store";
 import io from "socket.io-client";
-
-const useStyles = (theme) => ({
-  toolBar: {
-    position: "absolute",
-    zIndex: 120,
-    left: 0,
-    bottom: 0,
-    display: "flex",
-  },
-});
+import { surveyJSON } from "../components/Survey_JSON";
+import * as Survey from "survey-react";
 
 class RoomPage extends Component {
   constructor(props) {
@@ -24,27 +16,32 @@ class RoomPage extends Component {
         video: true,
       })
       .catch((e) => alert("getUserMedia() error: " + e.name));
+    this.state = {
+      survey: false,
+    };
     this.socket = io.connect();
+
     console.log("socket create", this.socket);
   }
   componentDidMount() {
     this.props.addRoom();
   }
   render() {
-    const { classes } = this.props;
     return (
       <div>
-        <MediaContainer
-          room={this.props.match.params.room}
-          media={(media) => (this.media = media)}
-          socket={this.socket}
-          getUserMedia={this.getUserMedia}
-        />
-        <CommunicationContainer
-          socket={this.socket}
-          media={this.media}
-          getUserMedia={this.getUserMedia}
-        />
+        <div>
+          <MediaContainer
+            room={this.props.match.params.room}
+            media={(media) => (this.media = media)}
+            socket={this.socket}
+            getUserMedia={this.getUserMedia}
+          />
+          <CommunicationContainer
+            socket={this.socket}
+            media={this.media}
+            getUserMedia={this.getUserMedia}
+          />
+        </div>
       </div>
     );
   }

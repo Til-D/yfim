@@ -53,7 +53,7 @@ function SurveyPage(props) {
         Survey On
       </button> */}
       {surveyOn && (
-        <Survey.SurveyWindow
+        <Survey.Survey
           model={model}
           isExpanded={true}
           onComplete={sendDataToServer}

@@ -42,9 +42,6 @@ class CommunicationContainer extends React.Component {
       this.props.media.setState({ bridge: "approve" });
       this.setState({ message, sid });
     });
-    // For freeze video and mute audio
-    socket.on("toggle-audio", this.toggleAudio);
-    socket.on("toggle-video", this.toggleVideo);
 
     socket.emit("find");
     this.props.getUserMedia.then((stream) => {

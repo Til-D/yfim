@@ -49,6 +49,8 @@ const initState = {
         position: 0,
       },
     },
+    video: true,
+    audio: true,
   },
   guest: {
     occlusion_mask: false, //Switch
@@ -72,6 +74,8 @@ const initState = {
         position: 0,
       },
     },
+    video: true,
+    audio: true,
   },
 };
 
@@ -98,14 +102,60 @@ export default function RoomControl(props) {
     socket.emit("survey-start", { room: room });
     setSurvey_count((count) => count + 1);
   }
+
   const ToolBar = (props) => {
     const { user } = props;
+    const videoId = `video${user}`;
+    const audioId = `audio${user}`;
+    const maskId = `mask${user}`;
+    const eyesId = `eyes${user}`;
+    const eyeSliderId = `eyes${user}`;
+    const mouthId = `mouth${user}`;
+    const mouthSliderId = `mouthSlider${user}`;
+    const noseId = `nose${user}`;
+    const noseSliderId = `noseSlider${user}`;
+    const barId = `barId${user}`;
+    const barDirectionId = `barDirection${user}`;
+    const barSliderId = `barSlider${user}`;
+    const barPositionId = `barPosition${user}`;
     return (
       <div className={classes.toolBar}>
         <div className={classes.toggleSwitch}>
+          <Typography style={{ color: "black" }}>
+            Freeze {user}'s Video
+          </Typography>
+          <Switch
+            id={videoId}
+            isOn={params[user].video}
+            handler={() => {
+              setParams({
+                ...params,
+                [user]: {
+                  ...params[user],
+                  video: !params[user].video,
+                },
+              });
+            }}
+          />
+          <Typography style={{ color: "black" }}>
+            Mute {user}'s Audio
+          </Typography>
+          <Switch
+            id={audioId}
+            isOn={params[user].audio}
+            handler={() => {
+              setParams({
+                ...params,
+                [user]: {
+                  ...params[user],
+                  audio: !params[user].audio,
+                },
+              });
+            }}
+          />
           <Typography style={{ color: "black" }}>Mask for {user}</Typography>
           <Switch
-            id="mask"
+            id={maskId}
             isOn={params[user].occlusion_mask}
             handler={() => {
               setParams({
@@ -121,7 +171,7 @@ export default function RoomControl(props) {
         <div className={classes.toggleSwitch}>
           <Typography style={{ color: "black" }}>Eyes</Typography>
           <Switch
-            id="eyes"
+            id={eyesId}
             isOn={params[user].feature_show.eyes.toggle}
             handler={() => {
               const payload = {
@@ -141,7 +191,7 @@ export default function RoomControl(props) {
             }}
           />
           <Slider
-            id="eyeSlider"
+            id={eyeSliderId}
             defaultValue={params[user].feature_show.eyes.sliderIndex}
             step={1}
             marks
@@ -169,7 +219,7 @@ export default function RoomControl(props) {
         <div className={classes.toggleSwitch}>
           <Typography style={{ color: "black" }}>Mouth</Typography>
           <Switch
-            id="mouth"
+            id={mouthId}
             isOn={params[user].feature_show.mouth.toggle}
             handler={() => {
               const payload = {
@@ -189,7 +239,7 @@ export default function RoomControl(props) {
             }}
           />
           <Slider
-            id="mouthSlider"
+            id={mouthSliderId}
             defaultValue={params[user].feature_show.mouth.sliderIndex}
             step={1}
             marks
@@ -217,7 +267,7 @@ export default function RoomControl(props) {
         <div className={classes.toggleSwitch}>
           <Typography style={{ color: "black" }}>Nose</Typography>
           <Switch
-            id="nose"
+            id={noseId}
             isOn={params[user].feature_show.nose.toggle}
             handler={() => {
               const payload = {
@@ -237,7 +287,7 @@ export default function RoomControl(props) {
             }}
           />
           <Slider
-            id="noseSlider"
+            id={noseSliderId}
             defaultValue={params[user].feature_show.nose.sliderIndex}
             step={1}
             marks
@@ -265,7 +315,7 @@ export default function RoomControl(props) {
         <div className={classes.toggleSwitch}>
           <Typography style={{ color: "black" }}>bar</Typography>
           <Switch
-            id="bar"
+            id={barId}
             isOn={params[user].feature_show.bar.toggle}
             handler={() => {
               const payload = {
@@ -286,7 +336,7 @@ export default function RoomControl(props) {
           />
           <Typography style={{ color: "black" }}>direction</Typography>
           <Switch
-            id="barDirection"
+            id={barDirectionId}
             isOn={params[user].feature_show.bar.direction}
             handler={() => {
               const payload = {
@@ -306,7 +356,7 @@ export default function RoomControl(props) {
             }}
           />
           <Slider
-            id="barSlider"
+            id={barSliderId}
             defaultValue={params[user].feature_show.bar.sliderIndex}
             step={1}
             marks
@@ -331,7 +381,7 @@ export default function RoomControl(props) {
             }}
           />
           <Slider
-            id="barPositionSlider"
+            id={barPositionId}
             defaultValue={params[user].feature_show.bar.position}
             step={1}
             marks
