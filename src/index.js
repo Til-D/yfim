@@ -5,7 +5,11 @@ import store from "./store";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import Home from "./containers/HomePage";
 import Room from "./containers/RoomPage";
+import DashBoard from "./containers/DashBoard";
+import RoomControl from "./containers/RoomControl";
+import SurveyPage from "./components/SurveyPage";
 import NotFound from "./components/NotFound";
+
 import styles from "./app.css";
 
 render(
@@ -14,7 +18,11 @@ render(
       <Switch>
         <Route exact path="/" component={Home} />
         <Route path="/r/:room" component={Room} />
-        <Route path="*" component={NotFound} />
+        {/* <Route path="*" component={NotFound} /> */}
+        <Route path="/dashboard" component={DashBoard} />
+        <Route path="/control/:room" component={RoomControl} />
+        <Route path="/survey/:room" component={SurveyPage} />
+        {/* <Route path="/survey/:room"/>  */}
       </Switch>
     </BrowserRouter>
   </Provider>,
@@ -22,3 +30,13 @@ render(
 );
 
 if (module.hot) module.hot.accept();
+
+// DashBoard:{
+//   RoomControl,
+//   xxx...
+// }
+// RoomControl:{
+//   Survey,
+//   Compete,
+//   xxx...
+// }

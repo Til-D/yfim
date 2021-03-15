@@ -164,6 +164,12 @@ input[type="text"] {
   z-index: 99;
   position: absolute;
 }
+.sv_window {
+  position: fixed;
+  top: 20px;
+  right: 10px;
+  width: 25%;
+}
 .primary-button {
   text-decoration: none;
   display: inline-block;

@@ -5,13 +5,21 @@ import * as faceapi from "face-api.js";
 import getFeatureAttributes from "../utils/getFeatureAttributes";
 import ToolBar from "../components/ToolBar";
 import { connect } from "react-redux";
+import { surveyJSON } from "../components/Survey_JSON";
+import * as Survey from "survey-react";
 
 class MediaBridge extends Component {
   constructor(props) {
     super(props);
     this.state = {
       bridge: "",
-      user: "",
+      user: "host",
+      survey: false,
+    };
+    this.record = {
+      user: this.state.user,
+      record_count: 0,
+      record_detail: [],
     };
     this.controlParams = props.controlParams;
     this.detections = null;
@@ -28,6 +36,12 @@ class MediaBridge extends Component {
     this.detectFace = this.detectFace.bind(this);
     this.loadModel = this.loadModel.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
+    this.onSurveyStart = this.onSurveyStart.bind(this);
+    this.onControl = this.onControl.bind(this);
+    this.sendDataToServer = this.sendDataToServer.bind(this);
+
+    Survey.StylesManager.applyTheme("winter");
+    this.model = new Survey.Model(surveyJSON);
     // this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
@@ -36,8 +50,11 @@ class MediaBridge extends Component {
     this.props.getUserMedia.then(
       (stream) => (this.localVideo.srcObject = this.localStream = stream)
     );
+    console.log("socket", this.props.socket);
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
+    this.props.socket.on("survey-start", this.onSurveyStart);
+    this.props.socket.on("control", this.onControl);
     this.localVideo.addEventListener("play", () => {
       this.showEmotion();
     });
@@ -61,15 +78,47 @@ class MediaBridge extends Component {
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
     await faceapi.loadFaceExpressionModel(MODEL_URL);
   }
+  onSurveyStart() {
+    console.log("survey start");
+    this.record.user = this.state.user;
+    this.setState({
+      ...this.state,
+      record_count: 0,
+      survey: true,
+    });
+    let mydate = new Date();
+    var datestr = "";
+    datestr +=
+      mydate.getHours() + "/" + mydate.getMinutes() + "/" + mydate.getSeconds();
+    this.record.record_detail.push(datestr);
+  }
+  onControl(control_data) {
+    const { user, controlData } = control_data;
+    if (user == this.state.user) {
+      this.props.updateAll(controlData);
+      if (controlData.video == false) {
+        this.localVideo.pause();
+      } else this.localVideo.play();
+      if (controlData.audio == false) {
+        this.localVideo.muted = true;
+      } else this.localVideo.muted = false;
+    } else {
+      if (controlData.video == false) {
+        this.remoteVideo.pause();
+      } else this.remoteVideo.play();
+      if (controlData.audio == false) {
+        this.remoteVideo.muted = true;
+      } else this.remoteVideo.muted = false;
+    }
 
+    console.log("control", controlData);
+  }
   detectFace() {
-    console.log("localVideo", this.localVideo);
     const canvasTmp = faceapi.createCanvasFromMedia(this.localVideo);
     const displaySize = {
       width: canvasTmp.width,
       height: canvasTmp.height,
     };
-    console.log("display", displaySize);
     faceapi.matchDimensions(this.canvasRef, displaySize);
 
     return new Promise(
@@ -83,7 +132,27 @@ class MediaBridge extends Component {
             .withFaceLandmarks()
             .withFaceExpressions();
           // console.log("detections", this.detections);
-          this.faceAttributes = getFeatureAttributes(this.detections);
+          try {
+            this.faceAttributes = getFeatureAttributes(this.detections);
+          } catch (err) {
+            console.log(err);
+          }
+
+          if (this.state.survey) {
+            this.record.record_detail.push(this.detections.expressions);
+            this.record.record_count += 1;
+            if (this.record.record_count == 10) {
+              this.setState({ ...this.state, survey: false });
+              // survey end and restore data in database
+              this.props.socket.emit("emotion-send", {
+                room: this.props.room,
+                data: this.record,
+              });
+
+              this.record.record_detail = [];
+              this.record.record_count = 0;
+            }
+          }
           if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
           else this.drawCanvas(false);
         }, 1000);
@@ -99,7 +168,6 @@ class MediaBridge extends Component {
       nose: noseCtrl,
       bar: barCtrl,
     } = this.props.controlParams.feature_show;
-    // console.log({ eyesCtrl, mouthCtrl, noseCtrl });
     if (!drawable) {
       ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
     } else {
@@ -203,15 +271,8 @@ class MediaBridge extends Component {
     }
   }
 
-  // // Configure settings
-  // setControlParams(params) {
-  //   this.controlParams = {
-  //     ...params,
-  //   };
-  // }
-
   onRemoteHangup() {
-    this.setState({ user: "host", bridge: "host-hangup" });
+    this.setState({ ...this.state, user: "host", bridge: "host-hangup" });
   }
   onMessage(message) {
     if (message.type === "offer") {
@@ -252,12 +313,32 @@ class MediaBridge extends Component {
     this.props.socket.send(this.pc.localDescription);
   }
   hangup() {
-    this.setState({ user: "guest", bridge: "guest-hangup" });
+    this.setState({ ...this.state, user: "guest", bridge: "guest-hangup" });
     this.pc.close();
     this.props.socket.emit("leave");
   }
   handleError(e) {
     console.log(e);
+  }
+  sendDataToServer(survey) {
+    //   callback function
+    alert("The results are:" + JSON.stringify(survey.data));
+    let mydate = new Date();
+    var datestr = "";
+    datestr +=
+      mydate.getHours() + "/" + mydate.getMinutes() + "/" + mydate.getSeconds();
+
+    const sendData = {
+      user: this.state.user,
+      submit_time: datestr,
+      result: survey.data,
+    };
+    this.props.socket.emit("survey-end", {
+      room: this.props.room,
+      data: sendData,
+    });
+    // this.setState({ survey: false });
+    this.model = new Survey.Model(surveyJSON);
   }
   init() {
     // wait for local media to be ready
@@ -293,7 +374,7 @@ class MediaBridge extends Component {
       console.log("onaddstream", e);
       this.remoteStream = e.stream;
       this.remoteVideo.srcObject = this.remoteStream = e.stream;
-      this.setState({ bridge: "established" });
+      this.setState({ ...this.state, bridge: "established" });
     };
     this.pc.ondatachannel = (e) => {
       // data channel
@@ -327,12 +408,20 @@ class MediaBridge extends Component {
         ></video>
         <video
           className="local-video"
-          id="localVideo"
           ref={(ref) => (this.localVideo = ref)}
           autoPlay
           muted
         ></video>
-        <ToolBar />
+        {/* <ToolBar /> */}
+        <div style={{ zIndex: 100, position: "absolute" }}>
+          {this.state.survey && (
+            <Survey.SurveyWindow
+              model={this.model}
+              isExpanded={true}
+              onComplete={this.sendDataToServer}
+            />
+          )}
+        </div>
       </div>
     );
   }
@@ -342,6 +431,14 @@ MediaBridge.propTypes = {
   getUserMedia: PropTypes.object.isRequired,
   media: PropTypes.func.isRequired,
 };
-const mapStateToProps = (store) => ({ controlParams: store.controlParams });
-const mapDispatchToProps = (dispatch) => {};
+const mapStateToProps = (store) => ({
+  video: store.video,
+  audio: store.audio,
+  controlParams: store.controlParams,
+});
+const mapDispatchToProps = (dispatch) => ({
+  updateAll: (payload) => store.dispatch({ type: "UPDATE_ALL", payload }),
+  setVideo: (boo) => store.dispatch({ type: "SET_VIDEO", video: boo }),
+  setAudio: (boo) => store.dispatch({ type: "SET_AUDIO", audio: boo }),
+});
 export default connect(mapStateToProps, mapDispatchToProps)(MediaBridge);

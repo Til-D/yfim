@@ -32,6 +32,7 @@
     "compression": "^1.7.2",
     "express": "^4.16.3",
     "face-api.js": "^0.22.2",
+    "nano": "^9.0.3",
     "react": "^16.4.0",
     "react-dom": ">=16.7.0",
     "react-mfb": "^0.6.0",
@@ -40,6 +41,7 @@
     "react-tooltip": "^4.2.14",
     "redux": "^4.0.0",
     "serve-favicon": "^2.5.0",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.1.1",
+    "survey-react": "^1.8.34"
   }
 }
