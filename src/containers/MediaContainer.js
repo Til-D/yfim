@@ -99,9 +99,9 @@ class MediaBridge extends Component {
       if (controlData.video == false) {
         this.localVideo.pause();
       } else this.localVideo.play();
-      if (controlData.audio == false) {
-        this.localVideo.muted = true;
-      } else this.localVideo.muted = false;
+      // if (controlData.audio == false) {
+      //   this.localVideo.muted = true;
+      // } else this.localVideo.muted = false;
     } else {
       if (controlData.video == false) {
         this.remoteVideo.pause();
