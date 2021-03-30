@@ -363,6 +363,9 @@ class MediaBridge extends Component {
           username: "hao",
           credential: "158131hh2232A",
         },
+        {
+          urls: "stun:stun.l.google.com:19302",
+        },
       ],
     });
     // when our browser gets a candidate, send it to the peer
