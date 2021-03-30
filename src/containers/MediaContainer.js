@@ -359,9 +359,9 @@ class MediaBridge extends Component {
     this.pc = new RTCPeerConnection({
       iceServers: [
         {
-          urls: "turn:149.28.164.18:3478",
+          urls: "turn:139.180.183.4:3478",
           username: "hao",
-          credential: "0x820492f231157aa798b4b48f8baa697e",
+          credential: "158131hh2232A",
         },
       ],
     });
