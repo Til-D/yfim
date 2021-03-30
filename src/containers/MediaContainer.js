@@ -55,7 +55,7 @@ class MediaBridge extends Component {
     this.props.socket.on("hangup", this.onRemoteHangup);
     this.props.socket.on("survey-start", this.onSurveyStart);
     this.props.socket.on("control", this.onControl);
-    this.localVideo.addEventListener("play", () => {
+    this.remoteVideo.addEventListener("play", () => {
       this.showEmotion();
     });
     //Canvas
@@ -114,10 +114,12 @@ class MediaBridge extends Component {
     console.log("control", controlData);
   }
   detectFace() {
-    const canvasTmp = faceapi.createCanvasFromMedia(this.localVideo);
+    const canvasTmp = faceapi.createCanvasFromMedia(this.remoteVideo);
+    // const canvasTmp2 = faceapi.createCanvasFromMedia(this.localVideo);
+    // console.log("compare", canvasTmp, canvasTmp2);
     const displaySize = {
-      width: canvasTmp.width,
-      height: canvasTmp.height,
+      width: canvasTmp.width * 2,
+      height: canvasTmp.height * 2,
     };
     faceapi.matchDimensions(this.canvasRef, displaySize);
 
@@ -126,7 +128,7 @@ class MediaBridge extends Component {
         setInterval(async () => {
           this.detections = await faceapi
             .detectSingleFace(
-              this.localVideo,
+              this.remoteVideo,
               new faceapi.TinyFaceDetectorOptions()
             )
             .withFaceLandmarks()
