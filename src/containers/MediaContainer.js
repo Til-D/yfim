@@ -364,7 +364,6 @@ class MediaBridge extends Component {
           credential: "0x820492f231157aa798b4b48f8baa697e",
         },
       ],
-      iceTransportPolicy: "relay",
     });
     // when our browser gets a candidate, send it to the peer
     this.pc.onicecandidate = (e) => {
