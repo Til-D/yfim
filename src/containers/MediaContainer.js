@@ -143,17 +143,18 @@ class MediaBridge extends Component {
           if (this.state.survey) {
             this.record.record_detail.push(this.detections.expressions);
             this.record.record_count += 1;
-            if (this.record.record_count == 10) {
-              this.setState({ ...this.state, survey: false });
-              // survey end and restore data in database
-              this.props.socket.emit("emotion-send", {
-                room: this.props.room,
-                data: this.record,
-              });
 
-              this.record.record_detail = [];
-              this.record.record_count = 0;
-            }
+            // if (this.record.record_count == 10) {
+            //   this.setState({ ...this.state, survey: false });
+            //   // survey end and restore data in database
+            //   this.props.socket.emit("emotion-send", {
+            //     room: this.props.room,
+            //     data: this.record,
+            //   });
+
+            //   this.record.record_detail = [];
+            //   this.record.record_count = 0;
+            // }
           }
           if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
           else this.drawCanvas(false);
@@ -339,6 +340,17 @@ class MediaBridge extends Component {
       room: this.props.room,
       data: sendData,
     });
+
+    this.setState({ ...this.state, survey: false });
+    // survey end and restore data in database
+    this.props.socket.emit("emotion-send", {
+      room: this.props.room,
+      data: this.record,
+    });
+
+    this.record.record_detail = [];
+    this.record.record_count = 0;
+
     // this.setState({ survey: false });
     this.model = new Survey.Model(surveyJSON);
   }
