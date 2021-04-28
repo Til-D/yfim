@@ -7,6 +7,7 @@ import ToolBar from "../components/ToolBar";
 import { connect } from "react-redux";
 import { surveyJSON } from "../components/Survey_JSON";
 import * as Survey from "survey-react";
+var FileSaver = require("file-saver");
 
 class MediaBridge extends Component {
   constructor(props) {
@@ -15,6 +16,7 @@ class MediaBridge extends Component {
       bridge: "",
       user: "host",
       survey: false,
+      recording: false,
     };
     this.record = {
       user: this.state.user,
@@ -39,6 +41,9 @@ class MediaBridge extends Component {
     this.onSurveyStart = this.onSurveyStart.bind(this);
     this.onControl = this.onControl.bind(this);
     this.sendDataToServer = this.sendDataToServer.bind(this);
+    this.startRecording = this.startRecording.bind(this);
+    this.stopRecording = this.stopRecording.bind(this);
+    this.saveVideo = this.saveVideo.bind(this);
 
     Survey.StylesManager.applyTheme("winter");
     this.model = new Survey.Model(surveyJSON);
@@ -50,13 +55,28 @@ class MediaBridge extends Component {
     this.props.getUserMedia.then(
       (stream) => (this.localVideo.srcObject = this.localStream = stream)
     );
+
     console.log("socket", this.props.socket);
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
     this.props.socket.on("survey-start", this.onSurveyStart);
     this.props.socket.on("control", this.onControl);
+    this.props.socket.on("recording", this.startRecording);
     this.remoteVideo.addEventListener("play", () => {
       this.showEmotion();
+    });
+    this.localVideo.addEventListener("play", () => {
+      this.mediaRecorder = new MediaRecorder(this.localStream, {
+        mimeType: "video/webm",
+      });
+      this.chunks = [];
+      // listen for data from media recorder
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          this.chunks.push(e.data);
+        }
+      };
+      console.log(this.mediaRecorder);
     });
     //Canvas
   }
@@ -99,6 +119,13 @@ class MediaBridge extends Component {
       if (controlData.video == false) {
         this.localVideo.pause();
       } else this.localVideo.play();
+
+      if (controlData.recording == true && this.state.recording == false) {
+        this.startRecording();
+      }
+      if (controlData.recording == false && this.state.recording == true) {
+        this.stopRecording();
+      }
       // if (controlData.audio == false) {
       //   this.localVideo.muted = true;
       // } else this.localVideo.muted = false;
@@ -113,6 +140,40 @@ class MediaBridge extends Component {
 
     console.log("control", controlData);
   }
+
+  startRecording() {
+    // e.preventDefault();
+    console.log("starting");
+    // wipe old data chunks
+    this.chunks = [];
+    // start recorder with 10ms buffer
+    this.mediaRecorder.start(10);
+    // say that we're recording
+    this.setState({ recording: true });
+  }
+
+  stopRecording() {
+    // e.preventDefault();
+    console.log("stopping");
+    // stop the recorder
+    this.mediaRecorder.stop();
+    // say that we're not recording
+    this.setState({ recording: false });
+    // save the video to memory
+    this.saveVideo();
+  }
+
+  saveVideo() {
+    // convert saved chunks to blob
+    const blob = new Blob(this.chunks, { type: "video/webm" });
+    // generate video url from blob
+    const videoURL = window.URL.createObjectURL(blob);
+    // append videoURL to list of saved videos for rendering
+    FileSaver.saveAs(blob, "recording.webm");
+    // const videos = this.state.videos.concat([videoURL]);
+    // this.setState({ videos });
+  }
+
   detectFace() {
     const canvasTmp = faceapi.createCanvasFromMedia(this.remoteVideo);
     const canvasTmp2 = faceapi.createCanvasFromMedia(this.localVideo);
@@ -122,6 +183,7 @@ class MediaBridge extends Component {
       height: canvasTmp.height,
     };
     faceapi.matchDimensions(this.canvasRef, displaySize);
+    console.log(this.canvasRef.width, this.canvasRef.height);
 
     return new Promise(
       function (resolve) {
@@ -158,7 +220,7 @@ class MediaBridge extends Component {
           }
           if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
           else this.drawCanvas(false);
-        }, 1000);
+        }, 500);
       }.bind(this)
     );
   }

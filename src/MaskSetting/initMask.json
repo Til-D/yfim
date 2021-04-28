@@ -1,0 +1,52 @@
+{
+    "host": {
+        "occlusion_mask": false,
+        "feature_show": {
+          "eyes": {
+            "toggle": false,
+            "sliderIndex": 0
+          },
+          "mouth": {
+            "toggle": false,
+            "sliderIndex": 0
+          },
+          "nose": {
+            "toggle": false,
+            "sliderIndex": 0
+          },
+          "bar": {
+            "toggle": false,
+            "direction": false,
+            "sliderIndex": 0,
+            "position": 0
+          }
+        },
+        "video": true,
+        "audio": true
+      },
+      "guest": {
+        "occlusion_mask": false,
+        "feature_show": {
+          "eyes": {
+            "toggle": false,
+            "sliderIndex": 0
+          },
+          "mouth": {
+            "toggle": false,
+            "sliderIndex": 0
+          },
+          "nose": {
+            "toggle": false,
+            "sliderIndex": 0
+          },
+          "bar": {
+            "toggle": false,
+            "direction": false,
+            "sliderIndex": 0,
+            "position": 0
+          }
+        },
+        "video": true,
+        "audio": true
+      }
+}

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Switch from "../components/Switch";
 import { Typography, Slider } from "@material-ui/core";
+import ReactFileReader from "react-file-reader";
 
 const useStyles = makeStyles((theme) => ({
   toolBarContainer: {
@@ -51,6 +52,7 @@ const initState = {
     },
     video: true,
     audio: true,
+    recording: false,
   },
   guest: {
     occlusion_mask: false, //Switch
@@ -76,8 +78,10 @@ const initState = {
     },
     video: true,
     audio: true,
+    recording: false,
   },
 };
+var FileSaver = require("file-saver");
 
 export default function RoomControl(props) {
   const [params, setParams] = useState(initState);
@@ -86,6 +90,7 @@ export default function RoomControl(props) {
   const classes = useStyles();
   // socket.emit("survey", props);
   const room = props.match.params.room;
+
   function onSubmit(user) {
     const data = {
       room: room,
@@ -103,7 +108,27 @@ export default function RoomControl(props) {
     setSurvey_count((count) => count + 1);
   }
 
+  function onLoadConfiguration(files) {
+    var reader = new FileReader();
+    reader.onload = (e) => {
+      // Use reader.result
+      let settingsP = JSON.parse(reader.result);
+      setParams(settingsP);
+    };
+    reader.readAsText(files[0]);
+    // socket.emit("survey-start", { room: room });
+    // setSurvey_count((count) => count + 1);
+  }
+
+  function savingCongfiguration() {
+    var blob = new Blob([JSON.stringify(params)], {
+      type: "text/plain;charset=utf-8",
+    });
+    FileSaver.saveAs(blob, "maskConfiguration.json");
+  }
+
   const ToolBar = (props) => {
+    const [submitSign, setSubmitSign] = useState(false);
     const { user } = props;
     const videoId = `video${user}`;
     const audioId = `audio${user}`;
@@ -118,6 +143,11 @@ export default function RoomControl(props) {
     const barDirectionId = `barDirection${user}`;
     const barSliderId = `barSlider${user}`;
     const barPositionId = `barPosition${user}`;
+    const recordId = `recording${user}`;
+    useEffect(() => {
+      onSubmit(user);
+    }, [submitSign]);
+
     return (
       <div className={classes.toolBar}>
         <div className={classes.toggleSwitch}>
@@ -153,6 +183,22 @@ export default function RoomControl(props) {
               });
             }}
           />
+          <Typography style={{ color: "black" }}>
+            Recording {user}'s Audio
+          </Typography>
+          <Switch
+            id={recordId}
+            isOn={params[user].recording}
+            handler={() => {
+              setParams({
+                ...params,
+                [user]: {
+                  ...params[user],
+                  recording: !params[user].recording,
+                },
+              });
+            }}
+          />
           <Typography style={{ color: "black" }}>Mask for {user}</Typography>
           <Switch
             id={maskId}
@@ -165,6 +211,7 @@ export default function RoomControl(props) {
                   occlusion_mask: !params[user].occlusion_mask,
                 },
               });
+              setSubmitSign(!submitSign);
             }}
           />
         </div>
@@ -411,9 +458,19 @@ export default function RoomControl(props) {
   };
   return (
     <div>
-      <Link className="primary-button" to={"/survey/" + room}>
+      {/* <Link className="primary-button" to={"/survey/" + room}>
         Survey
-      </Link>
+      </Link> */}
+
+      <ReactFileReader
+        handleFiles={(files) => onLoadConfiguration(files)}
+        fileTypes={".json"}
+      >
+        <button className="primary-button">Loading Configuration</button>
+      </ReactFileReader>
+      <button onClick={() => savingCongfiguration()} className="primary-button">
+        Saving Configuration
+      </button>
       <button onClick={() => onSurveyStart()} className="primary-button">
         Survey Start No.{survey_count}
       </button>
@@ -427,15 +484,15 @@ export default function RoomControl(props) {
       >
         <div style={{ width: "45%", flexDirection: "col", marginRight: 10 }}>
           <ToolBar user="host" />
-          <button onClick={() => onSubmit("host")} className="primary-button">
+          {/* <button onClick={() => onSubmit("host")} className="primary-button">
             Submit
-          </button>
+          </button> */}
         </div>
         <div style={{ width: "45%", flexDirection: "col" }}>
           <ToolBar user="guest" />
-          <button onClick={() => onSubmit("guest")} className="primary-button">
+          {/* <button onClick={() => onSubmit("guest")} className="primary-button">
             Submit
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -445,11 +502,3 @@ export default function RoomControl(props) {
     </div>
   );
 }
-// class RoomControl extends React.Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       room: props.match.params.room,
-//     };
-//   }
-// }
