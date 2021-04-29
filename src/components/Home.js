@@ -22,12 +22,12 @@ const Home = (props) => (
       <Link className="primary-button" to={"/r/" + props.roomId}>
         Join
       </Link>
-      <Link className="primary-button" to={"/r/" + props.defaultRoomId}>
+      {/* <Link className="primary-button" to={"/r/" + props.defaultRoomId}>
         Random
       </Link>
       <Link className="primary-button" to={"/dashboard/"}>
         DashBoard
-      </Link>
+      </Link> */}
       <Link className="primary-button" to={"/control/" + props.roomId}>
         Control
       </Link>

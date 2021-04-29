@@ -3,7 +3,7 @@ import io from "socket.io-client";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Switch from "../components/Switch";
-import { Typography, Slider } from "@material-ui/core";
+import { Slider } from "@material-ui/core";
 import ReactFileReader from "react-file-reader";
 
 const useStyles = makeStyles((theme) => ({
@@ -16,15 +16,22 @@ const useStyles = makeStyles((theme) => ({
     // right: 0,
     paddingRight: 20,
     paddingLeft: 20,
-    width: "70%",
+    width: "90%",
     top: "50px",
     backgroundColor: "#C7EDCC",
     // flexDirection:"column"
     // position: "absolute",
   },
   toggleSwitch: {
-    // display: "flex",
+    display: "flex",
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    flex: "1 1",
+  },
+  controlText: {
+    color: "black",
+    flex: "1",
   },
 }));
 const initState = {
@@ -151,10 +158,10 @@ export default function RoomControl(props) {
     return (
       <div className={classes.toolBar}>
         <div className={classes.toggleSwitch}>
-          <Typography style={{ color: "black" }}>
-            Freeze {user}'s Video
-          </Typography>
+          {/* <div style={{ display: "flex", flexDirection: "row" }}> */}
+          <text className={classes.controlText}>Freeze {user}'s Video</text>
           <Switch
+            style={{ justifyContent: "right" }}
             id={videoId}
             isOn={params[user].video}
             handler={() => {
@@ -167,9 +174,10 @@ export default function RoomControl(props) {
               });
             }}
           />
-          <Typography style={{ color: "black" }}>
-            Mute {user}'s Audio
-          </Typography>
+          {/* </div> */}
+        </div>
+        <div className={classes.toggleSwitch}>
+          <text className={classes.controlText}>Mute {user}'s Audio</text>
           <Switch
             id={audioId}
             isOn={params[user].audio}
@@ -183,9 +191,9 @@ export default function RoomControl(props) {
               });
             }}
           />
-          <Typography style={{ color: "black" }}>
-            Recording {user}'s Audio
-          </Typography>
+        </div>
+        <div className={classes.toggleSwitch}>
+          <text className={classes.controlText}>Recording {user}'s Video</text>
           <Switch
             id={recordId}
             isOn={params[user].recording}
@@ -199,7 +207,9 @@ export default function RoomControl(props) {
               });
             }}
           />
-          <Typography style={{ color: "black" }}>Mask for {user}</Typography>
+        </div>
+        <div className={classes.toggleSwitch}>
+          <text className={classes.controlText}>Mask for {user}</text>
           <Switch
             id={maskId}
             isOn={params[user].occlusion_mask}
@@ -215,8 +225,9 @@ export default function RoomControl(props) {
             }}
           />
         </div>
+
         <div className={classes.toggleSwitch}>
-          <Typography style={{ color: "black" }}>Eyes</Typography>
+          <text className={classes.controlText}>Eyes</text>
           <Switch
             id={eyesId}
             isOn={params[user].feature_show.eyes.toggle}
@@ -237,34 +248,34 @@ export default function RoomControl(props) {
               });
             }}
           />
-          <Slider
-            id={eyeSliderId}
-            defaultValue={params[user].feature_show.eyes.sliderIndex}
-            step={1}
-            marks
-            min={0}
-            max={10}
-            valueLabelDisplay="auto"
-            onChange={(e, val) => {
-              const payload = {
-                toggle: params[user].feature_show.eyes.toggle,
-                sliderIndex: val,
-              };
-              setParams({
-                ...params,
-                [user]: {
-                  ...params[user],
-                  feature_show: {
-                    ...params[user].feature_show,
-                    eyes: payload,
-                  },
-                },
-              });
-            }}
-          />
         </div>
+        <Slider
+          id={eyeSliderId}
+          defaultValue={params[user].feature_show.eyes.sliderIndex}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            const payload = {
+              toggle: params[user].feature_show.eyes.toggle,
+              sliderIndex: val,
+            };
+            setParams({
+              ...params,
+              [user]: {
+                ...params[user],
+                feature_show: {
+                  ...params[user].feature_show,
+                  eyes: payload,
+                },
+              },
+            });
+          }}
+        />
         <div className={classes.toggleSwitch}>
-          <Typography style={{ color: "black" }}>Mouth</Typography>
+          <text className={classes.controlText}>Mouth</text>
           <Switch
             id={mouthId}
             isOn={params[user].feature_show.mouth.toggle}
@@ -285,34 +296,34 @@ export default function RoomControl(props) {
               });
             }}
           />
-          <Slider
-            id={mouthSliderId}
-            defaultValue={params[user].feature_show.mouth.sliderIndex}
-            step={1}
-            marks
-            min={0}
-            max={10}
-            valueLabelDisplay="auto"
-            onChange={(e, val) => {
-              const payload = {
-                toggle: params[user].feature_show.mouth.toggle,
-                sliderIndex: val,
-              };
-              setParams({
-                ...params,
-                [user]: {
-                  ...params[user],
-                  feature_show: {
-                    ...params[user].feature_show,
-                    mouth: payload,
-                  },
-                },
-              });
-            }}
-          />
         </div>
+        <Slider
+          id={mouthSliderId}
+          defaultValue={params[user].feature_show.mouth.sliderIndex}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            const payload = {
+              toggle: params[user].feature_show.mouth.toggle,
+              sliderIndex: val,
+            };
+            setParams({
+              ...params,
+              [user]: {
+                ...params[user],
+                feature_show: {
+                  ...params[user].feature_show,
+                  mouth: payload,
+                },
+              },
+            });
+          }}
+        />
         <div className={classes.toggleSwitch}>
-          <Typography style={{ color: "black" }}>Nose</Typography>
+          <text className={classes.controlText}>Nose</text>
           <Switch
             id={noseId}
             isOn={params[user].feature_show.nose.toggle}
@@ -333,34 +344,34 @@ export default function RoomControl(props) {
               });
             }}
           />
-          <Slider
-            id={noseSliderId}
-            defaultValue={params[user].feature_show.nose.sliderIndex}
-            step={1}
-            marks
-            min={0}
-            max={10}
-            valueLabelDisplay="auto"
-            onChange={(e, val) => {
-              const payload = {
-                toggle: params[user].feature_show.nose.toggle,
-                sliderIndex: val,
-              };
-              setParams({
-                ...params,
-                [user]: {
-                  ...params[user],
-                  feature_show: {
-                    ...params[user].feature_show,
-                    nose: payload,
-                  },
-                },
-              });
-            }}
-          />
         </div>
+        <Slider
+          id={noseSliderId}
+          defaultValue={params[user].feature_show.nose.sliderIndex}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            const payload = {
+              toggle: params[user].feature_show.nose.toggle,
+              sliderIndex: val,
+            };
+            setParams({
+              ...params,
+              [user]: {
+                ...params[user],
+                feature_show: {
+                  ...params[user].feature_show,
+                  nose: payload,
+                },
+              },
+            });
+          }}
+        />
         <div className={classes.toggleSwitch}>
-          <Typography style={{ color: "black" }}>bar</Typography>
+          <text className={classes.controlText}>Bar Zone</text>
           <Switch
             id={barId}
             isOn={params[user].feature_show.bar.toggle}
@@ -381,7 +392,7 @@ export default function RoomControl(props) {
               });
             }}
           />
-          <Typography style={{ color: "black" }}>direction</Typography>
+          <text className={classes.controlText}>Horizontal/Vertical</text>
           <Switch
             id={barDirectionId}
             isOn={params[user].feature_show.bar.direction}
@@ -402,57 +413,57 @@ export default function RoomControl(props) {
               });
             }}
           />
-          <Slider
-            id={barSliderId}
-            defaultValue={params[user].feature_show.bar.sliderIndex}
-            step={1}
-            marks
-            min={0}
-            max={10}
-            valueLabelDisplay="auto"
-            onChange={(e, val) => {
-              const payload = {
-                ...params[user].feature_show.bar,
-                sliderIndex: val,
-              };
-              setParams({
-                ...params,
-                [user]: {
-                  ...params[user],
-                  feature_show: {
-                    ...params[user].feature_show,
-                    bar: payload,
-                  },
-                },
-              });
-            }}
-          />
-          <Slider
-            id={barPositionId}
-            defaultValue={params[user].feature_show.bar.position}
-            step={1}
-            marks
-            min={0}
-            max={10}
-            valueLabelDisplay="auto"
-            onChange={(e, val) => {
-              const payload = {
-                ...params[user].feature_show.bar,
-                position: val,
-              };
-              setParams({
-                ...params,
-                [user]: {
-                  ...params[user],
-                  feature_show: {
-                    ...params[user].feature_show,
-                    bar: payload,
-                  },
-                },
-              });
-            }}
-          />
         </div>
+        <Slider
+          id={barSliderId}
+          defaultValue={params[user].feature_show.bar.sliderIndex}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            const payload = {
+              ...params[user].feature_show.bar,
+              sliderIndex: val,
+            };
+            setParams({
+              ...params,
+              [user]: {
+                ...params[user],
+                feature_show: {
+                  ...params[user].feature_show,
+                  bar: payload,
+                },
+              },
+            });
+          }}
+        />
+        <Slider
+          id={barPositionId}
+          defaultValue={params[user].feature_show.bar.position}
+          step={1}
+          marks
+          min={0}
+          max={10}
+          valueLabelDisplay="auto"
+          onChange={(e, val) => {
+            const payload = {
+              ...params[user].feature_show.bar,
+              position: val,
+            };
+            setParams({
+              ...params,
+              [user]: {
+                ...params[user],
+                feature_show: {
+                  ...params[user].feature_show,
+                  bar: payload,
+                },
+              },
+            });
+          }}
+        />
       </div>
     );
   };
@@ -461,19 +472,33 @@ export default function RoomControl(props) {
       {/* <Link className="primary-button" to={"/survey/" + room}>
         Survey
       </Link> */}
-
-      <ReactFileReader
-        handleFiles={(files) => onLoadConfiguration(files)}
-        fileTypes={".json"}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyItems: "center",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        <button className="primary-button">Loading Configuration</button>
-      </ReactFileReader>
-      <button onClick={() => savingCongfiguration()} className="primary-button">
-        Saving Configuration
-      </button>
-      <button onClick={() => onSurveyStart()} className="primary-button">
-        Survey Start No.{survey_count}
-      </button>
+        <div className="primary-button">
+          <ReactFileReader
+            handleFiles={(files) => onLoadConfiguration(files)}
+            fileTypes={".json"}
+          >
+            {/* <button className="primary-button">Loading Configuration</button> */}
+            Loading Configuration
+          </ReactFileReader>
+        </div>
+
+        <button
+          onClick={() => savingCongfiguration()}
+          className="primary-button"
+        >
+          Saving Configuration
+        </button>
+      </div>
+
       <div
         style={{
           display: "flex",
@@ -494,6 +519,11 @@ export default function RoomControl(props) {
             Submit
           </button> */}
         </div>
+      </div>
+      <div>
+        <button onClick={() => onSurveyStart()} className="primary-button">
+          Survey Start No.{survey_count}
+        </button>
       </div>
 
       {/* <Link className="primary-button" to={"/compete/" + this.state.room}>

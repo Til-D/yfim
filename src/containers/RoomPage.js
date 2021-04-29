@@ -13,7 +13,10 @@ class RoomPage extends Component {
     this.getUserMedia = navigator.mediaDevices
       .getUserMedia({
         audio: true,
-        video: true,
+        video: {
+          width: { min: 640, ideal: 1280 },
+          height: { min: 400, ideal: 720 },
+        },
       })
       .catch((e) => alert("getUserMedia() error: " + e.name));
     this.state = {
