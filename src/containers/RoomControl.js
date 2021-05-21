@@ -97,7 +97,15 @@ export default function RoomControl(props) {
   const classes = useStyles();
   // socket.emit("survey", props);
   const room = props.match.params.room;
-
+  socket.emit("control-room", { room: room });
+  socket.on("process-in-progress", (data) => {
+    console.log(data);
+    let time_diff = data.time_diff;
+    alert(`process in ongoing, ${time_diff} seconds left`);
+  });
+  socket.on("process-stop", () => {
+    alert("process stop");
+  });
   function onSubmit(user) {
     const data = {
       room: room,
@@ -113,6 +121,11 @@ export default function RoomControl(props) {
     console.log(survey_count);
     socket.emit("survey-start", { room: room });
     setSurvey_count((count) => count + 1);
+  }
+
+  function onProcessStart() {
+    console.log("process start");
+    socket.emit("process-start", { room: room });
   }
 
   function onLoadConfiguration(files) {
@@ -523,6 +536,11 @@ export default function RoomControl(props) {
       <div>
         <button onClick={() => onSurveyStart()} className="primary-button">
           Survey Start No.{survey_count}
+        </button>
+      </div>
+      <div>
+        <button onClick={() => onProcessStart()} className="primary-button">
+          Process Start
         </button>
       </div>
 

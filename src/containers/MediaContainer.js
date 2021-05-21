@@ -7,6 +7,7 @@ import ToolBar from "../components/ToolBar";
 import { connect } from "react-redux";
 import { surveyJSON } from "../components/Survey_JSON";
 import * as Survey from "survey-react";
+import Clock from "./Clock";
 var FileSaver = require("file-saver");
 
 class MediaBridge extends Component {
@@ -17,6 +18,9 @@ class MediaBridge extends Component {
       user: "host",
       survey: false,
       recording: false,
+      time_diff: 90,
+      process: false,
+      stage: 0,
     };
     this.record = {
       user: this.state.user,
@@ -25,6 +29,7 @@ class MediaBridge extends Component {
     };
     this.controlParams = props.controlParams;
     this.detections = null;
+    this.process_duration = 10;
     this.onRemoteHangup = this.onRemoteHangup.bind(this);
     this.onMessage = this.onMessage.bind(this);
     this.sendData = this.sendData.bind(this);
@@ -44,6 +49,8 @@ class MediaBridge extends Component {
     this.startRecording = this.startRecording.bind(this);
     this.stopRecording = this.stopRecording.bind(this);
     this.saveVideo = this.saveVideo.bind(this);
+    this.onProcessStart = this.onProcessStart.bind(this);
+    this.mask_configuration = [];
 
     Survey.StylesManager.applyTheme("winter");
     this.model = new Survey.Model(surveyJSON);
@@ -56,7 +63,7 @@ class MediaBridge extends Component {
       (stream) => (this.localVideo.srcObject = this.localStream = stream)
     );
 
-    console.log("socket", this.props.socket);
+    this.props.socket.on("process-start", this.onProcessStart);
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
     this.props.socket.on("survey-start", this.onSurveyStart);
@@ -76,7 +83,6 @@ class MediaBridge extends Component {
           this.chunks.push(e.data);
         }
       };
-      console.log(this.mediaRecorder);
     });
     //Canvas
   }
@@ -86,17 +92,86 @@ class MediaBridge extends Component {
       this.localStream.getVideoTracks()[0].stop();
     }
     this.props.socket.emit("leave");
+    clearInterval(this.timmer);
   }
   async showEmotion() {
     this.detections = this.detectFace();
   }
   async loadModel() {
     const MODEL_URL = "/models";
-
     await faceapi.loadTinyFaceDetectorModel(MODEL_URL);
     await faceapi.loadFaceLandmarkModel(MODEL_URL);
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
     await faceapi.loadFaceExpressionModel(MODEL_URL);
+  }
+  onProcessStart() {
+    if (!this.state.process) {
+      let data = require("../MaskSetting/endWithEyes.json");
+      this.mask_configuration = data;
+      console.log(this.mask_configuration);
+      console.log("process start counting");
+
+      let startTime = new Date().getTime();
+      var endTime = startTime + 1000 * this.process_duration;
+      this.timmer = setInterval(() => {
+        let nowTime = new Date().getTime();
+        this.setState({
+          ...this.state,
+          process: true,
+          time_diff: Math.round((endTime - nowTime) / 1000),
+        });
+        let time_left = Math.round((endTime - nowTime) / 1000);
+
+        if (time_left <= 0) {
+          this.onProcessStop();
+        }
+        if (time_left > (this.process_duration * 2) / 3) {
+          //stage1
+          if (this.state.stage != 1) {
+            this.props.updateAll(this.mask_configuration[0][this.state.user]);
+            this.setState({ ...this.state, stage: 1 });
+          }
+        } else if (
+          time_left < (this.process_duration * 2) / 3 &&
+          time_left > this.process_duration / 3
+        ) {
+          //stage2
+          if (this.state.stage != 2) {
+            this.setState({
+              ...this.state,
+              stage: 2,
+            });
+            this.props.updateAll(this.mask_configuration[1][this.state.user]);
+          }
+        } else if (time_left < this.process_duration / 3) {
+          //stage3
+          if (this.state.stage != 3) {
+            this.setState({
+              ...this.state,
+              stage: 3,
+            });
+          }
+          this.props.updateAll(this.mask_configuration[2][this.state.user]);
+        }
+      }, 1000);
+    } else {
+      this.props.socket.emit("process-in-progress", {
+        room: this.props.room,
+        time_diff: this.state.time_diff,
+      });
+    }
+  }
+  onProcessStop() {
+    clearInterval(this.timmer);
+    this.setState({
+      ...this.state,
+      process: false,
+      time_diff: this.process_duration,
+      stage: 0,
+    });
+    this.props.socket.emit("process-stop", {
+      room: this.props.room,
+    });
   }
   onSurveyStart() {
     console.log("survey start");
@@ -137,8 +212,6 @@ class MediaBridge extends Component {
         this.remoteVideo.muted = true;
       } else this.remoteVideo.muted = false;
     }
-
-    console.log("control", controlData);
   }
 
   startRecording() {
@@ -154,7 +227,7 @@ class MediaBridge extends Component {
 
   stopRecording() {
     // e.preventDefault();
-    console.log("stopping");
+    console.log("stopping recording");
     // stop the recorder
     this.mediaRecorder.stop();
     // say that we're not recording
@@ -220,7 +293,7 @@ class MediaBridge extends Component {
           }
           if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
           else this.drawCanvas(false);
-        }, 500);
+        }, 1000);
       }.bind(this)
     );
   }
@@ -286,12 +359,6 @@ class MediaBridge extends Component {
           rightHeight
         );
       }
-      //  ctx.clearRect(
-      //   leftEyeAttributes.x,
-      //   leftEyeAttributes.y,
-      //   leftEyeAttributes.x_max - leftEyeAttributes.x,
-      //   leftEyeAttributes.y_max - leftEyeAttributes.y + 20
-      // );
 
       if (mouthCtrl.toggle) {
         const center = {
@@ -486,6 +553,10 @@ class MediaBridge extends Component {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>
         <canvas className="canvas" ref={(ref) => (this.canvasRef = ref)} />
+        {/* <text className="clock">{this.state.time_diff}</text> */}
+        <div className="clock">
+          <Clock time_diff={this.state.time_diff}></Clock>
+        </div>
         <video
           className="remote-video"
           ref={(ref) => (this.remoteVideo = ref)}

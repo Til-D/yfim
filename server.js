@@ -46,6 +46,9 @@ app.use((req, res) => res.sendFile(__dirname + "/dist/index.html"));
 app.use(favicon("./dist/favicon.ico"));
 // Switch off the default 'X-Powered-By: Express' header
 app.disable("x-powered-by");
+
+control_room_list = {};
+
 io.sockets.on("connection", (socket) => {
   let room = "";
   // sending to all clients in the room (channel) except sender
@@ -88,7 +91,11 @@ io.sockets.on("connection", (socket) => {
     socket.broadcast.to(room).emit("hangup");
     socket.leave(room);
   });
-
+  // control room record
+  socket.on("control-room", (data) => {
+    const room = data.room;
+    control_room_list[room] = socket;
+  });
   // survey send and control
   socket.on("survey-start", (data) => {
     console.log("survey start", data);
@@ -102,6 +109,24 @@ io.sockets.on("connection", (socket) => {
     restore_survey(params_room, params_data);
     console.log(params_data);
   });
+  // process control
+  socket.on("process-start", (data) => {
+    const params_room = data.room;
+    socket.broadcast.to(params_room).emit("process-start");
+  });
+  socket.on("process-in-progress", (data) => {
+    console.log(data);
+    const params_room = data.room;
+    control_socket = control_room_list[params_room];
+    control_socket.emit("process-in-progress", { time_diff: data.time_diff });
+  });
+  socket.on("process-stop", (data) => {
+    const params_room = data.room;
+    control_socket = control_room_list[params_room];
+    control_socket.emit("process-stop");
+  });
+
+  // send emotion data to database
   socket.on("emotion-send", (data) => {
     const params_room = data.room;
     const params_data = data.data;
