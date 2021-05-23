@@ -48,6 +48,7 @@ app.use(favicon("./dist/favicon.ico"));
 app.disable("x-powered-by");
 
 control_room_list = {};
+ready_user_by_room = {};
 
 io.sockets.on("connection", (socket) => {
   let room = "";
@@ -95,6 +96,7 @@ io.sockets.on("connection", (socket) => {
   socket.on("control-room", (data) => {
     const room = data.room;
     control_room_list[room] = socket;
+    console.log(control_room_list);
   });
   // survey send and control
   socket.on("survey-start", (data) => {
@@ -110,9 +112,32 @@ io.sockets.on("connection", (socket) => {
     console.log(params_data);
   });
   // process control
-  socket.on("process-start", (data) => {
+  socket.on("process-control", (data) => {
     const params_room = data.room;
-    socket.broadcast.to(params_room).emit("process-start");
+    const cfg = data.cfg;
+    socket.broadcast.to(params_room).emit("process-control", { cfg: cfg });
+  });
+  socket.on("process-ready", (data) => {
+    const room = data.room;
+    const user = data.user;
+    // socket.broadcast.to(room).emit("process-start");
+    console.log(`${user} in room ${room} is ready`);
+    if (room in ready_user_by_room) {
+      ready_user_by_room[room][user] = true;
+      if (
+        ready_user_by_room[room]["host"] &&
+        ready_user_by_room[room]["guest"]
+      ) {
+        socket.broadcast.to(room).emit("process-start");
+        socket.emit("process-start");
+      }
+    } else {
+      ready_user_by_room[room] = {
+        host: false,
+        guest: false,
+      };
+      ready_user_by_room[room][user] = true;
+    }
   });
   socket.on("process-in-progress", (data) => {
     console.log(data);

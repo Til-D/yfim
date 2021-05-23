@@ -18,9 +18,10 @@ class MediaBridge extends Component {
       user: "host",
       survey: false,
       recording: false,
-      time_diff: 90,
+      time_diff: 0,
       process: false,
       stage: 0,
+      process_cfg: null,
     };
     this.record = {
       user: this.state.user,
@@ -50,6 +51,7 @@ class MediaBridge extends Component {
     this.stopRecording = this.stopRecording.bind(this);
     this.saveVideo = this.saveVideo.bind(this);
     this.onProcessStart = this.onProcessStart.bind(this);
+    this.onProcessControl = this.onProcessControl.bind(this);
     this.mask_configuration = [];
 
     Survey.StylesManager.applyTheme("winter");
@@ -64,6 +66,7 @@ class MediaBridge extends Component {
     );
 
     this.props.socket.on("process-start", this.onProcessStart);
+    this.props.socket.on("process-control", this.onProcessControl);
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
     this.props.socket.on("survey-start", this.onSurveyStart);
@@ -104,14 +107,50 @@ class MediaBridge extends Component {
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
     await faceapi.loadFaceExpressionModel(MODEL_URL);
   }
+  onProcessControl(data) {
+    if (!this.state.process) {
+      this.setState(
+        {
+          ...this.state,
+          process_cfg: data.cfg,
+        },
+        () => {
+          console.log(this.state);
+          this.onReady();
+          // this.onProcessStart();
+        }
+      );
+    } else {
+      this.props.socket.emit("process-in-progress", {
+        room: this.props.room,
+        time_diff: this.state.time_diff,
+      });
+    }
+  }
+  onReady() {
+    let result = window.confirm("Are you ready to start?");
+    // while (!result) {
+    //   result = window.confirm("Start when you are ready :)");
+    // }
+    if (result) {
+      this.props.socket.emit("process-ready", {
+        room: this.props.room,
+        user: this.state.user,
+      });
+      console.log(this.state);
+    } else {
+      setTimeout(() => {
+        this.onReady();
+      }, 10000);
+    }
+  }
   onProcessStart() {
     if (!this.state.process) {
-      let data = require("../MaskSetting/endWithEyes.json");
-      this.mask_configuration = data;
-      console.log(this.mask_configuration);
+      // let data = require("../MaskSetting/endWithEyes.json");
       console.log("process start counting");
 
       let startTime = new Date().getTime();
+      this.process_duration = this.state.process_cfg[0]["duration"];
       var endTime = startTime + 1000 * this.process_duration;
       this.timmer = setInterval(() => {
         let nowTime = new Date().getTime();
@@ -128,7 +167,7 @@ class MediaBridge extends Component {
         if (time_left > (this.process_duration * 2) / 3) {
           //stage1
           if (this.state.stage != 1) {
-            this.props.updateAll(this.mask_configuration[0][this.state.user]);
+            this.props.updateAll(this.state.process_cfg[1][this.state.user]);
             this.setState({ ...this.state, stage: 1 });
           }
         } else if (
@@ -141,7 +180,7 @@ class MediaBridge extends Component {
               ...this.state,
               stage: 2,
             });
-            this.props.updateAll(this.mask_configuration[1][this.state.user]);
+            this.props.updateAll(this.state.process_cfg[2][this.state.user]);
           }
         } else if (time_left < this.process_duration / 3) {
           //stage3
@@ -151,7 +190,7 @@ class MediaBridge extends Component {
               stage: 3,
             });
           }
-          this.props.updateAll(this.mask_configuration[2][this.state.user]);
+          this.props.updateAll(this.state.process_cfg[3][this.state.user]);
         }
       }, 1000);
     } else {
@@ -172,6 +211,8 @@ class MediaBridge extends Component {
     this.props.socket.emit("process-stop", {
       room: this.props.room,
     });
+
+    this.onReady();
   }
   onSurveyStart() {
     console.log("survey start");

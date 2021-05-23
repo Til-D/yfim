@@ -123,9 +123,15 @@ export default function RoomControl(props) {
     setSurvey_count((count) => count + 1);
   }
 
-  function onProcessStart() {
+  function onProcessStart(files) {
     console.log("process start");
-    socket.emit("process-start", { room: room });
+    var reader = new FileReader();
+    reader.onload = (e) => {
+      // Use reader.result
+      let cfg = JSON.parse(reader.result);
+      socket.emit("process-control", { room: room, cfg: cfg });
+    };
+    reader.readAsText(files[0]);
   }
 
   function onLoadConfiguration(files) {
@@ -538,10 +544,14 @@ export default function RoomControl(props) {
           Survey Start No.{survey_count}
         </button>
       </div>
-      <div>
-        <button onClick={() => onProcessStart()} className="primary-button">
+      <div className="primary-button">
+        <ReactFileReader
+          handleFiles={(files) => onProcessStart(files)}
+          fileTypes={".json"}
+        >
+          {/* <button className="primary-button">Loading Configuration</button> */}
           Process Start
-        </button>
+        </ReactFileReader>
       </div>
 
       {/* <Link className="primary-button" to={"/compete/" + this.state.room}>
