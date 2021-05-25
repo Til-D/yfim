@@ -23,9 +23,16 @@ https://localhost:3000
 
     /r/:room            -- Chating room
     /game/:room         -- Similar to Survey page
-    /dashboard          -- Control every room
-        /control/:room  -- control : survey,game,...
-    /ambient/:room      -- Showing picture
+    /control/:room      -- control : survey,game,...
+    /projection         -- projection pages
+    /survey             -- survey pages
+
+## Develop guidance
+
+There are two ways to develop separate works, one of which is using React built-in router while another is using express router.
+
+1. For the first one, developer can write the frontend js files in the src directory and import them as a component and add them in /src/index.js
+2. For the second one, using express router, developer can write static html files in the directory /public and configure the path setting in /routes.
 
 ## Demo
 

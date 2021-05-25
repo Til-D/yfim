@@ -17,11 +17,11 @@ render(
     <BrowserRouter>
       <Switch>
         <Route exact path="/" component={Home} />
-        <Route path="/r/:room" component={Room} />
+        <Route exact path="/r/:room" component={Room} />
         {/* <Route path="*" component={NotFound} /> */}
-        <Route path="/dashboard" component={DashBoard} />
-        <Route path="/control/:room" component={RoomControl} />
-        <Route path="/survey/:room" component={SurveyPage} />
+        <Route exact path="/dashboard" component={DashBoard} />
+        <Route exact path="/control/:room" component={RoomControl} />
+        {/* <Route exact path="/survey/:room" component={SurveyPage} /> */}
         {/* <Route path="/survey/:room"/>  */}
       </Switch>
     </BrowserRouter>

@@ -8,6 +8,10 @@ const favicon = require("serve-favicon");
 const compression = require("compression");
 const bodyParser = require("body-parser");
 const nano = require("nano")("http://admin:158131@localhost:5984");
+
+var surveyRouter = require("./routes/survey");
+var projectionRouter = require("./routes/projection");
+var indexRouter = require("./routes/");
 // authenticate
 
 // async function asyncCall() {
@@ -39,9 +43,15 @@ app.get("/test", (req, res) => {
 
 // compress all requests
 app.set("socketIo", io);
-app.use(compression());
+// app.use(compression());
 app.use(express.static(path.join(__dirname, "dist")));
-app.use((req, res) => res.sendFile(__dirname + "/dist/index.html"));
+app.use(express.static(path.join(__dirname, "public")));
+
+app.use("/survey", surveyRouter);
+app.use("/projection", projectionRouter);
+app.use("/", indexRouter);
+
+// app.use((req, res) => res.sendFile(__dirname + "/dist/index.html"));
 
 app.use(favicon("./dist/favicon.ico"));
 // Switch off the default 'X-Powered-By: Express' header
@@ -128,8 +138,9 @@ io.sockets.on("connection", (socket) => {
         ready_user_by_room[room]["host"] &&
         ready_user_by_room[room]["guest"]
       ) {
-        socket.broadcast.to(room).emit("process-start");
-        socket.emit("process-start");
+        io.sockets.in(room).emit("process-start");
+        // socket.broadcast.to(room).emit("process-start");
+        // socket.emit("process-start");
       }
     } else {
       ready_user_by_room[room] = {

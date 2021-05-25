@@ -1,5 +1,8 @@
 [
     {
+        "duration": 90
+    },
+    {
         "host": {
             "occlusion_mask": false,
             "feature_show": {
