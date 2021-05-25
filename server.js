@@ -46,6 +46,7 @@ app.set("socketIo", io);
 // app.use(compression());
 app.use(express.static(path.join(__dirname, "dist")));
 app.use(express.static(path.join(__dirname, "public")));
+
 app.use("/survey", surveyRouter);
 app.use("/projection", projectionRouter);
 app.use("/", indexRouter);
@@ -138,7 +139,7 @@ io.sockets.on("connection", (socket) => {
         ready_user_by_room[room]["guest"]
       ) {
         socket.broadcast.to(room).emit("process-start");
-        socket.emit("process-start");
+        // socket.emit("process-start");
       }
     } else {
       ready_user_by_room[room] = {

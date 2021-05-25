@@ -4,7 +4,7 @@ var path = require("path");
 
 /* GET SURVEY PAGE. */
 
-router.get("/", function (req, res, next) {
+router.get("*", function (req, res, next) {
   res.sendFile(path.join(__dirname, "..", "/dist/index.html"));
 });
 
