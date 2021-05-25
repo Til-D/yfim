@@ -138,7 +138,8 @@ io.sockets.on("connection", (socket) => {
         ready_user_by_room[room]["host"] &&
         ready_user_by_room[room]["guest"]
       ) {
-        socket.broadcast.to(room).emit("process-start");
+        io.sockets.in(room).emit("process-start");
+        // socket.broadcast.to(room).emit("process-start");
         // socket.emit("process-start");
       }
     } else {
