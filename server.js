@@ -9,9 +9,9 @@ const compression = require("compression");
 const bodyParser = require("body-parser");
 const nano = require("nano")("http://admin:158131@localhost:5984");
 
-var surveyRouter = require("./routes/survey");
-var projectionRouter = require("./routes/projection");
-var indexRouter = require("./routes/");
+var surveyRouter = require("./backend/routes/survey");
+var projectionRouter = require("./backend/routes/projection");
+var indexRouter = require("./backend/routes");
 // authenticate
 
 // async function asyncCall() {
@@ -45,7 +45,7 @@ app.get("/test", (req, res) => {
 app.set("socketIo", io);
 // app.use(compression());
 app.use(express.static(path.join(__dirname, "dist")));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "backend", "public")));
 
 app.use("/survey", surveyRouter);
 app.use("/projection", projectionRouter);
