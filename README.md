@@ -32,7 +32,7 @@ https://localhost:3000
 There are two ways to develop separate works, one of which is using React built-in router while another is using express router.
 
 1. For the first one, developer can write the frontend js files in the src directory and import them as a component and add them in /src/index.js
-2. For the second one, using express router, developer can write static html files in the directory /public and configure the path setting in /routes.
+2. For the second one, using express router, developer can write static html files in the directory ./backend/public and configure the path setting in ./backend/routes.
 
 ## Demo
 
