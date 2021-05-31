@@ -5,6 +5,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Switch from "../components/Switch";
 import { Slider } from "@material-ui/core";
 import ReactFileReader from "react-file-reader";
+import GYModal from "../components/Modal";
 
 const useStyles = makeStyles((theme) => ({
   toolBarContainer: {
@@ -93,6 +94,7 @@ var FileSaver = require("file-saver");
 export default function RoomControl(props) {
   const [params, setParams] = useState(initState);
   const [survey_count, setSurvey_count] = useState(0);
+  const [visible, setVisible] = useState(false);
   const socket = io.connect();
   const classes = useStyles();
   // socket.emit("survey", props);
@@ -106,6 +108,18 @@ export default function RoomControl(props) {
   socket.on("process-stop", () => {
     alert("process stop");
   });
+  useEffect(() => {
+    if (JSON.stringify(params.guest) != JSON.stringify(initState.guest)) {
+      console.log("guest params change");
+      onSubmit("guest");
+    }
+  }, [params.guest]);
+  useEffect(() => {
+    if (JSON.stringify(params.host) != JSON.stringify(initState.host)) {
+      console.log("host change");
+      onSubmit("host");
+    }
+  }, [params.host]);
   function onSubmit(user) {
     const data = {
       room: room,
@@ -170,9 +184,6 @@ export default function RoomControl(props) {
     const barSliderId = `barSlider${user}`;
     const barPositionId = `barPosition${user}`;
     const recordId = `recording${user}`;
-    useEffect(() => {
-      onSubmit(user);
-    }, [submitSign]);
 
     return (
       <div className={classes.toolBar}>
@@ -486,6 +497,12 @@ export default function RoomControl(props) {
       </div>
     );
   };
+  function destroyAll() {
+    Modal.destroyAll();
+  }
+  function showConfirm() {
+    setVisible(true);
+  }
   return (
     <div>
       {/* <Link className="primary-button" to={"/survey/" + room}>
@@ -500,6 +517,14 @@ export default function RoomControl(props) {
           justifyContent: "center",
         }}
       >
+        <GYModal
+          title="Title"
+          visible={visible}
+          onOk={() => setVisible(false)}
+          onCancel={() => setVisible(false)}
+        >
+          <h1>Are you ready?</h1>
+        </GYModal>
         <div className="primary-button">
           <ReactFileReader
             handleFiles={(files) => onLoadConfiguration(files)}
@@ -515,6 +540,9 @@ export default function RoomControl(props) {
           className="primary-button"
         >
           Saving Configuration
+        </button>
+        <button onClick={() => showConfirm()} className="primary-button">
+          Ready
         </button>
       </div>
 

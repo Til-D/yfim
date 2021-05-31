@@ -138,7 +138,15 @@ io.sockets.on("connection", (socket) => {
         ready_user_by_room[room]["host"] &&
         ready_user_by_room[room]["guest"]
       ) {
+        console.log(
+          ready_user_by_room[room]["host"],
+          ready_user_by_room[room]["guest"]
+        );
         io.sockets.in(room).emit("process-start");
+        ready_user_by_room[room] = {
+          host: false,
+          guest: false,
+        };
         // socket.broadcast.to(room).emit("process-start");
         // socket.emit("process-start");
       }
@@ -149,6 +157,7 @@ io.sockets.on("connection", (socket) => {
       };
       ready_user_by_room[room][user] = true;
     }
+    console.log(ready_user_by_room);
   });
   socket.on("process-in-progress", (data) => {
     console.log(data);

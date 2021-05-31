@@ -8,6 +8,7 @@ import { connect } from "react-redux";
 import { surveyJSON } from "../components/Survey_JSON";
 import * as Survey from "survey-react";
 import Clock from "./Clock";
+import GYModal from "../components/Modal";
 var FileSaver = require("file-saver");
 
 class MediaBridge extends Component {
@@ -22,6 +23,9 @@ class MediaBridge extends Component {
       process: false,
       stage: 0,
       process_cfg: null,
+      visible: false,
+      ready: false,
+      modalContent: "Are you Ready to Start ?",
     };
     this.record = {
       user: this.state.user,
@@ -128,21 +132,11 @@ class MediaBridge extends Component {
     }
   }
   onReady() {
-    let result = window.confirm("Are you ready to start?");
+    console.log("on ready set state");
+    this.setState({ ...this.state, visible: true });
     // while (!result) {
     //   result = window.confirm("Start when you are ready :)");
     // }
-    if (result) {
-      this.props.socket.emit("process-ready", {
-        room: this.props.room,
-        user: this.state.user,
-      });
-      console.log(this.state);
-    } else {
-      setTimeout(() => {
-        this.onReady();
-      }, 10000);
-    }
   }
   onProcessStart() {
     if (!this.state.process) {
@@ -212,7 +206,9 @@ class MediaBridge extends Component {
       room: this.props.room,
     });
 
-    this.onReady();
+    setTimeout(() => {
+      this.onReady();
+    }, 100000);
   }
   onSurveyStart() {
     console.log("survey start");
@@ -598,6 +594,28 @@ class MediaBridge extends Component {
         <div className="clock">
           <Clock time_diff={this.state.time_diff}></Clock>
         </div>
+        <GYModal
+          title="Enjoy your talk"
+          visible={this.state.visible}
+          onOk={() => {
+            this.setState({ ...this.state, visible: false, ready: true });
+            console.log("ready");
+            this.props.socket.emit("process-ready", {
+              room: this.props.room,
+              user: this.state.user,
+            });
+            console.log(this.state);
+          }}
+          onCancel={() => {
+            console.log("not ready");
+            this.setState({ ...this.state, visible: false, ready: false });
+            setTimeout(() => {
+              this.onReady();
+            }, 10000);
+          }}
+        >
+          <h1>{this.state.modalContent}</h1>
+        </GYModal>
         <video
           className="remote-video"
           ref={(ref) => (this.remoteVideo = ref)}
