@@ -95,6 +95,7 @@ export default function RoomControl(props) {
   const [params, setParams] = useState(initState);
   const [survey_count, setSurvey_count] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [crowd, setCrowd] = useState(true)
   const socket = io.connect();
   const classes = useStyles();
   // socket.emit("survey", props);
