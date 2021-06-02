@@ -5,7 +5,7 @@ export const surveyJSON = {
       elements: [
         {
           type: "radiogroup",
-          name: "question1",
+          name: "Questionnaire",
           title: "What's your current emotion?",
           choices: [
             {
