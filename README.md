@@ -1,16 +1,11 @@
 # WebRTC video chat app with ReactJS
 
-## Application Logic and Implementations
-
-To connect two users over WebRTC, we exchange information to allow browsers to talk to each other. This process is called signaling and it is facilitated by using NodeJS and socket server chained to the express 4.0 engine to provide the plumbing. Other than signaling, no data has to be sent through a server. When a connection is successfully established and authentication and authorization are complete, stream data exchanged between peers is directed to a React component for rendering.
-
-## Installation
-
-Once you have forked this project, go ahead and use npm through the command line to install all required dependecies:
+## Start Application
 
 ```bash
-npm i
-npm start
+npm i or yarn
+npm start or yarn start
+
 ```
 
 The app can be accessed at:
@@ -22,7 +17,6 @@ https://localhost:3000
 ## Structure
 
     /r/:room            -- Chating room
-    /game/:room         -- Similar to Survey page
     /control/:room      -- control : survey,game,...
     /projection         -- projection pages
     /survey             -- survey pages
@@ -33,6 +27,39 @@ There are two ways to develop separate works, one of which is using React built-
 
 1. For the first one, developer can write the frontend js files in the src directory and import them as a component and add them in /src/index.js
 2. For the second one, using express router, developer can write static html files in the directory ./backend/public and configure the path setting in ./backend/routes.
+
+## Server Data
+
+### Data
+
+- Mask setting (endWithEyes,...)
+- Questionnaire_set ()
+
+## Data Schema
+
+In this project, we are going to use couchDB as database to restore json format data.
+
+```json
+// sessionid is the time process started and formatted like "year/month/day/hour/min/second" e.g. "2020/6/1/6/15/24"
+"${sessionid}":{
+    "mask_setting": "endWithEyes",
+    "duration":"90",     //(optional, process duration)
+    "host": {
+        "emotion":[[],[],[]...], //every second's emotion score, like[0,1,2,3,4,5,...](corresponding to scores of different type of emotion)
+        "question":{
+            "question_set_id": 1,   //not identify whether it's a question set for adults or kids from the id
+            "quesion_answer":[{
+                "submit_time": "12", //(second count from the process start)
+                "question_id": 1, //from 0-n-1, n for the number of question in current question set
+                "answer": 1,
+            }]
+        }
+    },
+    "guest":{
+        //same as host
+    }
+}
+```
 
 ## Demo
 

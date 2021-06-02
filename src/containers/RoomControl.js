@@ -138,7 +138,7 @@ export default function RoomControl(props) {
   }
 
   function onProcessStart(files) {
-    console.log("process start");
+    console.log("process start, asking for ready");
     var reader = new FileReader();
     reader.onload = (e) => {
       // Use reader.result

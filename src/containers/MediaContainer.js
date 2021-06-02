@@ -11,6 +11,33 @@ import Clock from "./Clock";
 import GYModal from "../components/Modal";
 var FileSaver = require("file-saver");
 
+const init_mask = {
+  occlusion_mask: false, //Switch
+  feature_show: {
+    eyes: {
+      toggle: false,
+      sliderIndex: 0,
+    },
+    mouth: {
+      toggle: false,
+      sliderIndex: 0,
+    },
+    nose: {
+      toggle: false,
+      sliderIndex: 0,
+    },
+    bar: {
+      toggle: false,
+      direction: false,
+      sliderIndex: 0,
+      position: 0,
+    },
+  },
+  video: true,
+  audio: true,
+  recording: false,
+};
+
 class MediaBridge extends Component {
   constructor(props) {
     super(props);
@@ -19,16 +46,18 @@ class MediaBridge extends Component {
       user: "host",
       survey: false,
       recording: false,
+      time_slot: 0,
       time_diff: 0,
       process: false,
+      sessionId: "",
       stage: 0,
       process_cfg: null,
       visible: false,
       ready: false,
       modalContent: "Are you Ready to Start ?",
+      loading: false,
     };
     this.record = {
-      user: this.state.user,
       record_count: 0,
       record_detail: [],
     };
@@ -56,6 +85,9 @@ class MediaBridge extends Component {
     this.saveVideo = this.saveVideo.bind(this);
     this.onProcessStart = this.onProcessStart.bind(this);
     this.onProcessControl = this.onProcessControl.bind(this);
+    this.onStageControl = this.onStageControl.bind(this);
+    this.onProcessStop = this.onProcessStop.bind(this);
+    this.onUploadingFinish = this.onUploadingFinish.bind(this);
     this.mask_configuration = [];
 
     Survey.StylesManager.applyTheme("winter");
@@ -70,7 +102,11 @@ class MediaBridge extends Component {
     );
 
     this.props.socket.on("process-start", this.onProcessStart);
+    this.props.socket.on("process-stop", this.onProcessStop);
     this.props.socket.on("process-control", this.onProcessControl);
+    this.props.socket.on("stage-control", this.onStageControl);
+    this.props.socket.on("upload-finish", this.onUploadingFinish);
+
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
     this.props.socket.on("survey-start", this.onSurveyStart);
@@ -111,12 +147,12 @@ class MediaBridge extends Component {
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
     await faceapi.loadFaceExpressionModel(MODEL_URL);
   }
-  onProcessControl(data) {
+  // configure process setting
+  onProcessControl() {
     if (!this.state.process) {
       this.setState(
         {
           ...this.state,
-          process_cfg: data.cfg,
         },
         () => {
           console.log(this.state);
@@ -134,57 +170,31 @@ class MediaBridge extends Component {
   onReady() {
     console.log("on ready set state");
     this.setState({ ...this.state, visible: true });
-    // while (!result) {
-    //   result = window.confirm("Start when you are ready :)");
-    // }
   }
-  onProcessStart() {
+  onProcessStart(data) {
+    const { startTime, duration } = data;
+    console.log("process start");
     if (!this.state.process) {
-      // let data = require("../MaskSetting/endWithEyes.json");
+      //init
+      this.record = {
+        record_count: 0,
+        record_detail: [],
+      };
       console.log("process start counting");
-
-      let startTime = new Date().getTime();
-      this.process_duration = this.state.process_cfg[0]["duration"];
+      this.process_duration = duration;
       var endTime = startTime + 1000 * this.process_duration;
       this.timmer = setInterval(() => {
         let nowTime = new Date().getTime();
-        this.setState({
-          ...this.state,
-          process: true,
-          time_diff: Math.round((endTime - nowTime) / 1000),
-        });
-        let time_left = Math.round((endTime - nowTime) / 1000);
 
-        if (time_left <= 0) {
-          this.onProcessStop();
-        }
-        if (time_left > (this.process_duration * 2) / 3) {
-          //stage1
-          if (this.state.stage != 1) {
-            this.props.updateAll(this.state.process_cfg[1][this.state.user]);
-            this.setState({ ...this.state, stage: 1 });
-          }
-        } else if (
-          time_left < (this.process_duration * 2) / 3 &&
-          time_left > this.process_duration / 3
-        ) {
-          //stage2
-          if (this.state.stage != 2) {
-            this.setState({
-              ...this.state,
-              stage: 2,
-            });
-            this.props.updateAll(this.state.process_cfg[2][this.state.user]);
-          }
-        } else if (time_left < this.process_duration / 3) {
-          //stage3
-          if (this.state.stage != 3) {
-            this.setState({
-              ...this.state,
-              stage: 3,
-            });
-          }
-          this.props.updateAll(this.state.process_cfg[3][this.state.user]);
+        if (Math.round((endTime - nowTime) / 1000) < 0) {
+          clearInterval(this.timmer);
+        } else {
+          this.setState({
+            ...this.state,
+            process: true,
+            time_slot: this.state.time_slot + 1,
+            time_diff: Math.round((endTime - nowTime) / 1000),
+          });
         }
       }, 1000);
     } else {
@@ -195,24 +205,36 @@ class MediaBridge extends Component {
     }
   }
   onProcessStop() {
+    console.log("process stop");
     clearInterval(this.timmer);
     this.setState({
       ...this.state,
       process: false,
       time_diff: this.process_duration,
+      time_slot: 0,
       stage: 0,
     });
-    this.props.socket.emit("process-stop", {
-      room: this.props.room,
+    this.props.updateAll(init_mask);
+    this.sendDataToServer();
+    this.setState({
+      ...this.state,
+      loading: true,
     });
-
-    setTimeout(() => {
-      this.onReady();
-    }, 100000);
+    // setTimeout(() => {
+    //   this.onReady();
+    // }, 10000);
   }
+  onUploadingFinish() {
+    console.log("upload finished");
+    this.setState({
+      ...this.state,
+      loading: false,
+      visible: true,
+    });
+  }
+
   onSurveyStart() {
     console.log("survey start");
-    this.record.user = this.state.user;
     this.setState({
       ...this.state,
       record_count: 0,
@@ -223,6 +245,11 @@ class MediaBridge extends Component {
     datestr +=
       mydate.getHours() + "/" + mydate.getMinutes() + "/" + mydate.getSeconds();
     this.record.record_detail.push(datestr);
+  }
+  onStageControl(data) {
+    // update mask when stage change
+    const controlData = data[this.state.user];
+    this.props.updateAll(controlData);
   }
   onControl(control_data) {
     const { user, controlData } = control_data;
@@ -253,7 +280,7 @@ class MediaBridge extends Component {
 
   startRecording() {
     // e.preventDefault();
-    console.log("starting");
+    console.log("start recording");
     // wipe old data chunks
     this.chunks = [];
     // start recorder with 10ms buffer
@@ -312,22 +339,16 @@ class MediaBridge extends Component {
             console.log(err);
           }
 
-          if (this.state.survey) {
-            this.record.record_detail.push(this.detections.expressions);
+          if (this.state.process) {
+            const emo_data = {
+              time_slot: this.state.time_slot,
+              emotion: this.detections.expressions,
+            };
+            this.record.record_detail.push(emo_data);
+            console.log(emo_data);
             this.record.record_count += 1;
-
-            // if (this.record.record_count == 10) {
-            //   this.setState({ ...this.state, survey: false });
-            //   // survey end and restore data in database
-            //   this.props.socket.emit("emotion-send", {
-            //     room: this.props.room,
-            //     data: this.record,
-            //   });
-
-            //   this.record.record_detail = [];
-            //   this.record.record_count = 0;
-            // }
           }
+
           if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
           else this.drawCanvas(false);
         }, 1000);
@@ -489,31 +510,18 @@ class MediaBridge extends Component {
   handleError(e) {
     console.log(e);
   }
-  sendDataToServer(survey) {
-    //   callback function
-    alert("The results are:" + JSON.stringify(survey.data));
-    let mydate = new Date();
-    var datestr = "";
-    datestr +=
-      mydate.getHours() + "/" + mydate.getMinutes() + "/" + mydate.getSeconds();
-
-    const sendData = {
+  sendDataToServer() {
+    const emo_record = this.record;
+    console.log(
+      "sending data to server ",
+      JSON.parse(JSON.stringify(emo_record))
+    );
+    this.props.socket.emit("data-send", {
+      room: this.props.room,
+      data_type: "emotion",
       user: this.state.user,
-      submit_time: datestr,
-      result: survey.data,
-    };
-    this.props.socket.emit("survey-end", {
-      room: this.props.room,
-      data: sendData,
+      data: emo_record,
     });
-
-    this.setState({ ...this.state, survey: false });
-    // survey end and restore data in database
-    this.props.socket.emit("emotion-send", {
-      room: this.props.room,
-      data: this.record,
-    });
-
     this.record.record_detail = [];
     this.record.record_count = 0;
 
@@ -615,6 +623,17 @@ class MediaBridge extends Component {
           }}
         >
           <h1>{this.state.modalContent}</h1>
+        </GYModal>
+        <GYModal
+          title="Enjoy your talk"
+          visible={this.state.loading}
+          onOk={() => {}}
+          onCancel={() => {}}
+        >
+          <h1>
+            Please wait, we are uploading the data of previous
+            conversation.Thanks for your patience.
+          </h1>
         </GYModal>
         <video
           className="remote-video"

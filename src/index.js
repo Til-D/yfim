@@ -21,7 +21,7 @@ render(
         {/* <Route path="*" component={NotFound} /> */}
         <Route exact path="/dashboard" component={DashBoard} />
         <Route exact path="/control/:room" component={RoomControl} />
-        {/* <Route exact path="/survey/:room" component={SurveyPage} /> */}
+        <Route exact path="/s/:room/:user" component={SurveyPage} />
         {/* <Route path="/survey/:room"/>  */}
       </Switch>
     </BrowserRouter>
