@@ -14,7 +14,7 @@ var projectionRouter = require("./backend/routes/projection");
 var indexRouter = require("./backend/routes");
 // authenticate
 
-const tableName = "occ2lusion_mask";
+const tableName = "occlusion_mask";
 
 const db = nano.db.use(tableName);
 
