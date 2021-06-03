@@ -7,8 +7,7 @@ import "survey-react/survey.css";
 function SurveyPage(props) {
   const [surveyOn, setSurveyOn] = useState(true);
   const [user, setUser] = useState("host");
-  console.log("survey", props);
-  const socket = io.connect();
+  const socket = io.connect({ transports: ["websocket"], upgrade: false });
   socket.emit("survey-connect", {
     room: props.match.params.room,
     user: props.match.params.user,
@@ -25,7 +24,6 @@ function SurveyPage(props) {
   Survey.StylesManager.applyTheme("winter");
   const model = new Survey.Model(surveyJSON);
   console.log(model);
-  console.log(surveyJSON);
   function sendDataToServer(survey) {
     //   callback function
     setSurveyOn(false);
@@ -40,7 +38,6 @@ function SurveyPage(props) {
       submit_time: datestr,
       result: survey.data,
     };
-    console.log("emit");
     socket.emit("survey-end", {
       room: props.match.params.room,
       data: sendData,

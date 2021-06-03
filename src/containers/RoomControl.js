@@ -6,7 +6,55 @@ import Switch from "../components/Switch";
 import { Slider } from "@material-ui/core";
 import ReactFileReader from "react-file-reader";
 import GYModal from "../components/Modal";
+import Select from "react-select";
 
+const colourStyles = {
+  option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+    // const color = chroma(data.color);
+    return {
+      ...styles,
+      backgroundColor: isFocused ? "#999999" : null,
+      color: "#0052CC",
+    };
+  },
+};
+
+const adultsOptions = [
+  { value: "adults_random", label: "Random", color: "#0052CC" },
+  { value: "adults_war", label: "War", color: "#0052CC" },
+  { value: "adults_vaccine", label: "Vaccine", color: "#0052CC" },
+];
+const kidsOptions = [
+  { value: "kids_random", label: "Random", color: "#0052CC" },
+  { value: "kids_cartoon", label: "Cartoon", color: "#0052CC" },
+];
+const groupOptions = [
+  { label: "Adults", options: adultsOptions },
+  { label: "Kids", options: kidsOptions },
+];
+const groupStyles = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+};
+const groupBadgeStyles = {
+  backgroundColor: "#EBECF0",
+  borderRadius: "2em",
+  color: "#172B4D",
+  display: "inline-block",
+  fontSize: 12,
+  fontWeight: "normal",
+  lineHeight: "1",
+  minWidth: 1,
+  padding: "0.16666666666667em 0.5em",
+  textAlign: "center",
+};
+const formatGroupLabel = (data) => (
+  <div style={groupStyles}>
+    <span>{data.label}</span>
+    <span style={groupBadgeStyles}>{data.options.length}</span>
+  </div>
+);
 const useStyles = makeStyles((theme) => ({
   toolBarContainer: {
     display: "flex",
@@ -35,6 +83,7 @@ const useStyles = makeStyles((theme) => ({
     flex: "1",
   },
 }));
+
 const initState = {
   host: {
     occlusion_mask: false, //Switch
@@ -95,8 +144,8 @@ export default function RoomControl(props) {
   const [params, setParams] = useState(initState);
   const [survey_count, setSurvey_count] = useState(0);
   const [visible, setVisible] = useState(false);
-  const [crowd, setCrowd] = useState(true)
-  const socket = io.connect();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const socket = io.connect({ transports: ["websocket"], upgrade: false });
   const classes = useStyles();
   // socket.emit("survey", props);
   const room = props.match.params.room;
@@ -110,11 +159,15 @@ export default function RoomControl(props) {
     alert("process stop");
   });
   useEffect(() => {
+    console.log(selectedOption);
+  }, [selectedOption]);
+  useEffect(() => {
     if (JSON.stringify(params.guest) != JSON.stringify(initState.guest)) {
       console.log("guest params change");
       onSubmit("guest");
     }
   }, [params.guest]);
+
   useEffect(() => {
     if (JSON.stringify(params.host) != JSON.stringify(initState.host)) {
       console.log("host change");
@@ -144,7 +197,11 @@ export default function RoomControl(props) {
     reader.onload = (e) => {
       // Use reader.result
       let cfg = JSON.parse(reader.result);
-      socket.emit("process-control", { room: room, cfg: cfg });
+      socket.emit("process-control", {
+        room: room,
+        cfg: cfg,
+        topic: selectedOption.value,
+      });
     };
     reader.readAsText(files[0]);
   }
@@ -498,57 +555,12 @@ export default function RoomControl(props) {
       </div>
     );
   };
-  function destroyAll() {
-    Modal.destroyAll();
-  }
-  function showConfirm() {
-    setVisible(true);
-  }
+
   return (
-    <div>
-      {/* <Link className="primary-button" to={"/survey/" + room}>
-        Survey
-      </Link> */}
+    <>
       <div
         style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyItems: "center",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <GYModal
-          title="Title"
-          visible={visible}
-          onOk={() => setVisible(false)}
-          onCancel={() => setVisible(false)}
-        >
-          <h1>Are you ready?</h1>
-        </GYModal>
-        <div className="primary-button">
-          <ReactFileReader
-            handleFiles={(files) => onLoadConfiguration(files)}
-            fileTypes={".json"}
-          >
-            {/* <button className="primary-button">Loading Configuration</button> */}
-            Loading Configuration
-          </ReactFileReader>
-        </div>
-
-        <button
-          onClick={() => savingCongfiguration()}
-          className="primary-button"
-        >
-          Saving Configuration
-        </button>
-        <button onClick={() => showConfirm()} className="primary-button">
-          Ready
-        </button>
-      </div>
-
-      <div
-        style={{
+          top: "10px",
           display: "flex",
           flexDirection: "row",
           alignItems: "flex-start",
@@ -568,24 +580,58 @@ export default function RoomControl(props) {
           </button> */}
         </div>
       </div>
-      <div>
-        <button onClick={() => onSurveyStart()} className="primary-button">
-          Survey Start No.{survey_count}
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyItems: "center",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            width: "8em",
+            height: "5em",
+            lineHeight: "2ex",
+          }}
+        >
+          <Select
+            defaultValue={selectedOption}
+            onChange={setSelectedOption}
+            options={groupOptions}
+            formatGroupLabel={formatGroupLabel}
+            styles={colourStyles}
+          />
+        </div>
+        <GYModal
+          title="Title"
+          visible={visible}
+          onOk={() => setVisible(false)}
+          onCancel={() => setVisible(false)}
+        >
+          <h1>Are you ready?</h1>
+        </GYModal>
+
+        <div className="primary-button">
+          <ReactFileReader
+            handleFiles={(files) => onProcessStart(files)}
+            fileTypes={".json"}
+          >
+            {/* <button className="primary-button">Loading Configuration</button> */}
+            Process Start
+          </ReactFileReader>
+        </div>
+
+        <button
+          onClick={() => savingCongfiguration()}
+          className="primary-button"
+        >
+          Saving setting
         </button>
       </div>
-      <div className="primary-button">
-        <ReactFileReader
-          handleFiles={(files) => onProcessStart(files)}
-          fileTypes={".json"}
-        >
-          {/* <button className="primary-button">Loading Configuration</button> */}
-          Process Start
-        </ReactFileReader>
-      </div>
-
-      {/* <Link className="primary-button" to={"/compete/" + this.state.room}>
-        Compete
-      </Link> */}
-    </div>
+    </>
   );
 }

@@ -56,6 +56,10 @@ class MediaBridge extends Component {
       ready: false,
       modalContent: "Are you Ready to Start ?",
       loading: false,
+      topic: {
+        content: "Welcome",
+        visible: false,
+      },
     };
     this.record = {
       record_count: 0,
@@ -247,8 +251,22 @@ class MediaBridge extends Component {
     this.record.record_detail.push(datestr);
   }
   onStageControl(data) {
+    const { mask, topic } = data;
     // update mask when stage change
-    const controlData = data[this.state.user];
+    const controlData = mask[this.state.user];
+    this.setState({
+      ...this.state,
+      topic: {
+        content: topic,
+        visible: true,
+      },
+    });
+    setTimeout(() => {
+      this.setState({
+        ...this.state,
+        topic: { ...this.state.topic, visible: false },
+      });
+    }, 5000);
     this.props.updateAll(controlData);
   }
   onControl(control_data) {
@@ -622,7 +640,7 @@ class MediaBridge extends Component {
             }, 10000);
           }}
         >
-          <h1>{this.state.modalContent}</h1>
+          <h1 style={{ color: "black" }}>{this.state.modalContent}</h1>
         </GYModal>
         <GYModal
           title="Enjoy your talk"
@@ -630,10 +648,18 @@ class MediaBridge extends Component {
           onOk={() => {}}
           onCancel={() => {}}
         >
-          <h1>
+          <h1 style={{ color: "black" }}>
             Please wait, we are uploading the data of previous
             conversation.Thanks for your patience.
           </h1>
+        </GYModal>
+        <GYModal
+          title="Enjoy your talk"
+          visible={this.state.topic.visible}
+          onOk={() => {}}
+          onCancel={() => {}}
+        >
+          <h1 style={{ color: "black" }}>{this.state.topic.content}</h1>
         </GYModal>
         <video
           className="remote-video"

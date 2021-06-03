@@ -63,6 +63,11 @@ ready_user_by_room = {};
 projection_room_list = {};
 survey_room_list = {};
 
+survey_socket = {
+  guest: undefined,
+  host: undefined,
+};
+
 emotion_ready = { host: false, guest: false };
 question_ready = { host: true, guest: true };
 emotion_data = {
@@ -73,11 +78,14 @@ question_data = {
   host: {},
   guest: {},
 };
+const adults_topics = ["lockdown", "politics", "soccer"];
+const kids_topics = ["lockdown", "supperstar"];
 
 var sessionId;
 var qsid;
 var timmer;
 var current_cfg;
+var current_question;
 
 function generateId(stime) {
   let year = stime.getFullYear();
@@ -134,7 +142,10 @@ function processStart(room, start_time, cfg) {
           //send mask
           console.log(time_left, "stage 1");
           let mask_setting = cfg["setting"][stage];
-          io.sockets.in(room).emit("stage-control", mask_setting);
+          let topic = current_question["stage1"];
+          io.sockets
+            .in(room)
+            .emit("stage-control", { mask: mask_setting, topic });
         }
       } else if (time_left < (duration * 2) / 3 && time_left > duration / 3) {
         //stage2
@@ -143,7 +154,10 @@ function processStart(room, start_time, cfg) {
           //send mask
           console.log(time_left, "stage 2");
           let mask_setting = cfg["setting"][stage];
-          io.sockets.in(room).emit("stage-control", mask_setting);
+          let topic = current_question["stage2"];
+          io.sockets
+            .in(room)
+            .emit("stage-control", { mask: mask_setting, topic });
         }
       } else if (time_left < duration / 3) {
         //stage3
@@ -152,7 +166,10 @@ function processStart(room, start_time, cfg) {
           //send mask
           console.log(time_left, "stage 3");
           let mask_setting = cfg["setting"][stage];
-          io.sockets.in(room).emit("stage-control", mask_setting);
+          let topic = current_question["stage3"];
+          io.sockets
+            .in(room)
+            .emit("stage-control", { mask: mask_setting, topic });
         }
       }
 
@@ -168,7 +185,6 @@ function processStop(room) {
   console.log("process stop");
   // clear timmer
   clearInterval(timmer);
-  console.log(timmer);
   // socket send stop
 
   io.in(room).emit("process-stop");
@@ -246,6 +262,12 @@ io.sockets.on("connection", (socket) => {
     const room = data.room;
     control_room_list[room] = socket;
   });
+  socket.on("survey-connect", (data) => {
+    const { room, user } = data.room;
+
+    socket.join("survey-" + room);
+    survey_socket[user] = socket;
+  });
   // survey send and control
   socket.on("survey-start", (data) => {
     console.log("survey start", data);
@@ -265,7 +287,30 @@ io.sockets.on("connection", (socket) => {
   //
   socket.on("process-control", (data) => {
     const params_room = data.room;
+
     current_cfg = data.cfg;
+    console.log(typeof data.topic);
+    let topic_selected = data.topic.split("_");
+    let topic_set = topic_selected[0];
+    let topic_name = topic_selected[1];
+    if (topic_name == "random") {
+      if (topic_set == "adults") {
+        const random = Math.floor(Math.random() * adults_topics.length);
+        topic_name = adults_topics[random];
+        console.log(random, topic_name);
+      } else {
+        const random = Math.floor(Math.random() * kids_topics.length);
+        topic_name = kids_topics[random];
+        console.log(random, topic_name);
+      }
+    }
+    try {
+      current_question = require(`./topics/${topic_set}/${topic_name}.json`);
+      console.log(current_question);
+    } catch {
+      console.log("getting topic error");
+    }
+
     socket.broadcast.to(params_room).emit("process-control");
   });
   socket.on("process-ready", (data) => {
