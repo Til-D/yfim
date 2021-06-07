@@ -12,14 +12,13 @@ function SurveyPage(props) {
     room: props.match.params.room,
     user: props.match.params.user,
   });
+  socket.on("survey-start", () => {
+    setSurveyOn(true);
+  });
   // socket.join(props.match.params.room);
   // Need to move this to control panel
 
-  useEffect(() => {
-    socket.on("survey-start", () => {
-      setSurveyOn(true);
-    });
-  });
+  useEffect(() => {});
 
   Survey.StylesManager.applyTheme("winter");
   const model = new Survey.Model(surveyJSON);
@@ -27,7 +26,6 @@ function SurveyPage(props) {
   function sendDataToServer(survey) {
     //   callback function
     setSurveyOn(false);
-    alert("The results are:" + JSON.stringify(survey.data));
     let mydate = new Date();
     var datestr = "";
     datestr +=

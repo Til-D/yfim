@@ -264,7 +264,6 @@ io.sockets.on("connection", (socket) => {
   });
   socket.on("survey-connect", (data) => {
     const { room, user } = data.room;
-
     socket.join("survey-" + room);
     survey_socket[user] = socket;
   });

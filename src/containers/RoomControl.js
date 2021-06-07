@@ -21,12 +21,14 @@ const colourStyles = {
 
 const adultsOptions = [
   { value: "adults_random", label: "Random", color: "#0052CC" },
-  { value: "adults_war", label: "War", color: "#0052CC" },
-  { value: "adults_vaccine", label: "Vaccine", color: "#0052CC" },
+  { value: "adults_lockdown", label: "Lockdown", color: "#0052CC" },
+  { value: "adults_politics", label: "Politics", color: "#0052CC" },
+  { value: "adults_soccer", label: "Soccer", color: "#0052CC" },
 ];
 const kidsOptions = [
   { value: "kids_random", label: "Random", color: "#0052CC" },
-  { value: "kids_cartoon", label: "Cartoon", color: "#0052CC" },
+  { value: "kids_lockdown", label: "Lockdown", color: "#0052CC" },
+  { value: "kids_supperstar", label: "Supperstar", color: "#0052CC" },
 ];
 const groupOptions = [
   { label: "Adults", options: adultsOptions },
