@@ -598,6 +598,7 @@ export default function RoomControl(props) {
             width: "8em",
             height: "5em",
             lineHeight: "2ex",
+            fontSize: "0.8em",
           }}
         >
           <Select
