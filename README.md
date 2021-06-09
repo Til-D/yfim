@@ -21,7 +21,7 @@ https://localhost:3000
     /projection         -- projection pages
     /survey             -- survey pages
 
-## Develop guidance
+## Developers' Guide
 
 There are two ways to develop separate works, one of which is using React built-in router while another is using express router.
 
