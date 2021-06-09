@@ -82,10 +82,9 @@ const adults_topics = ["lockdown", "politics", "soccer"];
 const kids_topics = ["lockdown", "supperstar"];
 
 var sessionId;
-var qsid;
 var timmer;
 var current_cfg;
-var current_question;
+var current_rating;
 
 function generateId(stime) {
   let year = stime.getFullYear();
@@ -124,6 +123,10 @@ function processStart(room, start_time, cfg) {
   let stage = 0;
   console.log("config ", cfg);
   const { duration } = cfg["setting"][0];
+  const questionset = require("./assets/topics/topics.json");
+  const icebreaker = questionset["icebreaker"];
+  const wouldyou = questionset["wouldyou"];
+  const quest = questionset["quest"][current_rating];
 
   let endTime = start_time + 1000 * duration;
   // create a timmer
@@ -142,10 +145,11 @@ function processStart(room, start_time, cfg) {
           //send mask
           console.log(time_left, "stage 1");
           let mask_setting = cfg["setting"][stage];
-          let topic = current_question["stage1"];
+          const rindex = Math.floor(Math.random() * icebreaker.length);
+          let topic = icebreaker[rindex];
           io.sockets
             .in(room)
-            .emit("stage-control", { mask: mask_setting, topic });
+            .emit("stage-control", { mask: mask_setting, topic: [topic] });
         }
       } else if (time_left < (duration * 2) / 3 && time_left > duration / 3) {
         //stage2
@@ -154,10 +158,11 @@ function processStart(room, start_time, cfg) {
           //send mask
           console.log(time_left, "stage 2");
           let mask_setting = cfg["setting"][stage];
-          let topic = current_question["stage2"];
+          const rindex = Math.floor(Math.random() * wouldyou.length);
+          let topic = wouldyou[rindex];
           io.sockets
             .in(room)
-            .emit("stage-control", { mask: mask_setting, topic });
+            .emit("stage-control", { mask: mask_setting, topic: [topic] });
         }
       } else if (time_left < duration / 3) {
         //stage3
@@ -166,7 +171,8 @@ function processStart(room, start_time, cfg) {
           //send mask
           console.log(time_left, "stage 3");
           let mask_setting = cfg["setting"][stage];
-          let topic = current_question["stage3"];
+          const rindex = Math.floor(Math.random() * quest.length);
+          let topic = quest[rindex];
           io.sockets
             .in(room)
             .emit("stage-control", { mask: mask_setting, topic });
@@ -288,27 +294,7 @@ io.sockets.on("connection", (socket) => {
     const params_room = data.room;
 
     current_cfg = data.cfg;
-    console.log(typeof data.topic);
-    let topic_selected = data.topic.split("_");
-    let topic_set = topic_selected[0];
-    let topic_name = topic_selected[1];
-    if (topic_name == "random") {
-      if (topic_set == "adults") {
-        const random = Math.floor(Math.random() * adults_topics.length);
-        topic_name = adults_topics[random];
-        console.log(random, topic_name);
-      } else {
-        const random = Math.floor(Math.random() * kids_topics.length);
-        topic_name = kids_topics[random];
-        console.log(random, topic_name);
-      }
-    }
-    try {
-      current_question = require(`./topics/${topic_set}/${topic_name}.json`);
-      console.log(current_question);
-    } catch {
-      console.log("getting topic error");
-    }
+    current_rating = data.topic;
 
     socket.broadcast.to(params_room).emit("process-control");
   });

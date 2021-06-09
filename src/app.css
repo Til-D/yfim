@@ -143,6 +143,13 @@ input[type="text"] {
   z-index: 10;
   /* background-color: transparent; */
 }
+.topic {
+  position: absolute;
+  height: 10%;
+  width: 100%;
+  z-index: 20;
+  text-align: center;
+}
 .clock {
   position: absolute;
 

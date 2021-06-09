@@ -1,0 +1,94 @@
+{
+    "wouldyou": [
+        "Give up social media or eat the same dinner for the rest of your life?",
+        "Have no taste or be colorblind?",
+        "Have the lights on or off if you knew the room was full of snakes?",
+        "Win $25,000 or have your best friend win $100,000?",
+        "Be reborn into the past or the future?",
+        "Never age physically or never age mentally?",
+        "Be hypersensitive to other people's emotions or give up your sense of compassion?",
+        "Have every meeting on ZOOM or go to the office for the rest of your life?",
+        "Would you rather have a rewind button or a pause button on your life?",
+        "Would you rather lose your vision or your hearing?",
+        "Would you rather become someone else or just stay you?",
+        "Would you rather always say everything on your mind or never speak again?",
+        "Would you rather make a phone call or send a text?",
+        "Would you rather have x-ray vision or magnified hearing?",
+        "Would you rather be stuck on an island alone or with someone who talks incessantly?",
+        "Would you rather have a 5-hour dinner with a headstrong politician from an opposing party or go hungry for 2 days?",
+        "Would you rather have a 5-hour dinner with Donald Trump or Vladimir Putin?",
+        "Would you rather have lunch with Donald Trump or Kim Kardashian?"
+    ],
+    "quest": {
+        "kids": [
+            [
+                "Homework helps me learn",
+                "Homework is a waste of time"
+            ]
+        ],
+        "mature": [
+            [
+                "pro choice is vital.",
+                "pro life is vital."
+            ],
+            [
+                "coal is the backbone of Australia's economy.",
+                "Australia needs to divest from coal."
+            ],
+            [
+                "owning a gun can protect me and my family.",
+                "all gun ownership should be banned."
+            ],
+            [
+                "feminism is crucial for reaching gender equality.",
+                "feminism is overrated. Life is good the way it is."
+            ],
+            [
+                "vaccinations should be mandatory.",
+                "vaccination should be optional, not mandatory."
+            ]
+        ],
+        "general": [
+            [
+                "meat is the way to go.",
+                "vegan is the way to go."
+            ],
+            [
+                "traditions are vital.",
+                "progress is vital."
+            ],
+            [
+                "climate change is man-made.",
+                "climate changes follow natural cycles."
+            ],
+            [
+                "Australia needs to protect its identity.",
+                "Australia should welcome more immigration."
+            ],
+            [
+                "social media has connected the world.",
+                "social media brings more harm than good."
+            ]
+        ]
+    },
+    "icebreaker": [
+        "Describe your current mood with one word.",
+        "What animal would you be and why?",
+        "Describe the shape of a wish.",
+        "What is the colour of today?",
+        "Describe how happiness would taste.",
+        "If you could have any superpower, what would you choose and why?",
+        "If you could be in the movie of your choice, what movie would it be? Why?",
+        "Describe yourself in one word.",
+        "Describe how happiness would smell.",
+        "Describe your life in one word.",
+        "Are you sunrise, daylight, twilight, or night? Why?",
+        "Describe your favourite city in one word.",
+        "Describe the past week in one word.",
+        "Describe your family in one word.",
+        "What's your most irrational fear?",
+        "What's an unusual skill you have?",
+        "Which emoji do you use the most?",
+        "What would you do if you had an extra hour in the day?"
+    ]
+}

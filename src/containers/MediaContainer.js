@@ -254,13 +254,25 @@ class MediaBridge extends Component {
     const { mask, topic } = data;
     // update mask when stage change
     const controlData = mask[this.state.user];
-    this.setState({
-      ...this.state,
-      topic: {
-        content: topic,
-        visible: true,
-      },
-    });
+    if (topic.length == 1) {
+      this.setState({
+        ...this.state,
+        topic: {
+          content: topic[0],
+          visible: true,
+        },
+      });
+    } else {
+      const index = this.state.user == "host" ? 0 : 1;
+      this.setState({
+        ...this.state,
+        topic: {
+          content: topic[index],
+          visible: true,
+        },
+      });
+    }
+
     setTimeout(() => {
       this.setState({
         ...this.state,
@@ -616,6 +628,11 @@ class MediaBridge extends Component {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>
         <canvas className="canvas" ref={(ref) => (this.canvasRef = ref)} />
+        <div className="topic">
+          <p style={{ color: "white", fontSize: "30px", margin: "0 auto" }}>
+            {this.state.topic.content}
+          </p>
+        </div>
         {/* <text className="clock">{this.state.time_diff}</text> */}
         <div className="clock">
           <Clock time_diff={this.state.time_diff}></Clock>
@@ -653,14 +670,14 @@ class MediaBridge extends Component {
             conversation.Thanks for your patience.
           </h1>
         </GYModal>
-        <GYModal
+        {/* <GYModal
           title="Enjoy your talk"
           visible={this.state.topic.visible}
           onOk={() => {}}
           onCancel={() => {}}
         >
           <h1 style={{ color: "black" }}>{this.state.topic.content}</h1>
-        </GYModal>
+        </GYModal> */}
         <video
           className="remote-video"
           ref={(ref) => (this.remoteVideo = ref)}
@@ -672,16 +689,6 @@ class MediaBridge extends Component {
           autoPlay
           muted
         ></video>
-        {/* <ToolBar /> */}
-        <div style={{ zIndex: 100, position: "absolute" }}>
-          {this.state.survey && (
-            <Survey.SurveyWindow
-              model={this.model}
-              isExpanded={true}
-              onComplete={this.sendDataToServer}
-            />
-          )}
-        </div>
       </div>
     );
   }

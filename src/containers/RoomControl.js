@@ -19,20 +19,31 @@ const colourStyles = {
   },
 };
 
-const adultsOptions = [
-  { value: "adults_random", label: "Random", color: "#0052CC" },
-  { value: "adults_lockdown", label: "Lockdown", color: "#0052CC" },
-  { value: "adults_politics", label: "Politics", color: "#0052CC" },
-  { value: "adults_soccer", label: "Soccer", color: "#0052CC" },
-];
-const kidsOptions = [
-  { value: "kids_random", label: "Random", color: "#0052CC" },
-  { value: "kids_lockdown", label: "Lockdown", color: "#0052CC" },
-  { value: "kids_supperstar", label: "Supperstar", color: "#0052CC" },
+// const adultsOptions = [
+//   { value: "adults_random", label: "Random", color: "#0052CC" },
+//   { value: "adults_lockdown", label: "Lockdown", color: "#0052CC" },
+//   { value: "adults_politics", label: "Politics", color: "#0052CC" },
+//   { value: "adults_soccer", label: "Soccer", color: "#0052CC" },
+// ];
+// const kidsOptions = [
+//   { value: "kids_random", label: "Random", color: "#0052CC" },
+//   { value: "kids_lockdown", label: "Lockdown", color: "#0052CC" },
+//   { value: "kids_supperstar", label: "Supperstar", color: "#0052CC" },
+// ];
+// const groupOptions = [
+//   { label: "Adults", options: adultsOptions },
+//   { label: "Kids", options: kidsOptions },
+// ];
+const maskOptions = [
+  { value: "endWithEyes", label: "EndWithEyes", color: "#0052CC" },
+  { value: "endWithMouth", label: "EndWithMouth", color: "#0052CC" },
+  { value: "opposite", label: "Opposite", color: "#0052CC" },
+  { value: "upload", label: "Upload", color: "#0052CC" },
 ];
 const groupOptions = [
-  { label: "Adults", options: adultsOptions },
-  { label: "Kids", options: kidsOptions },
+  { value: "general", label: "General", color: "#0052CC" },
+  { value: "kids", label: "Kids", color: "#0052CC" },
+  { value: "mature", label: "Mature", color: "#0052CC" },
 ];
 const groupStyles = {
   display: "flex",
@@ -144,12 +155,13 @@ var FileSaver = require("file-saver");
 
 export default function RoomControl(props) {
   const [params, setParams] = useState(initState);
-  const [survey_count, setSurvey_count] = useState(0);
   const [visible, setVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [upload, setUpload] = useState(false);
+  const [maskOption, setMaskOption] = useState(null);
+  const [maskConfig, setMaskConfig] = useState(null);
   const socket = io.connect({ transports: ["websocket"], upgrade: false });
   const classes = useStyles();
-  // socket.emit("survey", props);
   const room = props.match.params.room;
   socket.emit("control-room", { room: room });
   socket.on("process-in-progress", (data) => {
@@ -161,8 +173,16 @@ export default function RoomControl(props) {
     alert("process stop");
   });
   useEffect(() => {
-    console.log(selectedOption);
-  }, [selectedOption]);
+    console.log(maskOption);
+    if (maskOption != null) {
+      if (maskOption.value == "upload") {
+        setUpload(true);
+      } else if (upload) {
+        setUpload(false);
+      }
+    }
+  }, [maskOption]);
+
   useEffect(() => {
     if (JSON.stringify(params.guest) != JSON.stringify(initState.guest)) {
       console.log("guest params change");
@@ -176,6 +196,7 @@ export default function RoomControl(props) {
       onSubmit("host");
     }
   }, [params.host]);
+
   function onSubmit(user) {
     const data = {
       room: room,
@@ -187,37 +208,36 @@ export default function RoomControl(props) {
     console.log(data);
     socket.emit("control", data);
   }
-  function onSurveyStart() {
-    console.log(survey_count);
-    socket.emit("survey-start", { room: room });
-    setSurvey_count((count) => count + 1);
-  }
 
-  function onProcessStart(files) {
+  function onProcessStart() {
     console.log("process start, asking for ready");
-    var reader = new FileReader();
-    reader.onload = (e) => {
-      // Use reader.result
-      let cfg = JSON.parse(reader.result);
+    let cfg;
+    if (maskOption.value == "upload") {
+      cfg = maskConfig;
+    } else {
+      cfg = require("../../assets/MaskSetting/" + maskOption.value + ".json");
+    }
+    console.log(cfg);
+    if (maskOption != null && selectedOption != null) {
       socket.emit("process-control", {
         room: room,
         cfg: cfg,
         topic: selectedOption.value,
       });
-    };
-    reader.readAsText(files[0]);
+    } else {
+      alert("please select topics and mask type");
+    }
   }
 
-  function onLoadConfiguration(files) {
+  function onUploadConfig(files) {
+    console.log("uploading config file");
     var reader = new FileReader();
     reader.onload = (e) => {
       // Use reader.result
-      let settingsP = JSON.parse(reader.result);
-      setParams(settingsP);
+      let cfg = JSON.parse(reader.result);
+      setMaskConfig(cfg);
     };
     reader.readAsText(files[0]);
-    // socket.emit("survey-start", { room: room });
-    // setSurvey_count((count) => count + 1);
   }
 
   function savingCongfiguration() {
@@ -586,7 +606,7 @@ export default function RoomControl(props) {
       <div
         style={{
           display: "flex",
-          flexDirection: "row",
+          flexDirection: "column",
           justifyItems: "center",
           alignItems: "center",
           justifyContent: "center",
@@ -594,21 +614,64 @@ export default function RoomControl(props) {
       >
         <div
           style={{
-            display: "inline-block",
-            width: "8em",
-            height: "5em",
-            lineHeight: "2ex",
-            fontSize: "0.8em",
+            display: "flex",
+            flexDirection: "row",
           }}
         >
-          <Select
-            defaultValue={selectedOption}
-            onChange={setSelectedOption}
-            options={groupOptions}
-            formatGroupLabel={formatGroupLabel}
-            styles={colourStyles}
-          />
+          <p>Topics : </p>
+          <div
+            style={{
+              display: "inline-block",
+              width: "8em",
+              height: "5em",
+              lineHeight: "2ex",
+              fontSize: "0.8em",
+            }}
+          >
+            <Select
+              defaultValue={selectedOption}
+              onChange={setSelectedOption}
+              options={groupOptions}
+              // formatGroupLabel={formatGroupLabel}
+              styles={colourStyles}
+            />
+          </div>
         </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+          }}
+        >
+          {" "}
+          <p>Mask Type: </p>
+          <div
+            style={{
+              display: "inline-block",
+              width: "8em",
+              height: "5em",
+              lineHeight: "2ex",
+              fontSize: "0.8em",
+            }}
+          >
+            <Select
+              defaultValue={maskOption}
+              onChange={setMaskOption}
+              options={maskOptions}
+              styles={colourStyles}
+            />
+          </div>
+          {upload && (
+            <ReactFileReader
+              handleFiles={(files) => onUploadConfig(files)}
+              fileTypes={".json"}
+            >
+              {/* <button className="primary-button">Loading Configuration</button> */}
+              Upload Mask
+            </ReactFileReader>
+          )}
+        </div>
+
         <GYModal
           title="Title"
           visible={visible}
@@ -618,15 +681,9 @@ export default function RoomControl(props) {
           <h1>Are you ready?</h1>
         </GYModal>
 
-        <div className="primary-button">
-          <ReactFileReader
-            handleFiles={(files) => onProcessStart(files)}
-            fileTypes={".json"}
-          >
-            {/* <button className="primary-button">Loading Configuration</button> */}
-            Process Start
-          </ReactFileReader>
-        </div>
+        <button onClick={() => onProcessStart()} className="primary-button">
+          Process Start
+        </button>
 
         <button
           onClick={() => savingCongfiguration()}
