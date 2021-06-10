@@ -3,11 +3,15 @@ import io from "socket.io-client";
 import { surveyJSON } from "./Survey_JSON";
 import * as Survey from "survey-react";
 import "survey-react/survey.css";
+import Announcement from "./Announcement";
 
 function SurveyPage(props) {
-  const [surveyOn, setSurveyOn] = useState(true);
-  const [user, setUser] = useState("host");
+  const [surveyOn, setSurveyOn] = useState(false);
+  const [faceOn, setFaceOn] = useState(false);
+  const [stage, setStage] = useState("Start");
+  const { room, user } = props.match.params;
   const socket = io.connect({ transports: ["websocket"], upgrade: false });
+
   socket.emit("survey-connect", {
     room: props.match.params.room,
     user: props.match.params.user,
@@ -15,11 +19,30 @@ function SurveyPage(props) {
   socket.on("survey-start", () => {
     setSurveyOn(true);
   });
+  socket.on("face-detected", () => {
+    console.log("face detected");
+    setFaceOn(true);
+  });
+  socket.on("process-start", () => {
+    setStage("Conversation is in progress...");
+  });
+  socket.on("process-stop", () => {
+    setStage("Start");
+    setSurveyOn(false);
+    setFaceOn(false);
+  });
+  socket.on("reset", () => {
+    setStage("Start");
+    setSurveyOn(false);
+  });
   // socket.join(props.match.params.room);
   // Need to move this to control panel
 
   useEffect(() => {});
-
+  function sendReadyToServer() {
+    socket.emit("process-ready", { room, user });
+    setStage("Waiting remote partner...");
+  }
   Survey.StylesManager.applyTheme("winter");
   const model = new Survey.Model(surveyJSON);
   console.log(model);
@@ -43,7 +66,9 @@ function SurveyPage(props) {
   }
   return (
     <div>
-      <div>Hello, here are some questions for you</div>
+      {faceOn && !surveyOn && (
+        <Announcement handler={sendReadyToServer} stage={stage} />
+      )}
 
       {/* <button onClick={restart} className="primary-button">
         Survey On

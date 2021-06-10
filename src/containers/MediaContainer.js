@@ -5,8 +5,6 @@ import * as faceapi from "face-api.js";
 import getFeatureAttributes from "../utils/getFeatureAttributes";
 import ToolBar from "../components/ToolBar";
 import { connect } from "react-redux";
-import { surveyJSON } from "../components/Survey_JSON";
-import * as Survey from "survey-react";
 import Clock from "./Clock";
 import GYModal from "../components/Modal";
 import Announcement from "../components/Announcement";
@@ -45,7 +43,6 @@ class MediaBridge extends Component {
     this.state = {
       bridge: "",
       user: "host",
-      survey: false,
       recording: false,
       time_slot: 0,
       time_diff: 0,
@@ -58,11 +55,8 @@ class MediaBridge extends Component {
       modalContent: "Are you Ready to Start ?",
       loading: false,
       topic: {
-        content: "Welcome",
+        content: "Welcome, please wait for your partner",
         visible: false,
-      },
-      announcement: {
-        visible: true,
       },
     };
     this.record = {
@@ -85,7 +79,6 @@ class MediaBridge extends Component {
     this.detectFace = this.detectFace.bind(this);
     this.loadModel = this.loadModel.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
-    this.onSurveyStart = this.onSurveyStart.bind(this);
     this.onControl = this.onControl.bind(this);
     this.sendDataToServer = this.sendDataToServer.bind(this);
     this.startRecording = this.startRecording.bind(this);
@@ -96,10 +89,11 @@ class MediaBridge extends Component {
     this.onStageControl = this.onStageControl.bind(this);
     this.onProcessStop = this.onProcessStop.bind(this);
     this.onUploadingFinish = this.onUploadingFinish.bind(this);
+    this.onFaceDetect = this.onFaceDetect.bind(this);
+    this.onReset = this.onReset.bind(this);
     this.mask_configuration = [];
+    this.losingface = 0;
 
-    Survey.StylesManager.applyTheme("winter");
-    this.model = new Survey.Model(surveyJSON);
     // this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
@@ -112,12 +106,12 @@ class MediaBridge extends Component {
     this.props.socket.on("process-start", this.onProcessStart);
     this.props.socket.on("process-stop", this.onProcessStop);
     this.props.socket.on("process-control", this.onProcessControl);
+    this.props.socket.on("reset", this.onReset);
     this.props.socket.on("stage-control", this.onStageControl);
     this.props.socket.on("upload-finish", this.onUploadingFinish);
 
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
-    this.props.socket.on("survey-start", this.onSurveyStart);
     this.props.socket.on("control", this.onControl);
     this.props.socket.on("recording", this.startRecording);
     this.remoteVideo.addEventListener("play", () => {
@@ -165,7 +159,6 @@ class MediaBridge extends Component {
         () => {
           console.log(this.state);
           this.onReady();
-          // this.onProcessStart();
         }
       );
     } else {
@@ -212,8 +205,31 @@ class MediaBridge extends Component {
       });
     }
   }
-  onProcessStop() {
-    console.log("process stop");
+  onReset() {
+    this.props.socket.emit("reset", { room: this.props.room });
+    this.setState({
+      ...this.state,
+      recording: false,
+      time_slot: 0,
+      time_diff: 0,
+      process: false,
+      sessionId: "",
+      stage: 0,
+      visible: false,
+      loading: false,
+      topic: {
+        content: "Welcome, please wait for your partner",
+        visible: false,
+      },
+    });
+    this.record = {
+      record_count: 0,
+      record_detail: [],
+    };
+  }
+  onProcessStop(data) {
+    const { accident_stop } = data;
+    console.log("process stop", accident_stop);
     clearInterval(this.timmer);
     this.setState({
       ...this.state,
@@ -223,7 +239,9 @@ class MediaBridge extends Component {
       stage: 0,
     });
     this.props.updateAll(init_mask);
-    this.sendDataToServer();
+    if (!accident_stop) {
+      this.sendDataToServer();
+    }
     this.setState({
       ...this.state,
       loading: true,
@@ -241,19 +259,6 @@ class MediaBridge extends Component {
     });
   }
 
-  onSurveyStart() {
-    console.log("survey start");
-    this.setState({
-      ...this.state,
-      record_count: 0,
-      survey: true,
-    });
-    let mydate = new Date();
-    var datestr = "";
-    datestr +=
-      mydate.getHours() + "/" + mydate.getMinutes() + "/" + mydate.getSeconds();
-    this.record.record_detail.push(datestr);
-  }
   onStageControl(data) {
     const { mask, topic } = data;
     // update mask when stage change
@@ -310,6 +315,23 @@ class MediaBridge extends Component {
         this.remoteVideo.muted = true;
       } else this.remoteVideo.muted = false;
     }
+  }
+
+  onFaceDetect() {
+    console.log("face detected");
+    let user;
+    if (this.state.user == "guest") {
+      user = "host";
+    } else {
+      user = "guest";
+    }
+    this.props.socket.emit("face-detected", {
+      room: this.props.room,
+      user,
+    });
+    this.setState({
+      ...this.state,
+    });
   }
 
   startRecording() {
@@ -369,18 +391,30 @@ class MediaBridge extends Component {
           // console.log("detections", this.detections);
           try {
             this.faceAttributes = getFeatureAttributes(this.detections);
+            if (!this.state.process) {
+              this.onFaceDetect();
+            }
+            this.losingface = 0;
           } catch (err) {
-            console.log(err);
+            this.losingface += 1;
+            if (this.losingface > 10 && this.state.process) {
+              // Restart whole process
+              this.onReset();
+              console.log("You partner seems to leave");
+            }
+
+            console.log("Can't detect face on remote side");
           }
 
           if (this.state.process) {
-            const emo_data = {
-              time_slot: this.state.time_slot,
-              emotion: this.detections.expressions,
-            };
-            this.record.record_detail.push(emo_data);
-            console.log(emo_data);
-            this.record.record_count += 1;
+            try {
+              const emo_data = {
+                time_slot: this.state.time_slot,
+                emotion: this.detections.expressions,
+              };
+              this.record.record_detail.push(emo_data);
+              this.record.record_count += 1;
+            } catch (err) {}
           }
 
           if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
@@ -558,9 +592,6 @@ class MediaBridge extends Component {
     });
     this.record.record_detail = [];
     this.record.record_count = 0;
-
-    // this.setState({ survey: false });
-    this.model = new Survey.Model(surveyJSON);
   }
   init() {
     // wait for local media to be ready
@@ -631,7 +662,6 @@ class MediaBridge extends Component {
   render() {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>
-        {this.state.announcement.visible && <Announcement />}
         <canvas className="canvas" ref={(ref) => (this.canvasRef = ref)} />
         <div className="topic">
           <p style={{ color: "white", fontSize: "30px", margin: "0 auto" }}>
@@ -642,7 +672,7 @@ class MediaBridge extends Component {
         <div className="clock">
           <Clock time_diff={this.state.time_diff}></Clock>
         </div>
-        <GYModal
+        {/* <GYModal
           title="Enjoy your talk"
           visible={this.state.visible}
           onOk={() => {
@@ -663,18 +693,8 @@ class MediaBridge extends Component {
           }}
         >
           <h1 style={{ color: "black" }}>{this.state.modalContent}</h1>
-        </GYModal>
-        <GYModal
-          title="Enjoy your talk"
-          visible={this.state.loading}
-          onOk={() => {}}
-          onCancel={() => {}}
-        >
-          <h1 style={{ color: "black" }}>
-            Please wait, we are uploading the data of previous
-            conversation.Thanks for your patience.
-          </h1>
-        </GYModal>
+        </GYModal> */}
+
         {/* <GYModal
           title="Enjoy your talk"
           visible={this.state.topic.visible}

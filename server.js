@@ -180,20 +180,21 @@ function processStart(room, start_time, cfg) {
       }
 
       if (time_left <= 0) {
-        processStop(room);
+        processStop(room, false);
       }
     }, 1000);
   } else {
     console.log("timmer running", typeof timmer);
   }
 }
-function processStop(room) {
+function processStop(room, accident_stop) {
   console.log("process stop");
   // clear timmer
   clearInterval(timmer);
   // socket send stop
 
-  io.in(room).emit("process-stop");
+  io.in(room).emit("process-stop", { accident_stop });
+  io.in("survey-" + room).emit("process-stop", { accident_stop });
 }
 async function storeData(room) {
   const data = {
@@ -269,7 +270,7 @@ io.sockets.on("connection", (socket) => {
     control_room_list[room] = socket;
   });
   socket.on("survey-connect", (data) => {
-    const { room, user } = data.room;
+    const { room, user } = data;
     socket.join("survey-" + room);
     survey_socket[user] = socket;
   });
@@ -286,10 +287,18 @@ io.sockets.on("connection", (socket) => {
     restore_survey(params_room, params_data);
     console.log(params_data);
   });
+  socket.on("reset", (data) => {
+    const { room } = data;
+    processStop(room, true);
+  });
 
-  // process control: configuration
-  // ready: asking users get ready
-  //
+  socket.on("face-detected", (data) => {
+    const { room, user } = data;
+    if (survey_socket[user] != undefined) {
+      const sid = survey_socket[user].id;
+      io.to(sid).emit("face-detected");
+    }
+  });
   socket.on("process-control", (data) => {
     const params_room = data.room;
 
@@ -315,6 +324,7 @@ io.sockets.on("connection", (socket) => {
         sessionId = generateId(new Date(startTime));
         const { duration } = current_cfg["setting"][0];
         io.sockets.in(room).emit("process-start", { startTime, duration });
+        io.sockets.in("survey-" + room).emit("process-start");
         ready_user_by_room[room] = {
           host: false,
           guest: false,
@@ -367,10 +377,6 @@ io.sockets.on("connection", (socket) => {
     console.log("control data:", data);
     socket.broadcast.to(params_room).emit("control", params_data);
   });
-  // socket.on("survey-connect", (data) => {
-  //   const params_room = data.room;
-  //   socket.join("survey-" + params_room);
-  // });
 });
 
 async function restore_emotion(roomid, data) {
