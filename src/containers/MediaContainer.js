@@ -9,6 +9,7 @@ import { surveyJSON } from "../components/Survey_JSON";
 import * as Survey from "survey-react";
 import Clock from "./Clock";
 import GYModal from "../components/Modal";
+import Announcement from "../components/Announcement";
 var FileSaver = require("file-saver");
 
 const init_mask = {
@@ -59,6 +60,9 @@ class MediaBridge extends Component {
       topic: {
         content: "Welcome",
         visible: false,
+      },
+      announcement: {
+        visible: true,
       },
     };
     this.record = {
@@ -627,6 +631,7 @@ class MediaBridge extends Component {
   render() {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>
+        {this.state.announcement.visible && <Announcement />}
         <canvas className="canvas" ref={(ref) => (this.canvasRef = ref)} />
         <div className="topic">
           <p style={{ color: "white", fontSize: "30px", margin: "0 auto" }}>
