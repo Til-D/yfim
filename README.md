@@ -23,7 +23,7 @@ https://localhost:3000
 
 ## User Guidance
 
-    following path will use 1 as room number as an example
+- following path will use 1 as room number as an example
 
 ### Pages
 
