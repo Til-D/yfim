@@ -21,6 +21,24 @@ https://localhost:3000
     /projection         -- projection pages
     /survey             -- survey pages
 
+## User Guidance
+
+    following path will use 1 as room number as an example
+
+### Pages
+
+- User: Host/Guest
+- video room: https://url/r/1
+- survey page: https://url/s/1/:user (user here can be host or guest)
+- control page: https://url/control/1
+
+### Step:
+
+1. Both guest and host join room in the same video room
+2. The administrator need to use control page to choose what topics and mask type are used in the following conversation and click the Button Process Start
+3. use Ipad or browser(if running on localhost) enter survey page
+4. when the cam detect your face, survey page would show user the introduction of the project
+
 ## Developers' Guide
 
 There are two ways to develop separate works, one of which is using React built-in router while another is using express router.
