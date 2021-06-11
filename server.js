@@ -69,7 +69,8 @@ survey_socket = {
 };
 
 emotion_ready = { host: false, guest: false };
-question_ready = { host: true, guest: true };
+question_ready = { host: false, guest: false };
+survey_ready = { host: false, guest: false };
 emotion_data = {
   host: {},
   guest: {},
@@ -85,6 +86,9 @@ var sessionId;
 var timmer;
 var current_cfg;
 var current_rating;
+var topic_selected = [];
+var survey_in_progress = false;
+var stage;
 
 function generateId(stime) {
   let year = stime.getFullYear();
@@ -120,8 +124,8 @@ function generateId(stime) {
 
 function processStart(room, start_time, cfg) {
   console.log("process start");
-  let stage = 0;
   console.log("config ", cfg);
+  stage = 0;
   const { duration } = cfg["setting"][0];
   const questionset = require("./assets/topics/topics.json");
   const icebreaker = questionset["icebreaker"];
@@ -132,10 +136,14 @@ function processStart(room, start_time, cfg) {
   // create a timmer
   if (timmer == undefined || (timmer != undefined && timmer["_destroyed"])) {
     // pick up a questionnaire from the list
-
+    let stop = false;
+    let count = 0;
     // start chatting
     timmer = setInterval(() => {
       let nowTime = new Date().getTime();
+      if (survey_in_progress) {
+        endTime = nowTime + ((1000 * duration) / 3) * (4 - stage);
+      }
       let time_left = Math.round((endTime - nowTime) / 1000);
 
       if (time_left > (duration * 2) / 3) {
@@ -147,6 +155,7 @@ function processStart(room, start_time, cfg) {
           let mask_setting = cfg["setting"][stage];
           const rindex = Math.floor(Math.random() * icebreaker.length);
           let topic = icebreaker[rindex];
+          topic_selected.push(topic);
           io.sockets
             .in(room)
             .emit("stage-control", { mask: mask_setting, topic: [topic] });
@@ -154,25 +163,36 @@ function processStart(room, start_time, cfg) {
       } else if (time_left < (duration * 2) / 3 && time_left > duration / 3) {
         //stage2
         if (stage != 2) {
+          // previous stage finish, raise a survey
+          io.to("survey-" + room)
+            .to(room)
+            .emit("survey-start", { stage: stage });
+          survey_in_progress = true;
           stage = 2;
           //send mask
           console.log(time_left, "stage 2");
           let mask_setting = cfg["setting"][stage];
           const rindex = Math.floor(Math.random() * wouldyou.length);
           let topic = wouldyou[rindex];
+          topic_selected.push(topic);
           io.sockets
             .in(room)
             .emit("stage-control", { mask: mask_setting, topic: [topic] });
         }
-      } else if (time_left < duration / 3) {
+      } else if (time_left < duration / 3 && time_left > 0) {
         //stage3
         if (stage != 3) {
+          io.to("survey-" + room)
+            .to(room)
+            .emit("survey-start", { stage: stage });
+          survey_in_progress = true;
           stage = 3;
           //send mask
           console.log(time_left, "stage 3");
           let mask_setting = cfg["setting"][stage];
           const rindex = Math.floor(Math.random() * quest.length);
           let topic = quest[rindex];
+          topic_selected.push(topic);
           io.sockets
             .in(room)
             .emit("stage-control", { mask: mask_setting, topic });
@@ -180,7 +200,19 @@ function processStart(room, start_time, cfg) {
       }
 
       if (time_left <= 0) {
-        processStop(room, false);
+        if (stage != 4) {
+          stage = 4;
+          io.to("survey-" + room)
+            .to(room)
+            .emit("survey-start", { stage: stage });
+          survey_in_progress = true;
+        }
+        if (!stop && !survey_in_progress) {
+          count += 1;
+          console.log("stop count ", count);
+          stop = true;
+          processStop(room, false);
+        }
       }
     }, 1000);
   } else {
@@ -189,17 +221,20 @@ function processStart(room, start_time, cfg) {
 }
 function processStop(room, accident_stop) {
   console.log("process stop");
+  topic_selected = [];
+  survey_in_progress = false;
   // clear timmer
   clearInterval(timmer);
   // socket send stop
 
-  io.in(room).emit("process-stop", { accident_stop });
-  io.in("survey-" + room).emit("process-stop", { accident_stop });
+  io.to(room).emit("process-stop", { accident_stop });
+  io.to("survey-" + room).emit("process-stop", { accident_stop });
 }
 async function storeData(room) {
   const data = {
     _id: sessionId,
     mask_setting: current_cfg["name"],
+    topic: topic_selected,
     duration: current_cfg["setting"][0]["duration"],
     host: {
       emotion: emotion_data["host"],
@@ -282,10 +317,17 @@ io.sockets.on("connection", (socket) => {
     socket.broadcast.to("survey-" + params_room).emit("survey-start");
   });
   socket.on("survey-end", (data) => {
-    const params_room = data.room;
-    const params_data = data.data;
-    restore_survey(params_room, params_data);
-    console.log(params_data);
+    const { room, user } = data;
+    survey_ready[user] = true;
+    if (survey_ready["guest"] && survey_ready["host"]) {
+      survey_in_progress = false;
+      survey_ready = { host: false, guest: false };
+      let startTime = new Date().getTime();
+      let { duration } = current_cfg["setting"][0];
+      duration = (duration / 3) * (4 - stage);
+      console.log("survey-end", duration);
+      io.to(room).emit("survey-end", { startTime, duration });
+    }
   });
   socket.on("reset", (data) => {
     const { room } = data;
@@ -323,8 +365,8 @@ io.sockets.on("connection", (socket) => {
         processStart(room, startTime, current_cfg);
         sessionId = generateId(new Date(startTime));
         const { duration } = current_cfg["setting"][0];
-        io.sockets.in(room).emit("process-start", { startTime, duration });
-        io.sockets.in("survey-" + room).emit("process-start");
+        io.to(room).emit("process-start", { startTime, duration });
+        io.to("survey-" + room).emit("process-start");
         ready_user_by_room[room] = {
           host: false,
           guest: false,
@@ -353,6 +395,7 @@ io.sockets.on("connection", (socket) => {
   });
 
   socket.on("data-send", (data_get) => {
+    console.log(data_get);
     const { data_type, data, user, room } = data_get;
     if (data_type == "question") {
       question_ready[user] = true;

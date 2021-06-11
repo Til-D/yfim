@@ -58,6 +58,7 @@ class MediaBridge extends Component {
         content: "Welcome, please wait for your partner",
         visible: false,
       },
+      survey_in_progress: false,
     };
     this.record = {
       record_count: 0,
@@ -66,6 +67,7 @@ class MediaBridge extends Component {
     this.controlParams = props.controlParams;
     this.detections = null;
     this.process_duration = 10;
+    this.endTime = 0;
     this.onRemoteHangup = this.onRemoteHangup.bind(this);
     this.onMessage = this.onMessage.bind(this);
     this.sendData = this.sendData.bind(this);
@@ -91,6 +93,8 @@ class MediaBridge extends Component {
     this.onUploadingFinish = this.onUploadingFinish.bind(this);
     this.onFaceDetect = this.onFaceDetect.bind(this);
     this.onReset = this.onReset.bind(this);
+    this.onSurveyEnd = this.onSurveyEnd.bind(this);
+    this.onSurveyStart = this.onSurveyStart.bind(this);
     this.mask_configuration = [];
     this.losingface = 0;
 
@@ -109,6 +113,8 @@ class MediaBridge extends Component {
     this.props.socket.on("reset", this.onReset);
     this.props.socket.on("stage-control", this.onStageControl);
     this.props.socket.on("upload-finish", this.onUploadingFinish);
+    this.props.socket.on("survey-start", this.onSurveyStart);
+    this.props.socket.on("survey-end", this.onSurveyEnd);
 
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
@@ -149,6 +155,24 @@ class MediaBridge extends Component {
     await faceapi.loadFaceRecognitionModel(MODEL_URL);
     await faceapi.loadFaceExpressionModel(MODEL_URL);
   }
+
+  // survey progress control
+  onSurveyEnd(data) {
+    const { duration } = data;
+    this.setState({
+      ...this.state,
+      survey_in_progress: false,
+    });
+    let startTime = new Date().getTime();
+    this.endTime = startTime + 1000 * duration;
+    console.log("survey-end", data, this.endTime);
+  }
+  onSurveyStart() {
+    this.setState({
+      ...this.state,
+      survey_in_progress: true,
+    });
+  }
   // configure process setting
   onProcessControl() {
     if (!this.state.process) {
@@ -174,7 +198,7 @@ class MediaBridge extends Component {
   }
   onProcessStart(data) {
     const { startTime, duration } = data;
-    console.log("process start");
+    console.log("process start", startTime, duration);
     if (!this.state.process) {
       //init
       this.record = {
@@ -183,18 +207,21 @@ class MediaBridge extends Component {
       };
       console.log("process start counting");
       this.process_duration = duration;
-      var endTime = startTime + 1000 * this.process_duration;
+      this.endTime = startTime + 1000 * this.process_duration;
       this.timmer = setInterval(() => {
         let nowTime = new Date().getTime();
-
-        if (Math.round((endTime - nowTime) / 1000) < 0) {
+        let time_left;
+        if (!this.state.survey_in_progress) {
+          time_left = Math.round((this.endTime - nowTime) / 1000);
+        }
+        if (time_left < 0) {
           clearInterval(this.timmer);
-        } else {
+        } else if (!this.state.survey_in_progress) {
           this.setState({
             ...this.state,
             process: true,
             time_slot: this.state.time_slot + 1,
-            time_diff: Math.round((endTime - nowTime) / 1000),
+            time_diff: time_left,
           });
         }
       }, 1000);
@@ -207,6 +234,11 @@ class MediaBridge extends Component {
   }
   onReset() {
     this.props.socket.emit("reset", { room: this.props.room });
+  }
+  onProcessStop(data) {
+    const { accident_stop } = data;
+    console.log("process stop", accident_stop);
+    clearInterval(this.timmer);
     this.setState({
       ...this.state,
       recording: false,
@@ -221,26 +253,17 @@ class MediaBridge extends Component {
         content: "Welcome, please wait for your partner",
         visible: false,
       },
+      survey_in_progress: false,
     });
-    this.record = {
-      record_count: 0,
-      record_detail: [],
-    };
-  }
-  onProcessStop(data) {
-    const { accident_stop } = data;
-    console.log("process stop", accident_stop);
-    clearInterval(this.timmer);
-    this.setState({
-      ...this.state,
-      process: false,
-      time_diff: this.process_duration,
-      time_slot: 0,
-      stage: 0,
-    });
+
     this.props.updateAll(init_mask);
     if (!accident_stop) {
       this.sendDataToServer();
+    } else {
+      this.record = {
+        record_count: 0,
+        record_detail: [],
+      };
     }
     this.setState({
       ...this.state,
