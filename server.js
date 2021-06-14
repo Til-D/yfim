@@ -221,7 +221,10 @@ function processStart(room, start_time, cfg) {
 }
 function processStop(room, accident_stop) {
   console.log("process stop");
-  topic_selected = [];
+  if (accident_stop) {
+    topic_selected = [];
+  }
+
   survey_in_progress = false;
   // clear timmer
   clearInterval(timmer);
@@ -245,6 +248,7 @@ async function storeData(room) {
       question: question_data["guest"],
     },
   };
+  topic_selected = [];
   emotion_ready = { host: false, guest: false };
   question_ready = { host: true, guest: true };
   emotion_data = {
