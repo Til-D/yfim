@@ -32,23 +32,25 @@ function SurveyPage(props) {
       console.log("process start");
       setContent("Conversation is in progress...");
     });
-    socket.on("process-stop", processStop);
+    socket.on("process-stop", (data) => {
+      const { accident_stop } = data;
+      if (!accident_stop) {
+        console.log("process-stop", answer);
+        socket.emit("data-send", {
+          data_type: "question",
+          room,
+          user,
+          data: answer,
+        });
+      }
+
+      setAnswer([]);
+      resetParams();
+    });
     socket.on("reset", () => {
       resetParams();
     });
   }, []);
-
-  function processStop() {
-    console.log("process-stop", answer);
-    socket.emit("data-send", {
-      data_type: "question",
-      room,
-      user,
-      data: answer,
-    });
-    setAnswer([]);
-    resetParams();
-  }
 
   function resetParams() {
     setContent("Start");
