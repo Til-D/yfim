@@ -19,7 +19,7 @@ export default class GYModal extends Component {
     const { visible, title, children, onOk, onCancel } = this.props,
       show = { zIndex: 2000, opacity: 1 },
       hide = { zIndex: -1, opacity: 0 },
-      contShow = { width: "400px", height: "200px" },
+      contShow = { width: "400px", height: "150px" },
       contHide = { width: "0px", height: "0px" };
     return (
       <div className="gy-modalContainer" style={visible ? show : hide}>
@@ -29,14 +29,14 @@ export default class GYModal extends Component {
             <div className="innerContent-title">{title}</div>
           </div>
           <div className="innerContent-center">{children}</div>
-          <div className="innerContent-footer">
+          {/* <div className="innerContent-footer">
             <button type="cancel" onClick={onCancel}>
               Cancel
             </button>
             <button type="primary" onClick={onOk}>
               OK
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     );

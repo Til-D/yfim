@@ -173,7 +173,7 @@ function processStart(room, start_time, cfg) {
           console.log(time_left, "stage 2");
           let mask_setting = cfg["setting"][stage];
           const rindex = Math.floor(Math.random() * wouldyou.length);
-          let topic = wouldyou[rindex];
+          let topic = "Would you " + wouldyou[rindex];
           topic_selected.push(topic);
           io.sockets
             .in(room)
@@ -304,6 +304,11 @@ io.sockets.on("connection", (socket) => {
     const room = data.room;
     control_room_list[room] = socket;
   });
+  socket.on("room-idle", (data) => {
+    const { room } = data;
+    // console.log(`room ${room} is idle now`);
+    io.to("survey-" + room).emit("room-idle");
+  });
   socket.on("survey-connect", (data) => {
     const { room, user } = data;
     socket.join("survey-" + room);
@@ -360,17 +365,23 @@ io.sockets.on("connection", (socket) => {
         ready_user_by_room[room]["host"] &&
         ready_user_by_room[room]["guest"]
       ) {
-        console.log("both ready, start the process");
-        let startTime = new Date().getTime();
-        processStart(room, startTime, current_cfg);
-        sessionId = generateId(new Date(startTime));
-        const { duration } = current_cfg["setting"][0];
-        io.to(room).emit("process-start", { startTime, duration });
-        io.to("survey-" + room).emit("process-start");
-        ready_user_by_room[room] = {
-          host: false,
-          guest: false,
-        };
+        try {
+          console.log("both ready, start the process");
+          let startTime = new Date().getTime();
+          processStart(room, startTime, current_cfg);
+          sessionId = generateId(new Date(startTime));
+          const { duration } = current_cfg["setting"][0];
+          io.to(room).emit("process-start", { startTime, duration });
+          io.to("survey-" + room).emit("process-start");
+          ready_user_by_room[room] = {
+            host: false,
+            guest: false,
+          };
+        } catch (err) {
+          console.log("please confirm that the admin have start the process");
+          console.log(err);
+        }
+
         // socket.broadcast.to(room).emit("process-start");
         // socket.emit("process-start");
       }
@@ -421,29 +432,3 @@ io.sockets.on("connection", (socket) => {
     socket.broadcast.to(params_room).emit("control", params_data);
   });
 });
-
-async function restore_emotion(roomid, data) {
-  const tableName = "emotion-" + roomid + "-" + data.user;
-  try {
-    await nano.db.create(tableName);
-  } catch {}
-
-  const emotion_db = nano.db.use(tableName);
-  const response = await emotion_db.insert(
-    { detail: data.record_detail.slice(1) },
-    data.record_detail[0]
-  );
-}
-async function restore_survey(roomid, data) {
-  const tableName = "survey-" + roomid + "-" + data.user;
-  try {
-    await nano.db.create(tableName);
-  } catch {
-    console.log("exist");
-  }
-  const survey_db = nano.db.use(tableName);
-  const response = await survey_db.insert(
-    { result: data.result },
-    data.submit_time
-  );
-}

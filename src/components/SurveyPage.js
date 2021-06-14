@@ -19,6 +19,10 @@ function SurveyPage(props) {
       room: props.match.params.room,
       user: props.match.params.user,
     });
+    socket.on("room-idle", () => {
+      console.log("room is idle now");
+      resetParams();
+    });
     socket.on("survey-start", (data) => {
       const { stage } = data;
       setStage(stage);
