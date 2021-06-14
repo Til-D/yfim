@@ -33,7 +33,7 @@
 }
 
 .gy-modalContainer .innerContent .innerContent-header {
-  padding: 13px 16px;
+  padding: inherit;
   border-radius: 4px 4px 0 0;
   background: #fff;
   color: rgba(0, 0, 0, 0.65);

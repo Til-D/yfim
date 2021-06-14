@@ -359,7 +359,6 @@ class MediaBridge extends Component {
 
   startRecording() {
     // e.preventDefault();
-    console.log("start recording");
     // wipe old data chunks
     this.chunks = [];
     // start recorder with 10ms buffer
@@ -420,13 +419,19 @@ class MediaBridge extends Component {
             this.losingface = 0;
           } catch (err) {
             this.losingface += 1;
+            this.losingface %= 20;
             if (this.losingface > 10 && this.state.process) {
               // Restart whole process
               this.onReset();
               console.log("You partner seems to leave");
             }
+            if (this.losingface >= 19 && !this.state.process) {
+              // Restart whole process
+              this.props.socket.emit("room-idle", { room: this.props.room });
+              console.log("You partner seems to leave");
+            }
 
-            console.log("Can't detect face on remote side");
+            console.log("Can't detect face on remote side", this.losingface);
           }
 
           if (this.state.process) {
@@ -695,28 +700,11 @@ class MediaBridge extends Component {
         <div className="clock">
           <Clock time_diff={this.state.time_diff}></Clock>
         </div>
-        {/* <GYModal
-          title="Enjoy your talk"
-          visible={this.state.visible}
-          onOk={() => {
-            this.setState({ ...this.state, visible: false, ready: true });
-            console.log("ready");
-            this.props.socket.emit("process-ready", {
-              room: this.props.room,
-              user: this.state.user,
-            });
-            console.log(this.state);
-          }}
-          onCancel={() => {
-            console.log("not ready");
-            this.setState({ ...this.state, visible: false, ready: false });
-            setTimeout(() => {
-              this.onReady();
-            }, 10000);
-          }}
-        >
-          <h1 style={{ color: "black" }}>{this.state.modalContent}</h1>
-        </GYModal> */}
+        <GYModal title="Attention" visible={this.state.survey_in_progress}>
+          <h1 style={{ color: "black" }}>
+            We have some quesions for you on Ipad!
+          </h1>
+        </GYModal>
 
         {/* <GYModal
           title="Enjoy your talk"
