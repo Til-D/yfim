@@ -1,11 +1,11 @@
 export const surveyJSON = {
   pages: [
     {
-      name: "page1",
+      name: "interstage",
       elements: [
         {
           type: "radiogroup",
-          name: "Questionnaire",
+          name: "question1",
           title: "What's your current emotion?",
           choices: [
             {

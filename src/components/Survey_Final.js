@@ -1,11 +1,11 @@
 export const survey_Final = {
   pages: [
     {
-      name: "page1",
+      name: "Final Survey",
       elements: [
         {
           type: "radiogroup",
-          name: "Questionnaire",
+          name: "question1",
           title: "What's your overall emotion?",
           choices: [
             {
