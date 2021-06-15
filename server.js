@@ -250,7 +250,7 @@ async function storeData(room) {
   };
   topic_selected = [];
   emotion_ready = { host: false, guest: false };
-  question_ready = { host: true, guest: true };
+  question_ready = { host: false, guest: false };
   emotion_data = {
     host: {},
     guest: {},
