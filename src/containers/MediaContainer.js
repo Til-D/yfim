@@ -394,8 +394,8 @@ class MediaBridge extends Component {
     const canvasTmp2 = faceapi.createCanvasFromMedia(this.localVideo);
     console.log("compare", canvasTmp, canvasTmp2);
     const displaySize = {
-      width: canvasTmp2.width,
-      height: canvasTmp2.height,
+      width: canvasTmp.width,
+      height: canvasTmp.height,
     };
     faceapi.matchDimensions(this.canvasRef, displaySize);
     console.log(this.canvasRef.width, this.canvasRef.height);
