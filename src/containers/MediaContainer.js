@@ -419,13 +419,13 @@ class MediaBridge extends Component {
             this.losingface = 0;
           } catch (err) {
             this.losingface += 1;
-            this.losingface %= 20;
+            this.losingface %= 11;
             if (this.losingface > 10 && this.state.process) {
               // Restart whole process
               this.onReset();
               console.log("You partner seems to leave");
             }
-            if (this.losingface >= 19 && !this.state.process) {
+            if (this.losingface >= 10 && !this.state.process) {
               // Restart whole process
               this.props.socket.emit("room-idle", { room: this.props.room });
               console.log("You partner seems to leave");

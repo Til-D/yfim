@@ -312,6 +312,7 @@ io.sockets.on("connection", (socket) => {
     const { room } = data;
     // console.log(`room ${room} is idle now`);
     io.to("survey-" + room).emit("room-idle");
+    processStop(room, true);
   });
   socket.on("survey-connect", (data) => {
     const { room, user } = data;
