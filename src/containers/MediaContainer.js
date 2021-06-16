@@ -419,8 +419,8 @@ class MediaBridge extends Component {
             this.losingface = 0;
           } catch (err) {
             this.losingface += 1;
-            this.losingface %= 11;
-            if (this.losingface > 10 && this.state.process) {
+            this.losingface %= 12;
+            if (this.losingface >= 10 && this.state.process) {
               // Restart whole process
               this.onReset();
               console.log("You partner seems to leave");
