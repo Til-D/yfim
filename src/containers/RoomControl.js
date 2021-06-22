@@ -19,21 +19,6 @@ const colourStyles = {
   },
 };
 
-// const adultsOptions = [
-//   { value: "adults_random", label: "Random", color: "#0052CC" },
-//   { value: "adults_lockdown", label: "Lockdown", color: "#0052CC" },
-//   { value: "adults_politics", label: "Politics", color: "#0052CC" },
-//   { value: "adults_soccer", label: "Soccer", color: "#0052CC" },
-// ];
-// const kidsOptions = [
-//   { value: "kids_random", label: "Random", color: "#0052CC" },
-//   { value: "kids_lockdown", label: "Lockdown", color: "#0052CC" },
-//   { value: "kids_supperstar", label: "Supperstar", color: "#0052CC" },
-// ];
-// const groupOptions = [
-//   { label: "Adults", options: adultsOptions },
-//   { label: "Kids", options: kidsOptions },
-// ];
 const maskOptions = [
   { value: "endWithEyes", label: "EndWithEyes", color: "#0052CC" },
   { value: "endWithMouth", label: "EndWithMouth", color: "#0052CC" },
@@ -62,27 +47,18 @@ const groupBadgeStyles = {
   padding: "0.16666666666667em 0.5em",
   textAlign: "center",
 };
-const formatGroupLabel = (data) => (
-  <div style={groupStyles}>
-    <span>{data.label}</span>
-    <span style={groupBadgeStyles}>{data.options.length}</span>
-  </div>
-);
+
 const useStyles = makeStyles((theme) => ({
   toolBarContainer: {
     display: "flex",
     flexDirection: "row",
   },
   toolBar: {
-    // zIndex: 20,
-    // right: 0,
     paddingRight: 20,
     paddingLeft: 20,
     width: "90%",
     top: "50px",
     backgroundColor: "#C7EDCC",
-    // flexDirection:"column"
-    // position: "absolute",
   },
   toggleSwitch: {
     display: "flex",
@@ -99,6 +75,7 @@ const useStyles = makeStyles((theme) => ({
 
 const initState = {
   host: {
+    zoom: 100,
     occlusion_mask: false, //Switch
     feature_show: {
       eyes: {
@@ -125,6 +102,7 @@ const initState = {
     recording: false,
   },
   guest: {
+    zoom: 100,
     occlusion_mask: false, //Switch
     feature_show: {
       eyes: {
@@ -264,11 +242,30 @@ export default function RoomControl(props) {
     const barSliderId = `barSlider${user}`;
     const barPositionId = `barPosition${user}`;
     const recordId = `recording${user}`;
+    const zoomSliderId = `zoom${user}`;
 
     return (
       <div className={classes.toolBar}>
         <div className={classes.toggleSwitch}>
           {/* <div style={{ display: "flex", flexDirection: "row" }}> */}
+          <Slider
+            id={zoomSliderId}
+            defaultValue={params[user].zoom}
+            step={25}
+            marks
+            min={100}
+            max={500}
+            valueLabelDisplay="auto"
+            onChange={(e, val) => {
+              setParams({
+                ...params,
+                [user]: {
+                  ...params[user],
+                  zoom: val,
+                },
+              });
+            }}
+          />
           <text className={classes.controlText}>Freeze {user}'s Video</text>
           <Switch
             style={{ justifyContent: "right" }}

@@ -28,7 +28,12 @@ class CommunicationContainer extends React.Component {
   }
   componentDidMount() {
     const socket = this.props.socket;
-    this.setState({ video: this.props.video, audio: this.props.audio });
+    this.setState({
+      video: this.props.video,
+      audio: this.props.audio,
+      zoom: this.props.zoom,
+    });
+    console.log(this.props);
 
     socket.on("create", () =>
       this.props.media.setState({ user: "host", bridge: "create" })
@@ -46,9 +51,22 @@ class CommunicationContainer extends React.Component {
     socket.emit("find");
     this.props.getUserMedia.then((stream) => {
       this.localStream = stream;
+      this.track = stream.getVideoTracks()[0];
+
+      this.track.applyConstraints({
+        advanced: [{ ["zoom"]: this.props.zoom }],
+      });
       this.localStream.getVideoTracks()[0].enabled = this.state.video;
       this.localStream.getAudioTracks()[0].enabled = this.state.audio;
     });
+  }
+  componentDidUpdate() {
+    console.log(this.props);
+    if (this.track) {
+      this.track.applyConstraints({
+        advanced: [{ ["zoom"]: this.props.zoom }],
+      });
+    }
   }
   handleInput(e) {
     this.setState({ [e.target.dataset.ref]: e.target.value });
@@ -64,14 +82,14 @@ class CommunicationContainer extends React.Component {
     this.hideAuth();
   }
   toggleVideo() {
-    const video = (this.localStream.getVideoTracks()[0].enabled = !this.state
-      .video);
+    const video = (this.localStream.getVideoTracks()[0].enabled =
+      !this.state.video);
     this.setState({ video: video });
     this.props.setVideo(video);
   }
   toggleAudio() {
-    const audio = (this.localStream.getAudioTracks()[0].enabled = !this.state
-      .audio);
+    const audio = (this.localStream.getAudioTracks()[0].enabled =
+      !this.state.audio);
     this.setState({ audio: audio });
     this.props.setAudio(audio);
   }
@@ -79,6 +97,9 @@ class CommunicationContainer extends React.Component {
     this.props.media.hangup();
   }
   render() {
+    // this.track.applyConstraints({
+    //   advanced: [{ ["zoom"]: this.props.zoom }],
+    // });
     return (
       <Communication
         {...this.state}
@@ -92,7 +113,11 @@ class CommunicationContainer extends React.Component {
     );
   }
 }
-const mapStateToProps = (store) => ({ video: store.video, audio: store.audio });
+const mapStateToProps = (store) => ({
+  video: store.video,
+  audio: store.audio,
+  zoom: store.controlParams.zoom,
+});
 const mapDispatchToProps = (dispatch) => ({
   setVideo: (boo) => store.dispatch({ type: "SET_VIDEO", video: boo }),
   setAudio: (boo) => store.dispatch({ type: "SET_AUDIO", audio: boo }),

@@ -16,6 +16,7 @@ class RoomPage extends Component {
         video: {
           width: { min: 640, ideal: 1280 },
           height: { min: 400, ideal: 720 },
+          zoom: true,
         },
       })
       .catch((e) => alert("getUserMedia() error: " + e.name));
