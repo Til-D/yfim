@@ -146,9 +146,10 @@ input[type="text"] {
 .topic {
   position: absolute;
   height: 10%;
-  width: 100%;
+  width: 70%;
   z-index: 20;
   text-align: center;
+  right: 15%;
 }
 .clock {
   position: absolute;

@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
 
 const initState = {
   host: {
-    zoom: 100,
+    zoom: 200,
     occlusion_mask: false, //Switch
     feature_show: {
       eyes: {
@@ -102,7 +102,7 @@ const initState = {
     recording: false,
   },
   guest: {
-    zoom: 100,
+    zoom: 200,
     occlusion_mask: false, //Switch
     feature_show: {
       eyes: {

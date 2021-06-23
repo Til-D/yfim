@@ -10,7 +10,7 @@ const persistedState = {
   video: true,
   audio: true,
   controlParams: {
-    zoom: 100,
+    zoom: 200,
     occlusion_mask: false, //Switch
     feature_show: {
       eyes: {

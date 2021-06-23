@@ -6,7 +6,7 @@ import ToggleFullScreen from "./ToggleFullScreen";
 const Communication = (props) => (
   <div className="auth">
     <div className="media-controls">
-      <Link className="call-exit-button" to="/">
+      {/* <Link className="call-exit-button" to="/">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 36 36"
@@ -17,8 +17,8 @@ const Communication = (props) => (
             fill="white"
           />
         </svg>
-      </Link>
-      <button
+      </Link> */}
+      {/* <button
         onClick={props.toggleAudio}
         className={"audio-button-" + props.audio}
       >
@@ -89,7 +89,7 @@ const Communication = (props) => (
             fill="white"
           ></path>
         </svg>
-      </button>
+      </button>*/}
     </div>
     <div className="request-access">
       <p>
