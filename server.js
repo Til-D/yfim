@@ -9,9 +9,6 @@ const compression = require("compression");
 const bodyParser = require("body-parser");
 const nano = require("nano")("http://admin:admin@localhost:5984");
 
-var surveyRouter = require("./backend/routes/survey");
-var projectionRouter = require("./backend/routes/projection");
-var indexRouter = require("./backend/routes");
 // authenticate
 
 const tableName = "occlusion_mask";
@@ -44,15 +41,12 @@ app.use(function (req, res, next) {
 
 // compress all requests
 app.set("socketIo", io);
-// app.use(compression());
+app.use(compression());
 app.use(express.static(path.join(__dirname, "dist")));
-app.use(express.static(path.join(__dirname, "backend", "public")));
+// app.use(express.static(path.join(__dirname, "backend", "public")));
+app.use((req, res) => res.sendFile(__dirname + "/dist/index.html"));
 
-app.use("/survey", surveyRouter);
-app.use("/projection", projectionRouter);
-app.use("/", indexRouter);
 
-// app.use((req, res) => res.sendFile(__dirname + "/dist/index.html"));
 
 app.use(favicon("./dist/favicon.ico"));
 // Switch off the default 'X-Powered-By: Express' header
