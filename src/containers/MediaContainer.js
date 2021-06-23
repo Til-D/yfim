@@ -691,8 +691,15 @@ class MediaBridge extends Component {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>
         <canvas className="canvas" ref={(ref) => (this.canvasRef = ref)} />
-        <div className="topic">
-          <p style={{ color: "white", fontSize: "30px", margin: "0 auto" }}>
+        <div className="chatblock">
+          <p
+            style={{
+              color: "#EC7500",
+              fontSize: "30px",
+              margin: "0 auto",
+              fontWeight: "bold",
+            }}
+          >
             {this.state.topic.content}
           </p>
         </div>

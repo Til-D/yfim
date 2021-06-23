@@ -143,13 +143,22 @@ input[type="text"] {
   z-index: 10;
   /* background-color: transparent; */
 }
-.topic {
+/* .topic {
   position: absolute;
   height: 10%;
   width: 70%;
   z-index: 20;
   text-align: center;
-  right: 15%;
+  right: 10%;
+} */
+.chatblock {
+  position: absolute;
+  height: 30%;
+  width: 20%;
+  z-index: 20;
+  text-align: center;
+  right: 0;
+  top: 70%;
 }
 .clock {
   position: absolute;

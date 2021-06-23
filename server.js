@@ -46,8 +46,6 @@ app.use(express.static(path.join(__dirname, "dist")));
 // app.use(express.static(path.join(__dirname, "backend", "public")));
 app.use((req, res) => res.sendFile(__dirname + "/dist/index.html"));
 
-
-
 app.use(favicon("./dist/favicon.ico"));
 // Switch off the default 'X-Powered-By: Express' header
 app.disable("x-powered-by");
@@ -73,8 +71,8 @@ question_data = {
   host: {},
   guest: {},
 };
-const adults_topics = ["lockdown", "politics", "soccer"];
-const kids_topics = ["lockdown", "supperstar"];
+
+const mask_set = ["endWithEyes", "endWithMouth", "opposite"];
 
 var sessionId;
 var timmer;
@@ -167,7 +165,7 @@ function processStart(room, start_time, cfg) {
           console.log(time_left, "stage 2");
           let mask_setting = cfg["setting"][stage];
           const rindex = Math.floor(Math.random() * wouldyou.length);
-          let topic = "Would you " + wouldyou[rindex];
+          let topic = wouldyou[rindex];
           topic_selected.push(topic);
           io.sockets
             .in(room)
@@ -367,8 +365,15 @@ io.sockets.on("connection", (socket) => {
         try {
           console.log("both ready, start the process");
           let startTime = new Date().getTime();
-          processStart(room, startTime, current_cfg);
+          // processStart(room, startTime, current_cfg);
+
           sessionId = generateId(new Date(startTime));
+          let mask_id = Math.floor(Math.random() * 3);
+          current_cfg = require("./assets/MaskSetting/" +
+            mask_set[mask_id] +
+            ".json");
+          current_rating = "general";
+          processStart(room, startTime, current_cfg);
           const { duration } = current_cfg["setting"][0];
           io.to(room).emit("process-start", { startTime, duration });
           io.to("survey-" + room).emit("process-start");
