@@ -341,6 +341,7 @@ io.sockets.on("connection", (socket) => {
     if (survey_socket[user] != undefined) {
       const sid = survey_socket[user].id;
       io.to(sid).emit("face-detected");
+      io.to(room).emit("face-detected", user);
     }
   });
   socket.on("process-control", (data) => {

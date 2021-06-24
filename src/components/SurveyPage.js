@@ -13,7 +13,7 @@ function SurveyPage(props) {
   const [stage, setStage] = useState(0);
   const { room, user } = props.match.params;
   const [answer, setAnswer] = useState([]);
-  const socket = io.connect({ transports: ["websocket"], upgrade: false });
+  const socket = io.connect();
   useEffect(() => {
     socket.emit("survey-connect", {
       room: props.match.params.room,

@@ -10,6 +10,12 @@ import GYModal from "../components/Modal";
 import Announcement from "../components/Announcement";
 var FileSaver = require("file-saver");
 
+const introduction =
+  "Hi, welcome to Your Face is Mute, the whole process contains three stages, for each stage, we will provide you a topic to discuss or debate with your partner,\
+and you will have 30 seconds for each stage. During the discussion, different part of your face will be muted. Finally, after each stage, you may need to answer two \
+questions on the Ipad. The questions are about how much you know about your partner's facial expression hidden behind different mask. So, if you are interested and ready, \
+click the start button on the Ipad and enjoy!";
+
 const init_mask = {
   occlusion_mask: false, //Switch
   feature_show: {
@@ -55,9 +61,14 @@ class MediaBridge extends Component {
       modalContent: "Are you Ready to Start ?",
       loading: false,
       topic: {
-        content: "Welcome, please wait for your partner",
+        content: "Welcome, please have a seat",
         visible: false,
       },
+      intro: {
+        visible: false,
+        content: introduction,
+      },
+
       controlData: {},
       survey_in_progress: false,
     };
@@ -96,6 +107,7 @@ class MediaBridge extends Component {
     this.onReset = this.onReset.bind(this);
     this.onSurveyEnd = this.onSurveyEnd.bind(this);
     this.onSurveyStart = this.onSurveyStart.bind(this);
+    this.onFace = this.onFace.bind(this);
     this.mask_configuration = [];
     this.losingface = 0;
 
@@ -116,6 +128,7 @@ class MediaBridge extends Component {
     this.props.socket.on("upload-finish", this.onUploadingFinish);
     this.props.socket.on("survey-start", this.onSurveyStart);
     this.props.socket.on("survey-end", this.onSurveyEnd);
+    this.props.socket.on("face-detected", this.onFace);
 
     this.props.socket.on("message", this.onMessage);
     this.props.socket.on("hangup", this.onRemoteHangup);
@@ -222,6 +235,14 @@ class MediaBridge extends Component {
   }
   onProcessStart(data) {
     const { startTime, duration } = data;
+    console.log("set intro invisible");
+    this.setState({
+      ...this.state,
+      intro: {
+        content: introduction,
+        visible: false,
+      },
+    });
     console.log("process start", startTime, duration);
     if (!this.state.process) {
       //init
@@ -260,6 +281,13 @@ class MediaBridge extends Component {
     this.props.socket.emit("reset", { room: this.props.room });
   }
   onProcessStop(data) {
+    this.setState({
+      ...this.state,
+      intro: {
+        content: introduction,
+        visible: false,
+      },
+    });
     const { accident_stop } = data;
     console.log("process stop", accident_stop);
     clearInterval(this.timmer);
@@ -274,7 +302,7 @@ class MediaBridge extends Component {
       visible: false,
       loading: false,
       topic: {
-        content: "Welcome, please wait for your partner",
+        content: "Welcome, please have a seat",
         visible: false,
       },
       survey_in_progress: false,
@@ -310,8 +338,31 @@ class MediaBridge extends Component {
     const { mask, topic } = data;
     // update mask when stage change
     // update control data
+    if (this.state.stage == 0) {
+      const controlData = mask[this.state.user];
+      if (topic.length == 1) {
+        this.setState({
+          ...this.state,
+          topic: {
+            content: topic[0],
+            visible: true,
+          },
+        });
+      } else {
+        const index = this.state.user == "host" ? 0 : 1;
+        this.setState({
+          ...this.state,
+          topic: {
+            content: topic[index],
+            visible: true,
+          },
+        });
+      }
+      this.props.updateAll(controlData);
+    }
     this.setState({
       ...this.state,
+      stage: 1,
       controlData: {
         mask: mask[this.state.user],
         topic: topic,
@@ -360,6 +411,18 @@ class MediaBridge extends Component {
     this.setState({
       ...this.state,
     });
+  }
+  onFace(data) {
+    if (this.state.user == data && !this.state.process) {
+      console.log(this.state.process, "show intro");
+      this.setState({
+        ...this.state,
+        intro: {
+          ...this.state.intro,
+          visible: true,
+        },
+      });
+    }
   }
 
   startRecording() {
@@ -696,18 +759,34 @@ class MediaBridge extends Component {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>
         <canvas className="canvas" ref={(ref) => (this.canvasRef = ref)} />
-        <div className="chatblock">
-          <p
-            style={{
-              color: "#EC7500",
-              fontSize: "30px",
-              margin: "0 auto",
-              fontWeight: "bold",
-            }}
-          >
-            {this.state.topic.content}
-          </p>
-        </div>
+        {this.state.intro.visible && (
+          <div className="topic">
+            <p
+              style={{
+                color: "white",
+                fontSize: "30px",
+                margin: "0 auto",
+                fontWeight: "bold",
+              }}
+            >
+              {this.state.intro.content}
+            </p>
+          </div>
+        )}
+        {this.state.process && (
+          <div className="chatblock">
+            <p
+              style={{
+                color: "#EC7500",
+                fontSize: "30px",
+                margin: "0 auto",
+                fontWeight: "bold",
+              }}
+            >
+              {this.state.topic.content}
+            </p>
+          </div>
+        )}
         {/* <text className="clock">{this.state.time_diff}</text> */}
         <div className="clock">
           <Clock time_diff={this.state.time_diff}></Clock>
