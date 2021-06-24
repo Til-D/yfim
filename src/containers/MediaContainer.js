@@ -58,6 +58,7 @@ class MediaBridge extends Component {
         content: "Welcome, please wait for your partner",
         visible: false,
       },
+      controlData: {},
       survey_in_progress: false,
     };
     this.record = {
@@ -165,6 +166,29 @@ class MediaBridge extends Component {
     });
     let startTime = new Date().getTime();
     this.endTime = startTime + 1000 * duration;
+
+    const controlData = this.state.controlData.mask;
+    const topic = this.state.controlData.topic;
+    if (topic.length == 1) {
+      this.setState({
+        ...this.state,
+        topic: {
+          content: topic[0],
+          visible: true,
+        },
+      });
+    } else {
+      const index = this.state.user == "host" ? 0 : 1;
+      this.setState({
+        ...this.state,
+        topic: {
+          content: topic[index],
+          visible: true,
+        },
+      });
+    }
+    this.props.updateAll(controlData);
+
     console.log("survey-end", data, this.endTime);
   }
   onSurveyStart() {
@@ -285,33 +309,14 @@ class MediaBridge extends Component {
   onStageControl(data) {
     const { mask, topic } = data;
     // update mask when stage change
-    const controlData = mask[this.state.user];
-    if (topic.length == 1) {
-      this.setState({
-        ...this.state,
-        topic: {
-          content: topic[0],
-          visible: true,
-        },
-      });
-    } else {
-      const index = this.state.user == "host" ? 0 : 1;
-      this.setState({
-        ...this.state,
-        topic: {
-          content: topic[index],
-          visible: true,
-        },
-      });
-    }
-
-    setTimeout(() => {
-      this.setState({
-        ...this.state,
-        topic: { ...this.state.topic, visible: false },
-      });
-    }, 5000);
-    this.props.updateAll(controlData);
+    // update control data
+    this.setState({
+      ...this.state,
+      controlData: {
+        mask: mask[this.state.user],
+        topic: topic,
+      },
+    });
   }
   onControl(control_data) {
     const { user, controlData } = control_data;
