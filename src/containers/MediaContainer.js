@@ -328,6 +328,7 @@ class MediaBridge extends Component {
   }
 
   onStageControl(data) {
+    console.log("stage control receiving");
     const { mask, topic } = data;
     // update mask when stage change
     if (this.state.stage == 0) {

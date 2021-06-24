@@ -115,7 +115,7 @@ function generateId(stime) {
 }
 
 function processStart(room, start_time, cfg) {
-  console.log("process start");
+  console.log("process start", room);
   console.log("config ", cfg);
   stage = 0;
   const { duration } = cfg["setting"][0];
