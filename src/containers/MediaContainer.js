@@ -414,7 +414,6 @@ class MediaBridge extends Component {
   }
   onFace(data) {
     if (this.state.user == data && !this.state.process) {
-      console.log(this.state.process, "show intro");
       this.setState({
         ...this.state,
         intro: {
@@ -486,7 +485,11 @@ class MediaBridge extends Component {
             }
             this.losingface = 0;
           } catch (err) {
-            this.losingface += 1;
+            if (this.state.survey_in_progress) {
+              this.losingface += 0.5;
+            } else {
+              this.losingface += 1;
+            }
             this.losingface %= 12;
             if (this.losingface >= 10 && this.state.process) {
               // Restart whole process
