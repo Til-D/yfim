@@ -212,7 +212,6 @@ function processStart(room, start_time, cfg) {
   }
 }
 function processStop(room, accident_stop) {
-  console.log("process stop");
   if (accident_stop) {
     topic_selected = [];
   }

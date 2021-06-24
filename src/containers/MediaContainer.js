@@ -465,6 +465,7 @@ class MediaBridge extends Component {
 
     return new Promise(
       function (resolve) {
+        let lose_face_f = false;
         setInterval(async () => {
           this.detections = await faceapi
             .detectSingleFace(
@@ -480,14 +481,30 @@ class MediaBridge extends Component {
               this.onFaceDetect();
             }
             this.losingface = 0;
+            if (lose_face_f) {
+              this.sendData("recover");
+              lose_face_f = false;
+            }
           } catch (err) {
             if (this.state.survey_in_progress) {
               this.losingface += 0.5;
             } else {
               this.losingface += 1;
             }
-            this.losingface %= 12;
-            if (this.losingface >= 10 && this.state.process) {
+            this.losingface %= 22;
+            if (
+              this.losingface >= 10 &&
+              this.state.process &&
+              this.losingface < 20
+            ) {
+              // Restart whole process
+              if (!lose_face_f) {
+                lose_face_f = true;
+                this.sendData("lose-face");
+              }
+              console.log("losing face for more than 10 secs");
+            }
+            if (this.losingface >= 20 && this.state.process) {
               // Restart whole process
               this.onReset();
               console.log("You partner seems to leave");
@@ -651,6 +668,18 @@ class MediaBridge extends Component {
   setupDataHandlers() {
     this.dc.onmessage = (e) => {
       var msg = JSON.parse(e.data);
+      if (msg == "lose-face") {
+        this.setState({
+          ...this.state,
+          visible: true,
+        });
+      }
+      if (msg == "recover") {
+        this.setState({
+          ...this.state,
+          visible: false,
+        });
+      }
       console.log("received message over data channel:" + msg);
     };
     this.dc.onclose = () => {
@@ -791,8 +820,14 @@ class MediaBridge extends Component {
           <Clock time_diff={this.state.time_diff}></Clock>
         </div>
         <GYModal title="Attention" visible={this.state.survey_in_progress}>
-          <h1 style={{ color: "black" }}>
+          <h1 style={{ color: "white" }}>
             We have some quesions for you on Ipad!
+          </h1>
+        </GYModal>
+        <GYModal title="Attention" visible={this.state.visible}>
+          <h1 style={{ color: "white" }}>
+            Ooops! We can not detect your face, please look at the screen during
+            the process. Or the conversation will be terminated.
           </h1>
         </GYModal>
 
