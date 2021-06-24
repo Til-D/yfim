@@ -236,13 +236,6 @@ class MediaBridge extends Component {
   onProcessStart(data) {
     const { startTime, duration } = data;
     console.log("set intro invisible");
-    this.setState({
-      ...this.state,
-      intro: {
-        content: introduction,
-        visible: false,
-      },
-    });
     console.log("process start", startTime, duration);
     if (!this.state.process) {
       //init
@@ -337,7 +330,6 @@ class MediaBridge extends Component {
   onStageControl(data) {
     const { mask, topic } = data;
     // update mask when stage change
-    // update control data
     if (this.state.stage == 0) {
       const controlData = mask[this.state.user];
       if (topic.length == 1) {
@@ -346,6 +338,10 @@ class MediaBridge extends Component {
           topic: {
             content: topic[0],
             visible: true,
+          },
+          intro: {
+            content: introduction,
+            visible: false,
           },
         });
       } else {
