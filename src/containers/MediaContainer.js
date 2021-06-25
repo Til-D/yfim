@@ -313,6 +313,7 @@ class MediaBridge extends Component {
       stage: 0,
       visible: false,
       loading: false,
+      ready: false,
       topic: {
         content: "Welcome, please have a seat",
         visible: false,
@@ -433,6 +434,7 @@ class MediaBridge extends Component {
     ) {
       this.setState({
         ...this.state,
+        ready: true,
         intro: {
           ...this.state.intro,
           visible: true,
@@ -530,7 +532,11 @@ class MediaBridge extends Component {
               this.onReset();
               console.log("You partner seems to leave");
             }
-            if (this.losingface >= 10 && !this.state.process) {
+            if (
+              this.losingface >= 20 &&
+              !this.state.process &&
+              !this.state.ready
+            ) {
               // Restart whole process
               this.props.socket.emit("room-idle", { room: this.props.room });
               console.log("You partner seems to leave");
@@ -693,12 +699,14 @@ class MediaBridge extends Component {
         this.setState({
           ...this.state,
           visible: true,
+          ready: this.state.process,
         });
       }
       if (msg == "recover") {
         this.setState({
           ...this.state,
           visible: false,
+          ready: true,
         });
       }
       console.log("received message over data channel:" + msg);
