@@ -138,18 +138,21 @@ export default function RoomControl(props) {
   const [upload, setUpload] = useState(false);
   const [maskOption, setMaskOption] = useState(null);
   const [maskConfig, setMaskConfig] = useState(null);
-  const socket = io.connect({ transports: ["websocket"], upgrade: false });
   const classes = useStyles();
   const room = props.match.params.room;
-  socket.emit("control-room", { room: room });
-  socket.on("process-in-progress", (data) => {
-    console.log(data);
-    let time_diff = data.time_diff;
-    alert(`process in ongoing, ${time_diff} seconds left`);
-  });
-  socket.on("process-stop", () => {
-    alert("process stop");
-  });
+  useEffect(() => {
+    const socket = io.connect();
+    socket.emit("control-room", { room: room });
+    socket.on("process-in-progress", (data) => {
+      console.log(data);
+      let time_diff = data.time_diff;
+      alert(`process in ongoing, ${time_diff} seconds left`);
+    });
+    socket.on("process-stop", () => {
+      alert("process stop");
+    });
+  }, []);
+
   useEffect(() => {
     console.log(maskOption);
     if (maskOption != null) {

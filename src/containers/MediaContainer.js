@@ -162,7 +162,7 @@ class MediaBridge extends Component {
     if (this.localStream !== undefined) {
       this.localStream.getVideoTracks()[0].stop();
     }
-    this.onReset();
+    this.props.socket.emit("room-idle", { room: this.props.room });
     this.props.socket.emit("leave");
     clearInterval(this.timmer);
   }
@@ -424,12 +424,13 @@ class MediaBridge extends Component {
       room: this.props.room,
       user,
     });
-    this.setState({
-      ...this.state,
-    });
   }
   onFace(data) {
-    if (this.state.user == data && !this.state.process) {
+    if (
+      this.state.user == data &&
+      !this.state.process &&
+      !this.state.intro.visible
+    ) {
       this.setState({
         ...this.state,
         intro: {
@@ -717,7 +718,7 @@ class MediaBridge extends Component {
   hangup() {
     this.setState({ ...this.state, user: "guest", bridge: "guest-hangup" });
     this.pc.close();
-    this.onReset();
+    this.props.socket.emit("room-idle", { room: this.props.room });
     this.props.socket.emit("leave");
   }
   handleError(e) {
