@@ -80,7 +80,7 @@ function SurveyPage(props) {
   function sendDataToServer(survey) {
     //   callback function
     setSurveyOn(false);
-    socket.emit("survey-end", {
+    socket_s.emit("survey-end", {
       room,
       user,
     });
