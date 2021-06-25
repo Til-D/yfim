@@ -162,6 +162,7 @@ class MediaBridge extends Component {
     if (this.localStream !== undefined) {
       this.localStream.getVideoTracks()[0].stop();
     }
+    this.onReset();
     this.props.socket.emit("leave");
     clearInterval(this.timmer);
   }
@@ -716,6 +717,7 @@ class MediaBridge extends Component {
   hangup() {
     this.setState({ ...this.state, user: "guest", bridge: "guest-hangup" });
     this.pc.close();
+    this.onReset();
     this.props.socket.emit("leave");
   }
   handleError(e) {
