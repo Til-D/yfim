@@ -15,6 +15,9 @@ const introduction =
 and you will have 30 seconds for each stage. During the discussion, different part of your face will be muted. Finally, after each stage, you may need to answer two \
 questions on the Ipad. The questions are about how much you know about your partner's facial expression hidden behind different mask. So, if you are interested and ready, \
 click the start button on the Ipad and enjoy!";
+const loseface_notify =
+  "Ooops! We can not detect your face, please look at the screen during\
+the process. Or the conversation will be terminated.";
 
 const init_mask = {
   occlusion_mask: false, //Switch
@@ -56,6 +59,9 @@ class MediaBridge extends Component {
       sessionId: "",
       stage: 0,
       process_cfg: null,
+      attention:
+        "Ooops! We can not detect your face, please look at the screen during\
+      the process. Or the conversation will be terminated.",
       visible: false,
       ready: false,
       modalContent: "Are you Ready to Start ?",
@@ -182,6 +188,18 @@ class MediaBridge extends Component {
 
     const controlData = this.state.controlData.mask;
     const topic = this.state.controlData.topic;
+    this.setState({
+      ...this.state,
+      visible: true,
+      attention: topic,
+    });
+    setTimeout(() => {
+      this.setState({
+        ...this.state,
+        visible: false,
+        attention: loseface_notify,
+      });
+    }, 5000);
     if (topic.length == 1) {
       this.setState({
         ...this.state,
@@ -336,6 +354,8 @@ class MediaBridge extends Component {
       if (topic.length == 1) {
         this.setState({
           ...this.state,
+          visible: true,
+          attention: topic,
           topic: {
             content: topic[0],
             visible: true,
@@ -345,15 +365,13 @@ class MediaBridge extends Component {
             visible: false,
           },
         });
-      } else {
-        const index = this.state.user == "host" ? 0 : 1;
-        this.setState({
-          ...this.state,
-          topic: {
-            content: topic[index],
-            visible: true,
-          },
-        });
+        setTimeout(() => {
+          this.setState({
+            ...this.state,
+            visible: false,
+            attention: loseface_notify,
+          });
+        }, 5000);
       }
       this.props.updateAll(controlData);
     }
@@ -802,7 +820,7 @@ class MediaBridge extends Component {
             </p>
           </div>
         )}
-        {this.state.process && (
+        {this.state.process && !this.state.visible && (
           <div className="chatblock">
             <p
               style={{
@@ -826,10 +844,7 @@ class MediaBridge extends Component {
           </h1>
         </GYModal>
         <GYModal title="Attention" visible={this.state.visible}>
-          <h1 style={{ color: "white" }}>
-            Ooops! We can not detect your face, please look at the screen during
-            the process. Or the conversation will be terminated.
-          </h1>
+          <h1 style={{ color: "white" }}>{this.state.attention}</h1>
         </GYModal>
 
         {/* <GYModal
