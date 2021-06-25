@@ -13,6 +13,7 @@ function SurveyPage(props) {
   const [stage, setStage] = useState(0);
   const { room, user } = props.match.params;
   const [answer, setAnswer] = useState([]);
+  const [socket_s, setSocket] = useState();
 
   useEffect(() => {
     const socket = io.connect();
@@ -55,6 +56,7 @@ function SurveyPage(props) {
     socket.on("reset", () => {
       resetParams();
     });
+    setSocket(socket);
   }, []);
 
   function resetParams() {
@@ -63,13 +65,13 @@ function SurveyPage(props) {
     setSurveyOn(false);
     setFaceOn(false);
   }
-  // socket.join(props.match.params.room);
-  // Need to move this to control panel
 
   function sendReadyToServer() {
-    socket.emit("process-ready", { room, user });
+    socket_s.emit("process-ready", { room, user });
     setContent("Waiting remote partner...");
   }
+  // socket.join(props.match.params.room);
+  // Need to move this to control panel
 
   Survey.StylesManager.applyTheme("winter");
   const model = new Survey.Model(surveyJSON);
