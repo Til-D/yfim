@@ -189,10 +189,16 @@ class MediaBridge extends Component {
 
     const controlData = this.state.controlData.mask;
     const topic = this.state.controlData.topic;
+    let new_topic;
+    if (topic.length == 1) {
+      new_topic = topic[0];
+    } else {
+      new_topic = topic[this.state.user == "host" ? 0 : 1];
+    }
     this.setState({
       ...this.state,
       visible: true,
-      attention: topic,
+      attention: "Your prompt is " + new_topic,
     });
     setTimeout(() => {
       this.setState({
@@ -515,16 +521,20 @@ class MediaBridge extends Component {
               this.losingface += 1;
             }
             this.losingface %= 22;
-            if (
-              this.losingface >= 10 &&
-              this.state.process &&
-              this.losingface < 20
-            ) {
-              // Restart whole process
-              if (!lose_face_f) {
-                lose_face_f = true;
-                this.sendData("lose-face");
+            if (this.losingface >= 10 && this.losingface < 20) {
+              if (this.state.process) {
+                // Restart whole process
+                if (!lose_face_f) {
+                  lose_face_f = true;
+                  this.sendData("lose-face");
+                }
+              } else {
+                if (!lose_face_f) {
+                  lose_face_f = true;
+                  this.sendData("room-idle");
+                }
               }
+
               console.log("losing face for more than 10 secs");
             }
             if (this.losingface >= 20 && this.state.process) {
@@ -707,6 +717,12 @@ class MediaBridge extends Component {
           ...this.state,
           visible: false,
           ready: true,
+        });
+      }
+      if (msg == "room-idle") {
+        this.setState({
+          ...this.state,
+          ready: false,
         });
       }
       console.log("received message over data channel:" + msg);
