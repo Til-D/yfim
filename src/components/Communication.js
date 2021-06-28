@@ -105,6 +105,7 @@ const Communication = (props) => (
           maxLength="30"
           required
           placeholder="Hi, I'm Hao."
+          value="hi"
         />
         <button className="primary-button">Send</button>
       </form>
