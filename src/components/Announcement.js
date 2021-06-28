@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 
 function Announcement(props) {
-  const onSubmit = props.handler;
+  const [rating, setRating] = useState("general");
+  const onSubmit = props.handler(rating);
   return (
     <div
       style={{

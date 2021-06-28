@@ -66,8 +66,9 @@ function SurveyPage(props) {
     setFaceOn(false);
   }
 
-  function sendReadyToServer() {
-    socket_s.emit("process-ready", { room, user });
+  function sendReadyToServer(rating) {
+    console.log("select rating, ", rating);
+    socket_s.emit("process-ready", { room, user, rating });
     setContent("Waiting remote partner...");
   }
   // socket.join(props.match.params.room);

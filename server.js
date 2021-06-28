@@ -52,6 +52,7 @@ app.disable("x-powered-by");
 
 control_room_list = {};
 ready_user_by_room = {};
+rating_by_user = {};
 projection_room_list = {};
 survey_room_list = {};
 
@@ -352,12 +353,12 @@ io.sockets.on("connection", (socket) => {
     socket.broadcast.to(params_room).emit("process-control");
   });
   socket.on("process-ready", (data) => {
-    const room = data.room;
-    const user = data.user;
+    const { room, user, rating } = data;
     // socket.broadcast.to(room).emit("process-start");
     console.log(`${user} in room ${room} is ready`);
     if (room in ready_user_by_room) {
       ready_user_by_room[room][user] = true;
+      rating_by_user[user] = rating;
       if (
         ready_user_by_room[room]["host"] &&
         ready_user_by_room[room]["guest"]
@@ -373,6 +374,9 @@ io.sockets.on("connection", (socket) => {
             mask_set[mask_id] +
             ".json");
           current_rating = "general";
+          if (rating_by_user["host"] == rating_by_user["guest"]) {
+            current_rating = rating_by_user["host"];
+          }
           processStart(room, startTime, current_cfg);
           const { duration } = current_cfg["setting"][0];
           io.to(room).emit("process-start", { startTime, duration });
