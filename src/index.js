@@ -11,6 +11,7 @@ import SurveyPage from "./components/SurveyPage";
 import NotFound from "./components/NotFound";
 
 import styles from "./app.css";
+import ProjectionPage from "./containers/ProjectionPage";
 
 render(
   <Provider store={store}>
@@ -19,10 +20,13 @@ render(
         <Route exact path="/" component={Home} />
         <Route exact path="/r/:room" component={Room} />
         {/* <Route path="*" component={NotFound} /> */}
-        <Route exact path="/dashboard" component={DashBoard} />
         <Route exact path="/control/:room" component={RoomControl} />
         <Route exact path="/s/:room/:user" component={SurveyPage} />
-        {/* <Route path="/survey/:room"/>  */}
+        <Route
+          exact
+          path="/projection/:room/:user"
+          component={ProjectionPage}
+        />
       </Switch>
     </BrowserRouter>
   </Provider>,

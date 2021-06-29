@@ -40,7 +40,7 @@ input[type="checkbox"] {
 }
 .checkboxtext {
   /* Checkbox text */
-  font-size: 110%;
+  font-size: 20px;
   display: inline;
 }
 .home {

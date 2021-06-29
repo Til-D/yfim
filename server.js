@@ -60,6 +60,10 @@ survey_socket = {
   guest: undefined,
   host: undefined,
 };
+projection_socket = {
+  guest: undefined,
+  host: undefined,
+};
 
 emotion_ready = { host: false, guest: false };
 question_ready = { host: false, guest: false };
@@ -151,7 +155,12 @@ function processStart(room, start_time, cfg) {
           topic_selected.push(topic);
           io.sockets
             .in(room)
-            .emit("stage-control", { mask: mask_setting, topic: [topic] });
+            .to("projection-" + room)
+            .emit("stage-control", {
+              mask: mask_setting,
+              topic: [topic],
+              stage,
+            });
         }
       } else if (time_left < (duration * 2) / 3 && time_left > duration / 3) {
         //stage2
@@ -168,9 +177,11 @@ function processStart(room, start_time, cfg) {
           const rindex = Math.floor(Math.random() * wouldyou.length);
           let topic = wouldyou[rindex];
           topic_selected.push(topic);
-          io.sockets
-            .in(room)
-            .emit("stage-control", { mask: mask_setting, topic: [topic] });
+          io.sockets.in(room).emit("stage-control", {
+            mask: mask_setting,
+            topic: [topic],
+            stage,
+          });
         }
       } else if (time_left < duration / 3 && time_left > 0) {
         //stage3
@@ -188,7 +199,7 @@ function processStart(room, start_time, cfg) {
           topic_selected.push(topic);
           io.sockets
             .in(room)
-            .emit("stage-control", { mask: mask_setting, topic });
+            .emit("stage-control", { mask: mask_setting, topic, stage });
         }
       }
 
@@ -197,6 +208,7 @@ function processStart(room, start_time, cfg) {
           stage = 4;
           io.to("survey-" + room)
             .to(room)
+
             .emit("survey-start", { stage: stage });
           survey_in_progress = true;
         }
@@ -306,6 +318,11 @@ io.sockets.on("connection", (socket) => {
     io.to("survey-" + room).emit("room-idle");
     processStop(room, true);
   });
+  socket.on("projection-connect", (data) => {
+    const { room, user } = data;
+    socket.join("projection-" + room);
+    projection_socket[user] = socket;
+  });
   socket.on("survey-connect", (data) => {
     const { room, user } = data;
     socket.join("survey-" + room);
@@ -329,6 +346,7 @@ io.sockets.on("connection", (socket) => {
       duration = (duration / 3) * (4 - stage);
       console.log("survey-end", duration);
       io.to(room).emit("survey-end", { startTime, duration });
+      io.to("projection-" + room).emit("stage-control", { stage });
     }
   });
   socket.on("reset", (data) => {
@@ -377,6 +395,7 @@ io.sockets.on("connection", (socket) => {
           if (rating_by_user["host"] == rating_by_user["guest"]) {
             current_rating = rating_by_user["host"];
           }
+          console.log(current_rating, rating_by_user);
           processStart(room, startTime, current_cfg);
           const { duration } = current_cfg["setting"][0];
           io.to(room).emit("process-start", { startTime, duration });
@@ -399,6 +418,7 @@ io.sockets.on("connection", (socket) => {
         guest: false,
       };
       ready_user_by_room[room][user] = true;
+      rating_by_user[user] = rating;
     }
   });
   socket.on("process-in-progress", (data) => {
