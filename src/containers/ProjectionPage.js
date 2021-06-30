@@ -21,7 +21,11 @@ export default function ProjectionPage(props) {
 
     socket.on("stage-control", (data) => {
       const { stage } = data;
-      setVideoid(stage);
+      if (stage > 3) {
+        setVideoid(1);
+      } else {
+        setVideoid(stage);
+      }
     });
   }, []);
 

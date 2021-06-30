@@ -82,6 +82,7 @@ class MediaBridge extends Component {
       record_count: 0,
       record_detail: [],
     };
+    this.survey_count = 0;
     this.controlParams = props.controlParams;
     this.detections = null;
     this.process_duration = 10;
@@ -180,6 +181,7 @@ class MediaBridge extends Component {
   // survey progress control
   onSurveyEnd(data) {
     const { duration } = data;
+    this.survey_count += 1;
     this.setState({
       ...this.state,
       survey_in_progress: false,
@@ -197,7 +199,7 @@ class MediaBridge extends Component {
     }
     this.setState({
       ...this.state,
-      visible: true,
+      visible: true && this.survey_count < 3,
       attention: "Your prompt is " + new_topic,
     });
     setTimeout(() => {
@@ -326,7 +328,7 @@ class MediaBridge extends Component {
       },
       survey_in_progress: false,
     });
-
+    this.survey_count = 0;
     this.props.updateAll(init_mask);
     if (!accident_stop) {
       this.sendDataToServer();
