@@ -19,9 +19,9 @@ def csv_to_json(csvFilePath, jsonFilePath):
             row = reader[i]
             icebreaker.append(row[0])
             wouldyou.append(row[1])
-            if (row[2] != "") and (row[3] != "") and (row[4] != ""):
-                rating = row[4]
-                quest[rating].append([row[2], row[3]])
+            if (row[3] != "") and (row[4] != "") and (row[5]!=""):
+                rating = row[5]
+                quest[rating].append([row[3], row[4]])
 
         with open(jsonFilePath, 'w')as jsonfile:
             data = {
@@ -34,5 +34,5 @@ def csv_to_json(csvFilePath, jsonFilePath):
 
 if __name__ == '__main__':
     csv_file = './conversations.csv'
-    json_file = '../topics/topics.json'
+    json_file = './topics/topics.json'
     csv_to_json(csv_file, json_file)

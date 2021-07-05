@@ -1,13 +1,13 @@
 {
     "wouldyou": [
-        "Give up social media or eat the same dinner for the rest of your life?",
-        "Have no taste or be colorblind?",
-        "Have the lights on or off if you knew the room was full of snakes?",
-        "Win $25,000 or have your best friend win $100,000?",
-        "Be reborn into the past or the future?",
-        "Never age physically or never age mentally?",
-        "Be hypersensitive to other people's emotions or give up your sense of compassion?",
-        "Have every meeting on ZOOM or go to the office for the rest of your life?",
+        "Would you rather give up social media or eat the same dinner for the rest of your life?",
+        "Would your rather have no taste or be colorblind?",
+        "Would you rather have the lights on or off if you knew the room was full of snakes?",
+        "Would you rather win $25,000 or have your best friend win $100,000?",
+        "Would you rather be reborn into the past or the future?",
+        "Would you rather never age physically or never age mentally?",
+        "Would you rather be hypersensitive to other people's emotions or give up your sense of compassion?",
+        "Would you rather have every meeting on ZOOM or go to the office for the rest of your life?",
         "Would you rather have a rewind button or a pause button on your life?",
         "Would you rather lose your vision or your hearing?",
         "Would you rather become someone else or just stay you?",
@@ -22,52 +22,80 @@
     "quest": {
         "kids": [
             [
-                "Homework helps me learn",
-                "Homework is a waste of time"
+                "Try to convince your conversation partner that homework helps in learning",
+                "You are arguing that homework is a waste of time"
+            ],
+            [
+                "Try to convince your conversation partner that homeschooling is better than a public or private school education.",
+                "Try to convince your conversation partner that homeschooling is not any better than a public or private school education"
+            ],
+            [
+                "Try to convince your conversation partner that students need to pass algebra to graduate.",
+                "Try to convince your conversation partner that students do not needneed to pass algebra to graduate."
+            ],
+            [
+                "Try to convince your conversation partner that students should be able to leave school grounds for lunch.",
+                "Try to convince your conversation partner that students should not be able to leave school grounds for lunch."
+            ],
+            [
+                "Try to convince your conversation partner that all students should be required to perform community service.",
+                "Try to convince your conversation partner that students do not need to perform community service."
+            ],
+            [
+                "Try to convince your conversation partner that reading literature books is important.",
+                "Try to convince your conversation partner that reading literature books is not important."
+            ],
+            [
+                "Try to convince your conversation partner that it is okay to have junk food in the cafeteria inside the school campus.",
+                "Try to convince your conversation partner that it is not good to have junk food in the cafeteria inside the school campus."
             ]
         ],
         "mature": [
             [
-                "pro choice is vital.",
-                "pro life is vital."
+                "You are arguing that pro choice is vital.",
+                "Try to convince your conversation partner that pro life is vital."
             ],
             [
-                "coal is the backbone of Australia's economy.",
-                "Australia needs to divest from coal."
+                "You are arguing that coal is the backbone of Australia's economy.",
+                "Try to convince your conversation partner that Australia needs to divest from coal."
             ],
             [
-                "owning a gun can protect me and my family.",
-                "all gun ownership should be banned."
+                "You are arguing that owning a gun can protect me and my family.",
+                "You are arguing that all gun ownership should be banned."
             ],
             [
-                "feminism is crucial for reaching gender equality.",
-                "feminism is overrated. Life is good the way it is."
+                "You are arguing that feminism is crucial for reaching gender equality.",
+                "You are arguing that feminism is overrated. Life is good the way it is."
             ],
             [
-                "vaccinations should be mandatory.",
-                "vaccination should be optional, not mandatory."
+                "You are arguing that vaccinations should be mandatory.",
+                "You are arguing that vaccination should be optional, not mandatory."
             ]
         ],
         "general": [
             [
-                "meat is the way to go.",
-                "vegan is the way to go."
+                "Try to convince your conversation partner that meat is the way to go.",
+                "Try to convince your conversation partner that vegan is the way to go."
             ],
             [
-                "traditions are vital.",
-                "progress is vital."
+                "Try to convince your conversation partner that traditions are vital.",
+                "Try to convince your conversation partner that progress is vital."
             ],
             [
-                "climate change is man-made.",
-                "climate changes follow natural cycles."
+                "You are arguing that climate change is man-made.",
+                "You are arguing that climate changes follow natural cycles."
             ],
             [
-                "Australia needs to protect its identity.",
-                "Australia should welcome more immigration."
+                "You are arguing that Australia needs to protect its identity.",
+                "You are arguing that Australia should welcome more immigration."
             ],
             [
-                "social media has connected the world.",
-                "social media brings more harm than good."
+                "You are arguing that social media has connected the world.",
+                "You are arguing that social media brings more harm than good."
+            ],
+            [
+                "Try to convince your conversation partner that cellphones should be banned in schools.",
+                "You are arguing that cellphones should be integrated into classroom teaching."
             ]
         ]
     },

@@ -6,3 +6,5 @@
 ./rtc-video-room-key.pem
 
 ./vscode
+
+./.DS_Store
