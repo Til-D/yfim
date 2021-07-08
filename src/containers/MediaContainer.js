@@ -355,7 +355,6 @@ class MediaBridge extends Component {
     this.setState({
       ...this.state,
       loading: false,
-      visible: true,
     });
   }
 
