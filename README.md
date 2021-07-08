@@ -83,6 +83,15 @@ In this project, we are going to use couchDB as database to restore json format 
 
 https://www.happychat.tech
 
+# TODOs
+
+- recording of voice should be made optional (add second checkbox to consent form)
+- kids should also get 'general' topics
+
+# Ideas
+
+- at the end of the experience, display how accurate participants were able to guess their partner's emotion throughout the experience (i.e., guessed emotion vs. self-reported ground truth)
+
 #### License
 
 MIT License

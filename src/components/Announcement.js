@@ -38,69 +38,42 @@ function Announcement(props) {
       </h>
       <p
         style={{
-          margin: "10px",
+          margin: "20px",
           fontSize: "20px",
         }}
       >
-        1. I consent to participate in this project, the details of which have
-        been explained to me, and I can request a written plain language
-        statement to keep.
+        This experience has been created by researches at the University of Melbourne. <i>Your Face is Muted</i> explores how a lack of non-verbal cues affects critical conversations and our ability to empathise. You can support this research by participating in the experience. To do so, we kindly ask you to sign the following consent form:
+        1. I consent to participate in this project knowing that I can request further information by contacting the creators of this work or asking a floor assistant.
         <br />
-        2. I confirm that I am not under the age of 18.
-        <br />
-        3. I understand that the purpose of this research is to investigate how
+        2. I understand that the purpose of this research is to investigate how
         obfuscation of facial features, visuals, and audio can influence
         people’s ability to empathise with a conversation partner.
         <br />
-        4. In this project I will participate in a conversation with another
-        person. The conversation will last for approximately 15 minutes.
-        <br />
-        5. I understand that the conversation will be transmitted through video,
+        3. In this project I will participate in a conversation with another
+        person. The conversation will last for about 5 minutes.
+        4. I understand that the conversation will be transmitted through video,
         and I will see my conversation partner through a web-camera.
         <br />
-        6. I understand that my conversation partner will see me through a
-        web-camera too.
-        <br />
-        7. I understand that my participation in this project is for research
+        5. I understand that my participation in this project is for research
         purposes only.
         <br />
-        8. I understand that during the conversation, I will be asked to report
+        6. I understand that during the conversation, I will be asked to report
         my emotional states and assess the emotions of my conversation partner
-        in the popup window that appears on the screen.
+        in a popup window that appears on the iPad screen.
         <br />
-        9. I understand that confidence values of emotions derived from my
-        facial expressions will be measured and stored by the software.
+        7. I understand that my voice will be recorded by the software.
         <br />
-        10. I understand that my voice will be recorded by the software.
-        <br />
-        11. I understand that the topics of the conversation will be collected
-        and stored by the software.
-        <br />
-        12. I understand that my participation is voluntary and that I am free
-        to withdraw from this project anytime without explanation or prejudice
+        8. I understand that my participation is voluntary and that I am free
+        to withdraw from this project by simply standing up anytime without explanation or prejudice
         and to withdraw any unprocessed data that I have provided.
         <br />
-        13. I understand that the data from this research will be stored at the
+        9. I understand that the data from this research will be stored at the
         University of Melbourne and will be destroyed 5 years after last
         publication.
         <br />
-        14. I have been informed that the confidentiality of the information I
+        10. I have been informed that the confidentiality of the information I
         provide will be safeguarded subject to any legal requirements; my data
-        will be password protected and accessible only by the named researchers.
-        <br />
-        15. I understand that my decision on participation in this project will
-        not affect my grades in the courses taught or related to any of the
-        researchers involved in this study.
-        <br />
-        16. I understand that the data collected during this study may be reused
-        in future work related to emotion recognition and regulation for
-        comparison and/or reference purposes. However, it will be only carried
-        out by the researchers included in this study.
-        <br />
-        17. I understand that after I sign and return this consent form, it will
-        be retained by the researcher. 19.I acknowledge that the possible
-        effects of participating in this research project have been explained to
-        my satisfaction.
+        will be password protected and accessible only by the researchers in question.
       </p>
 
       <div
@@ -109,7 +82,7 @@ function Announcement(props) {
         }}
       >
         <input type="checkbox" onChange={handleCheck} />
-        <span class="checkboxtext"> I am under 18 years old (Optional) </span>
+        <span class="checkboxtext"> I am over 18 years old </span>
       </div>
 
       <button

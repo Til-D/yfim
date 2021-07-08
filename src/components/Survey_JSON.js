@@ -6,11 +6,11 @@ export const surveyJSON = {
         {
           type: "radiogroup",
           name: "question1",
-          title: "What's your current emotion?",
+          title: "Which emotion describes your current feeling best?",
           choices: [
             {
               value: "item1",
-              text: "Neural",
+              text: "Neutral",
             },
             {
               value: "item2",
@@ -26,18 +26,18 @@ export const surveyJSON = {
             },
             {
               value: "item5",
-              text: "Suprised",
+              text: "Surprised",
             },
           ],
         },
         {
           type: "radiogroup",
           name: "question2",
-          title: "What's your friend's current emotion?",
+          title: "How do you think does your conversation partner currently feel?",
           choices: [
             {
               value: "item1",
-              text: "Neural",
+              text: "Neutral",
             },
             {
               value: "item2",
@@ -53,7 +53,7 @@ export const surveyJSON = {
             },
             {
               value: "item5",
-              text: "Suprised",
+              text: "Surprised",
             },
           ],
         },

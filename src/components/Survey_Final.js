@@ -6,11 +6,11 @@ export const survey_Final = {
         {
           type: "radiogroup",
           name: "question1",
-          title: "What's your overall emotion?",
+          title: "How did you overall feel?",
           choices: [
             {
               value: "item1",
-              text: "Neural",
+              text: "Neutral",
             },
             {
               value: "item2",
@@ -26,18 +26,18 @@ export const survey_Final = {
             },
             {
               value: "item5",
-              text: "Suprised",
+              text: "Surprised",
             },
           ],
         },
         {
           type: "radiogroup",
           name: "question2",
-          title: "What's your friend's current emotion?",
+          title: "How do you think your conversation feels?",
           choices: [
             {
               value: "item1",
-              text: "Neural",
+              text: "Neutral",
             },
             {
               value: "item2",
@@ -53,7 +53,7 @@ export const survey_Final = {
             },
             {
               value: "item5",
-              text: "Suprised",
+              text: "Surprised",
             },
           ],
         },

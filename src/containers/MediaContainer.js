@@ -11,13 +11,13 @@ import Announcement from "../components/Announcement";
 var FileSaver = require("file-saver");
 
 const introduction =
-  "Hi, welcome to Your Face is Mute, the whole process contains three stages, for each stage, we will provide you a topic to discuss or debate with your partner.\
-During the discussion, different part of your face will be muted. After each stage, you may need to answer two questions on the Ipad. \
-Try to understand your partner's facial expression hidden behind different mask. So, if you are interested and ready, \
-click the start button on the Ipad and enjoy!";
+  "Welcome to Your Face is Muted! This experience consists of three stages. For each one, the screen in front of you will show a prompt with a topic to discuss with your conversation partner.\
+Throughout the discussion, different parts of your face will be obfuscated. The iPad next to you will occasionally prompt you with questions about you and your partner's current emotion. Let's see how accurate you can read how they feel! \
+Sounds good? \
+Then click the start button on the iPad and converse away!";
 const loseface_notify =
-  "Ooops! We can not detect your face, please look at the screen during\
-the process. Or the conversation will be terminated.";
+  "Ooops! We can not detect your face, please make sure to look at the screen during\
+the experience. Otherwise, the conversation may be terminated.";
 
 const init_mask = {
   occlusion_mask: false, //Switch

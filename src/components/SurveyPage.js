@@ -37,7 +37,7 @@ function SurveyPage(props) {
     });
     socket.on("process-start", () => {
       console.log("process start");
-      setContent("Conversation is in progress...");
+      setContent("Conversation in progress...");
       setProcess(true);
     });
     socket.on("process-stop", (data) => {
@@ -72,7 +72,7 @@ function SurveyPage(props) {
   function sendReadyToServer(rating) {
     console.log("select rating, ", rating);
     socket_s.emit("process-ready", { room, user, rating });
-    setContent("Waiting remote partner...");
+    setContent("Waiting for conversation partner...");
   }
   // socket.join(props.match.params.room);
   // Need to move this to control panel
