@@ -180,7 +180,7 @@ class MediaBridge extends Component {
 
   // survey progress control
   onSurveyEnd(data) {
-    const { duration } = data;
+    const { duration, stage } = data;
     this.survey_count += 1;
     this.setState({
       ...this.state,
@@ -197,11 +197,14 @@ class MediaBridge extends Component {
     } else {
       new_topic = topic[this.state.user == "host" ? 0 : 1];
     }
-    this.setState({
-      ...this.state,
-      visible: true && this.survey_count < 3,
-      attention: "Your prompt is " + new_topic,
-    });
+    if (stage != 4) {
+      this.setState({
+        ...this.state,
+        visible: true && this.survey_count < 3,
+        attention: "Your prompt is " + new_topic,
+      });
+    }
+
     setTimeout(() => {
       this.setState({
         ...this.state,

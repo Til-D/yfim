@@ -215,7 +215,6 @@ function processStart(room, start_time, cfg) {
           stage = 4;
           io.to("survey-" + room)
             .to(room)
-
             .emit("survey-start", { stage: stage });
           survey_in_progress = true;
         }
@@ -358,7 +357,7 @@ io.sockets.on("connection", (socket) => {
       }
       let duration = extend_time;
       console.log("survey-end", duration);
-      io.to(room).emit("survey-end", { startTime, duration });
+      io.to(room).emit("survey-end", { startTime, duration, stage });
       io.to("projection-" + room).emit("stage-control", { stage });
     }
   });
