@@ -40,6 +40,7 @@ input[type="checkbox"] {
 }
 .checkboxtext {
   /* Checkbox text */
+  margin-left: 10px;
   font-size: 20px;
   display: inline;
 }

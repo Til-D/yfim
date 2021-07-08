@@ -127,7 +127,11 @@ function processStart(room, start_time, cfg) {
   const questionset = require("./assets/topics/topics.json");
   const icebreaker = questionset["icebreaker"];
   const wouldyou = questionset["wouldyou"];
-  const quest = questionset["quest"][current_rating];
+  const quest = [
+    ...questionset["quest"][current_rating],
+    ...questionset["quest"]["general"],
+  ];
+  console.log(quest);
 
   let endTime = start_time + 1000 * duration;
   // create a timmer

@@ -69,8 +69,10 @@ function SurveyPage(props) {
     setProcess(false);
   }
 
-  function sendReadyToServer(rating) {
+  function sendReadyToServer(data) {
+    const { rating, record } = data;
     console.log("select rating, ", rating);
+    console.log("select record", record);
     socket_s.emit("process-ready", { room, user, rating });
     setContent("Waiting for conversation partner...");
   }
