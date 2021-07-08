@@ -38,6 +38,16 @@ input[type="checkbox"] {
   padding: 10px;
   margin-inline: 10px;
 }
+
+.sv_main .sv_container .sv_body .sv_p_root .sv_page_title {
+  font-size: 1.5em;
+}
+.sv_row {
+  font-size: 1.5em;
+}
+.sv_nav {
+  font-size: 2em;
+}
 .checkboxtext {
   /* Checkbox text */
   margin-left: 10px;
