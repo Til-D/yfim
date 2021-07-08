@@ -197,6 +197,7 @@ class MediaBridge extends Component {
     } else {
       new_topic = topic[this.state.user == "host" ? 0 : 1];
     }
+    console.log("survey-end", stage);
     if (stage != 4) {
       this.setState({
         ...this.state,
