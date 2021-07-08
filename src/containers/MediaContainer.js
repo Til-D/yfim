@@ -11,9 +11,9 @@ import Announcement from "../components/Announcement";
 var FileSaver = require("file-saver");
 
 const introduction =
-  "Hi, welcome to Your Face is Mute, the whole process contains three stages, for each stage, we will provide you a topic to discuss or debate with your partner,\
-and you will have 30 seconds for each stage. During the discussion, different part of your face will be muted. Finally, after each stage, you may need to answer two \
-questions on the Ipad. The questions are about how much you know about your partner's facial expression hidden behind different mask. So, if you are interested and ready, \
+  "Hi, welcome to Your Face is Mute, the whole process contains three stages, for each stage, we will provide you a topic to discuss or debate with your partner.\
+During the discussion, different part of your face will be muted. After each stage, you may need to answer two questions on the Ipad. \
+Try to understand your partner's facial expression hidden behind different mask. So, if you are interested and ready, \
 click the start button on the Ipad and enjoy!";
 const loseface_notify =
   "Ooops! We can not detect your face, please look at the screen during\

@@ -139,11 +139,18 @@ function processStart(room, start_time, cfg) {
     timmer = setInterval(() => {
       let nowTime = new Date().getTime();
       if (survey_in_progress) {
-        endTime = nowTime + ((1000 * duration) / 3) * (4 - stage);
+        let extend_time = 0;
+        if (stage == 2) {
+          extend_time = 1000 * 150;
+        }
+        if (stage == 3) {
+          extend_time = 1000 * 90;
+        }
+        endTime = nowTime + extend_time;
       }
       let time_left = Math.round((endTime - nowTime) / 1000);
 
-      if (time_left > (duration * 2) / 3) {
+      if (time_left > 150) {
         //stage1
         if (stage != 1) {
           stage = 1;
@@ -162,7 +169,7 @@ function processStart(room, start_time, cfg) {
               stage,
             });
         }
-      } else if (time_left < (duration * 2) / 3 && time_left > duration / 3) {
+      } else if (time_left < 150 && time_left > 90) {
         //stage2
         if (stage != 2) {
           // previous stage finish, raise a survey
@@ -183,7 +190,7 @@ function processStart(room, start_time, cfg) {
             stage,
           });
         }
-      } else if (time_left < duration / 3 && time_left > 0) {
+      } else if (time_left < 90 && time_left > 0) {
         //stage3
         if (stage != 3) {
           io.to("survey-" + room)
@@ -342,8 +349,14 @@ io.sockets.on("connection", (socket) => {
       survey_in_progress = false;
       survey_ready = { host: false, guest: false };
       let startTime = new Date().getTime();
-      let { duration } = current_cfg["setting"][0];
-      duration = (duration / 3) * (4 - stage);
+      let extend_time = 0;
+      if (stage == 2) {
+        extend_time = 150;
+      }
+      if (stage == 3) {
+        extend_time = 90;
+      }
+      let duration = extend_time;
       console.log("survey-end", duration);
       io.to(room).emit("survey-end", { startTime, duration });
       io.to("projection-" + room).emit("stage-control", { stage });

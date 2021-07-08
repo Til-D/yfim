@@ -14,6 +14,7 @@ function SurveyPage(props) {
   const { room, user } = props.match.params;
   const [answer, setAnswer] = useState([]);
   const [socket_s, setSocket] = useState();
+  const [process, setProcess] = useState(false);
 
   useEffect(() => {
     const socket = io.connect();
@@ -37,6 +38,7 @@ function SurveyPage(props) {
     socket.on("process-start", () => {
       console.log("process start");
       setContent("Conversation is in progress...");
+      setProcess(true);
     });
     socket.on("process-stop", (data) => {
       const { accident_stop } = data;
@@ -64,6 +66,7 @@ function SurveyPage(props) {
     setStage(0);
     setSurveyOn(false);
     setFaceOn(false);
+    setProcess(false);
   }
 
   function sendReadyToServer(rating) {
@@ -92,8 +95,13 @@ function SurveyPage(props) {
 
   return (
     <div>
-      {faceOn && !surveyOn && (
+      {faceOn && !process && !surveyOn && (
         <Announcement handler={sendReadyToServer} stage={content} />
+      )}
+      {process && !surveyOn && (
+        <p style={{ textAlign: "center", top: "10px" }}>
+          Process is ongoing, enjoy your talk with your partner!
+        </p>
       )}
 
       {/* <button onClick={restart} className="primary-button">

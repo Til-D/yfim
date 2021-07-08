@@ -34,7 +34,7 @@ function Announcement(props) {
           margin: "0 auto",
         }}
       >
-        Consent Form
+        Consent Form
       </h>
       <p
         style={{
@@ -76,31 +76,28 @@ function Announcement(props) {
         11. I understand that the topics of the conversation will be collected
         and stored by the software.
         <br />
-        12. I understand that additional physiological signals may be collected
-        using the Empatica E4 wristband.
-        <br />
-        13. I understand that my participation is voluntary and that I am free
+        12. I understand that my participation is voluntary and that I am free
         to withdraw from this project anytime without explanation or prejudice
         and to withdraw any unprocessed data that I have provided.
         <br />
-        14. I understand that the data from this research will be stored at the
+        13. I understand that the data from this research will be stored at the
         University of Melbourne and will be destroyed 5 years after last
         publication.
         <br />
-        15. I have been informed that the confidentiality of the information I
+        14. I have been informed that the confidentiality of the information I
         provide will be safeguarded subject to any legal requirements; my data
         will be password protected and accessible only by the named researchers.
         <br />
-        16. I understand that my decision on participation in this project will
+        15. I understand that my decision on participation in this project will
         not affect my grades in the courses taught or related to any of the
         researchers involved in this study.
         <br />
-        17. I understand that the data collected during this study may be reused
+        16. I understand that the data collected during this study may be reused
         in future work related to emotion recognition and regulation for
         comparison and/or reference purposes. However, it will be only carried
         out by the researchers included in this study.
         <br />
-        18. I understand that after I sign and return this consent form, it will
+        17. I understand that after I sign and return this consent form, it will
         be retained by the researcher. 19.I acknowledge that the possible
         effects of participating in this research project have been explained to
         my satisfaction.
