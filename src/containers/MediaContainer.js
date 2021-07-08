@@ -151,7 +151,7 @@ class MediaBridge extends Component {
       this.chunks = [];
       // listen for data from media recorder
       this.mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
+        if (e.data && e.data.size > 0 && !this.state.survey_in_progress) {
           this.chunks.push(e.data);
         }
       };
@@ -265,15 +265,19 @@ class MediaBridge extends Component {
     this.setState({ ...this.state, visible: true });
   }
   onProcessStart(data) {
-    const { startTime, duration } = data;
+    const { startTime, duration, record_by_user, sessionId } = data;
     console.log("set intro invisible");
     console.log("process start", startTime, duration);
+    console.log("record", record_by_user, record_by_user[this.state.user]);
     if (!this.state.process) {
       //init
       this.record = {
         record_count: 0,
         record_detail: [],
       };
+      if (record_by_user[this.state.user]) {
+        this.startRecording();
+      }
       console.log("process start counting");
       this.process_duration = duration;
       this.endTime = startTime + 1000 * this.process_duration;
@@ -288,7 +292,9 @@ class MediaBridge extends Component {
         } else if (!this.state.survey_in_progress) {
           this.setState({
             ...this.state,
+            sessionId: sessionId,
             process: true,
+            recording: record_by_user[this.state.user],
             time_slot: this.state.time_slot + 1,
             time_diff: time_left,
           });
@@ -305,14 +311,11 @@ class MediaBridge extends Component {
     this.props.socket.emit("reset", { room: this.props.room });
   }
   onProcessStop(data) {
-    this.setState({
-      ...this.state,
-      intro: {
-        content: introduction,
-        visible: false,
-      },
-    });
     const { accident_stop } = data;
+    if (this.state.recording) {
+      this.stopRecording(accident_stop);
+    }
+
     console.log("process stop", accident_stop);
     clearInterval(this.timmer);
     this.setState({
@@ -328,6 +331,10 @@ class MediaBridge extends Component {
       ready: false,
       topic: {
         content: "Welcome, please have a seat",
+        visible: false,
+      },
+      intro: {
+        content: introduction,
         visible: false,
       },
       survey_in_progress: false,
@@ -464,7 +471,7 @@ class MediaBridge extends Component {
     this.setState({ recording: true });
   }
 
-  stopRecording() {
+  stopRecording(accident_stop) {
     // e.preventDefault();
     console.log("stopping recording");
     // stop the recorder
@@ -472,16 +479,19 @@ class MediaBridge extends Component {
     // say that we're not recording
     this.setState({ recording: false });
     // save the video to memory
-    this.saveVideo();
+    if (!accident_stop) {
+      this.saveVideo();
+    }
   }
 
   saveVideo() {
     // convert saved chunks to blob
     const blob = new Blob(this.chunks, { type: "video/webm" });
     // generate video url from blob
-    const videoURL = window.URL.createObjectURL(blob);
+    // const videoURL = window.URL.createObjectURL(blob);
     // append videoURL to list of saved videos for rendering
-    FileSaver.saveAs(blob, "recording.webm");
+    let filename = this.state.sessionId + "_" + this.state.user;
+    FileSaver.saveAs(blob, filename);
     // const videos = this.state.videos.concat([videoURL]);
     // this.setState({ videos });
   }

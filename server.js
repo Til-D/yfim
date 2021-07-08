@@ -76,6 +76,10 @@ question_data = {
   host: {},
   guest: {},
 };
+record_by_user = {
+  host: false,
+  guest: false,
+};
 
 const mask_set = ["endWithEyes", "endWithMouth", "opposite"];
 
@@ -131,7 +135,6 @@ function processStart(room, start_time, cfg) {
     ...questionset["quest"][current_rating],
     ...questionset["quest"]["general"],
   ];
-  console.log(quest);
 
   let endTime = start_time + 1000 * duration;
   // create a timmer
@@ -163,6 +166,8 @@ function processStart(room, start_time, cfg) {
           let mask_setting = cfg["setting"][stage];
           const rindex = Math.floor(Math.random() * icebreaker.length);
           let topic = icebreaker[rindex];
+          console.log(icebreaker.length, topic);
+
           topic_selected.push(topic);
           io.sockets
             .in(room)
@@ -387,12 +392,13 @@ io.sockets.on("connection", (socket) => {
     socket.broadcast.to(params_room).emit("process-control");
   });
   socket.on("process-ready", (data) => {
-    const { room, user, rating } = data;
+    const { room, user, rating, record } = data;
     // socket.broadcast.to(room).emit("process-start");
-    console.log(`${user} in room ${room} is ready`);
+    console.log(`${user} in room ${room} is ready recording: `, record);
     if (room in ready_user_by_room) {
       ready_user_by_room[room][user] = true;
       rating_by_user[user] = rating;
+      record_by_user[user] = record;
       if (
         ready_user_by_room[room]["host"] &&
         ready_user_by_room[room]["guest"]
@@ -414,9 +420,18 @@ io.sockets.on("connection", (socket) => {
           console.log(current_rating, rating_by_user);
           processStart(room, startTime, current_cfg);
           const { duration } = current_cfg["setting"][0];
-          io.to(room).emit("process-start", { startTime, duration });
+          io.to(room).emit("process-start", {
+            startTime,
+            duration,
+            record_by_user,
+            sessionId,
+          });
           io.to("survey-" + room).emit("process-start");
           ready_user_by_room[room] = {
+            host: false,
+            guest: false,
+          };
+          record_by_user = {
             host: false,
             guest: false,
           };
@@ -435,6 +450,7 @@ io.sockets.on("connection", (socket) => {
       };
       ready_user_by_room[room][user] = true;
       rating_by_user[user] = rating;
+      record_by_user[user] = record;
     }
   });
   socket.on("process-in-progress", (data) => {

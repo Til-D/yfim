@@ -105,7 +105,7 @@ function Announcement(props) {
         }}
       >
         <input type="checkbox" onChange={handleCheck2} />
-        <span class="checkboxtext">I agree to record the video and voice</span>
+        <span class="checkboxtext"> I agree to record the video and voice</span>
       </div>
 
       <button

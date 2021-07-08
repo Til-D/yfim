@@ -73,7 +73,7 @@ function SurveyPage(props) {
     const { rating, record } = data;
     console.log("select rating, ", rating);
     console.log("select record", record);
-    socket_s.emit("process-ready", { room, user, rating });
+    socket_s.emit("process-ready", { room, user, rating, record });
     setContent("Waiting for conversation partner...");
   }
   // socket.join(props.match.params.room);
