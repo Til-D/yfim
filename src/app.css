@@ -188,16 +188,17 @@ input[type="checkbox"] {
   height: 30%;
   width: 30%;
   z-index: 20;
-  text-align: center;
-  right: 0;
+
   top: 60%;
+  left: 15px;
+  text-align: left;
 }
 .clock {
   position: absolute;
-
   z-index: 10;
-  right: 20px;
-  /* background-color: transparent; */
+  left: 15px;
+  bottom: 0;
+  font-size: 2em;
 }
 .media-bridge,
 .local-video,
