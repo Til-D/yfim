@@ -187,7 +187,20 @@ class MediaBridge extends Component {
       survey_in_progress: false,
     });
     let startTime = new Date().getTime();
-    this.endTime = startTime + 1000 * duration;
+    if (stage == 1) {
+      this.endTime = startTime + 1000 * 31;
+    }
+    if (stage == 2) {
+      console.log("changging endtime,", this.endTime);
+      this.endTime = startTime + 1000 * 60;
+    }
+    if (stage == 3) {
+      console.log("changging endtime,", this.endTime);
+      this.endTime = startTime + 1000 * 90;
+    }
+    if (stage == 4) {
+      this.endTime = startTime + 1000 * 0;
+    }
 
     const controlData = this.state.controlData.mask;
     const topic = this.state.controlData.topic;
@@ -280,16 +293,16 @@ class MediaBridge extends Component {
       }
       console.log("process start counting");
       this.process_duration = duration;
-      this.endTime = startTime + 1000 * this.process_duration;
+      this.endTime = startTime + 1000 * 31;
       this.timmer = setInterval(() => {
         let nowTime = new Date().getTime();
         let time_left;
         if (!this.state.survey_in_progress) {
           time_left = Math.round((this.endTime - nowTime) / 1000);
         }
-        if (time_left < 0) {
+        if (time_left < -5000) {
           clearInterval(this.timmer);
-        } else if (!this.state.survey_in_progress) {
+        } else if (!this.state.survey_in_progress & (time_left >= 0)) {
           this.setState({
             ...this.state,
             sessionId: sessionId,
@@ -358,22 +371,23 @@ class MediaBridge extends Component {
     // }, 10000);
   }
   onUploadingFinish(data) {
-    const guest_answers = data["guest"];
-    const host_answers = data["host"];
+    let partner = "host";
+    if (this.state.user == "host") {
+      partner = "guest";
+    }
+    const your_answers = data[this.state.user];
+    const partner_answers = data[partner];
     let correct_count = 0;
+    console.log("upload, ", data);
 
     for (let i = 0; i < 3; i++) {
-      if (guest_answers[i]["question1"] == host_answers[i]["question1"]) {
-        correct_count += 1;
-      }
-      if (guest_answers[i]["question2"] == host_answers[i]["question2"]) {
+      if (your_answers[i]["question2"] == partner_answers[i]["question1"]) {
         correct_count += 1;
       }
     }
-    const accuracy = Math.round((correct_count / 6) * 10000) / 100 + "%";
-    const survey_accuracy = ` Hey! You made ${correct_count} guess in last conversation (${accuracy})`;
+    const accuracy = Math.round((correct_count / 3) * 10000) / 100 + "%";
+    const survey_accuracy = ` Hey! You made ${correct_count} over 3 correct guess in the previous conversation `;
 
-    console.log("upload finished", guest_answers, host_answers);
     this.setState({
       ...this.state,
       intro: {

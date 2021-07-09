@@ -185,8 +185,8 @@ input[type="checkbox"] {
 }
 .chatblock {
   position: absolute;
-  height: 30%;
-  width: 25%;
+  height: 40%;
+  width: 20%;
   z-index: 20;
 
   top: 50%;

@@ -33,7 +33,7 @@ export const survey_Final = {
         {
           type: "radiogroup",
           name: "question2",
-          title: "How do you think your conversation feels?",
+          title: "How do you think your conversation partner feels?",
           choices: [
             {
               value: "item1",
