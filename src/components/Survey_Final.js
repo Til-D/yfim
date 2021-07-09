@@ -5,7 +5,7 @@ export const survey_Final = {
       elements: [
         {
           type: "radiogroup",
-          name: "question1",
+          name: "question1",
           title: "How did you overall feel?",
           choices: [
             {

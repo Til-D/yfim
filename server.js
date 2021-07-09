@@ -166,7 +166,6 @@ function processStart(room, start_time, cfg) {
           let mask_setting = cfg["setting"][stage];
           const rindex = Math.floor(Math.random() * icebreaker.length);
           let topic = icebreaker[rindex];
-          console.log(icebreaker.length, topic);
 
           topic_selected.push(topic);
           io.sockets
@@ -253,6 +252,10 @@ function processStop(room, accident_stop) {
   io.to("survey-" + room).emit("process-stop", { accident_stop });
 }
 async function storeData(room) {
+  const results = {
+    guest: question_data["guest"],
+    host: question_data["host"],
+  };
   const data = {
     _id: sessionId,
     mask_setting: current_cfg["name"],
@@ -279,9 +282,9 @@ async function storeData(room) {
     guest: {},
   };
   console.log(data);
+  io.in(room).emit("upload-finish", results);
   const response = await db.insert(data);
   console.log("restore", response);
-  io.in(room).emit("upload-finish");
 }
 
 io.sockets.on("connection", (socket) => {

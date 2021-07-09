@@ -357,12 +357,39 @@ class MediaBridge extends Component {
     //   this.onReady();
     // }, 10000);
   }
-  onUploadingFinish() {
-    console.log("upload finished");
+  onUploadingFinish(data) {
+    const guest_answers = data["guest"];
+    const host_answers = data["host"];
+    let correct_count = 0;
+
+    for (let i = 0; i < 3; i++) {
+      if (guest_answers[i]["question1"] == host_answers[i]["question1"]) {
+        correct_count += 1;
+      }
+      if (guest_answers[i]["question2"] == host_answers[i]["question2"]) {
+        correct_count += 1;
+      }
+    }
+    const accuracy = Math.round((correct_count / 6) * 10000) / 100 + "%";
+    const survey_accuracy = ` Hey! You made ${correct_count} guess in last conversation (${accuracy})`;
+
+    console.log("upload finished", guest_answers, host_answers);
     this.setState({
       ...this.state,
-      loading: false,
+      intro: {
+        content: survey_accuracy,
+        visible: true,
+      },
     });
+    setTimeout(() => {
+      this.setState({
+        ...this.state,
+        intro: {
+          content: introduction,
+          visible: false,
+        },
+      });
+    }, 5000);
   }
 
   onStageControl(data) {
