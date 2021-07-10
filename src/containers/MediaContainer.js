@@ -372,7 +372,7 @@ class MediaBridge extends Component {
           ...this.state,
           loading: false,
         });
-      }, 10000);
+      }, 20000);
     } else {
       this.record = {
         record_count: 0,

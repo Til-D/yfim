@@ -58,7 +58,7 @@ function SurveyPage(props) {
         setLoading(true);
         setTimeout(() => {
           setLoading(false);
-        }, 10000);
+        }, 20000);
       }
 
       setAnswer([]);
