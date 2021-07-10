@@ -4,17 +4,22 @@ import { surveyJSON } from "./Survey_JSON";
 import { survey_Final } from "./Survey_Final";
 import * as Survey from "survey-react";
 import "survey-react/survey.css";
-import Announcement from "./Announcement";
+import SurveyIntro from "./SurveyIntro";
+import SurveyFaceDetect from "./SurveyFaceDetect";
+import SurveyOngoing from "./SurveyOngoing";
+import SurveyReady from "./SurveyReady";
+import SurveyThankyou from "./SurveyThankyou";
 
 function SurveyPage(props) {
   const [surveyOn, setSurveyOn] = useState(false);
   const [faceOn, setFaceOn] = useState(false);
-  const [content, setContent] = useState("Start");
-  const [stage, setStage] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [stage, setStage] = useState(1);
   const { room, user } = props.match.params;
   const [answer, setAnswer] = useState([]);
   const [socket_s, setSocket] = useState();
   const [process, setProcess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const socket = io.connect();
@@ -28,7 +33,7 @@ function SurveyPage(props) {
     });
     socket.on("survey-start", (data) => {
       const { stage } = data;
-      setStage(stage);
+      setStage(stage + 1);
       setSurveyOn(true);
     });
     socket.on("face-detected", () => {
@@ -37,7 +42,7 @@ function SurveyPage(props) {
     });
     socket.on("process-start", () => {
       console.log("process start");
-      setContent("Conversation in progress...");
+      setReady(false);
       setProcess(true);
     });
     socket.on("process-stop", (data) => {
@@ -50,6 +55,10 @@ function SurveyPage(props) {
           user,
           data: answer,
         });
+        setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+        }, 10000);
       }
 
       setAnswer([]);
@@ -62,11 +71,11 @@ function SurveyPage(props) {
   }, []);
 
   function resetParams() {
-    setContent("Start");
-    setStage(0);
+    setStage(1);
     setSurveyOn(false);
     setFaceOn(false);
     setProcess(false);
+    setReady(false);
   }
 
   function sendReadyToServer(data) {
@@ -74,17 +83,18 @@ function SurveyPage(props) {
     console.log("select rating, ", rating);
     console.log("select record", record);
     socket_s.emit("process-ready", { room, user, rating, record });
-    setContent("Waiting for conversation partner...");
+    setReady(true);
   }
   // socket.join(props.match.params.room);
   // Need to move this to control panel
 
-  Survey.StylesManager.applyTheme("winter");
+  // Survey.StylesManager.applyTheme("winter");
   const model = new Survey.Model(surveyJSON);
   const final_model = new Survey.Model(survey_Final);
 
   function sendDataToServer(survey) {
     //   callback function
+
     setSurveyOn(false);
     socket_s.emit("survey-end", {
       room,
@@ -93,22 +103,25 @@ function SurveyPage(props) {
     let curr_answer = answer;
     curr_answer.push(survey.data);
     setAnswer(curr_answer);
+    console.log("get answer, ", answer, survey.data);
   }
 
   return (
-    <div>
-      {faceOn && !process && !surveyOn && (
-        <Announcement handler={sendReadyToServer} stage={content} />
-      )}
-      {process && !surveyOn && (
-        <p style={{ textAlign: "center", top: "10px" }}>
-          Process is ongoing, enjoy your talk with your partner!
-        </p>
-      )}
+    <div
+      style={{
+        backgroundColor: "black",
+        height: "100%",
+      }}
+    >
+      {!faceOn && !process && !surveyOn && !loading && <SurveyIntro />}
 
-      {/* <button onClick={restart} className="primary-button">
-        Survey On
-      </button> */}
+      {faceOn && !process && !surveyOn && !loading && !ready && (
+        <SurveyFaceDetect handler={sendReadyToServer} />
+      )}
+      {!process && ready && <SurveyReady />}
+      {process && !surveyOn && <SurveyOngoing stage={stage} />}
+      {loading && <SurveyThankyou />}
+
       {surveyOn && stage != 4 && (
         <Survey.Survey
           model={model}

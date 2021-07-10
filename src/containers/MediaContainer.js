@@ -7,7 +7,10 @@ import ToolBar from "../components/ToolBar";
 import { connect } from "react-redux";
 import Clock from "./Clock";
 import GYModal from "../components/Modal";
-import Announcement from "../components/Announcement";
+import Introduction from "../components/Introduction";
+import IntroFaceDetect from "../components/IntroFaceDetect";
+import Thankyou from "../components/Thankyou";
+import SideBar from "../components/SideBar";
 var FileSaver = require("file-saver");
 
 const introduction =
@@ -58,6 +61,7 @@ class MediaBridge extends Component {
       process: false,
       sessionId: "",
       stage: 0,
+      side_prompt: "",
       process_cfg: null,
       attention:
         "Ooops! We can not detect your face, please look at the screen during\
@@ -145,8 +149,11 @@ class MediaBridge extends Component {
       this.showEmotion();
     });
     this.localVideo.addEventListener("play", () => {
-      this.mediaRecorder = new MediaRecorder(this.localStream, {
-        mimeType: "video/webm",
+      let audio_track = this.localStream.getAudioTracks()[0];
+      let audio_stream = new MediaStream();
+      audio_stream.addTrack(audio_track);
+      this.mediaRecorder = new MediaRecorder(audio_stream, {
+        mimeType: "audio/webm",
       });
       this.chunks = [];
       // listen for data from media recorder
@@ -191,11 +198,9 @@ class MediaBridge extends Component {
       this.endTime = startTime + 1000 * 31;
     }
     if (stage == 2) {
-      console.log("changging endtime,", this.endTime);
       this.endTime = startTime + 1000 * 60;
     }
     if (stage == 3) {
-      console.log("changging endtime,", this.endTime);
       this.endTime = startTime + 1000 * 90;
     }
     if (stage == 4) {
@@ -204,6 +209,7 @@ class MediaBridge extends Component {
 
     const controlData = this.state.controlData.mask;
     const topic = this.state.controlData.topic;
+    console.log("print topic", topic);
     let new_topic;
     if (topic.length == 1) {
       new_topic = topic[0];
@@ -211,11 +217,11 @@ class MediaBridge extends Component {
       new_topic = topic[this.state.user == "host" ? 0 : 1];
     }
     console.log("survey-end", stage);
-    if (stage != 4) {
+    if (stage != 4 && this.survey_count < 3) {
       this.setState({
         ...this.state,
-        visible: true && this.survey_count < 3,
-        attention: "Your prompt is " + new_topic,
+        side_prompt: new_topic,
+        stage: stage,
       });
     }
 
@@ -252,6 +258,7 @@ class MediaBridge extends Component {
     this.setState({
       ...this.state,
       survey_in_progress: true,
+      side_prompt: "We have some questions for you on Ipad",
     });
   }
   // configure process setting
@@ -275,7 +282,7 @@ class MediaBridge extends Component {
   }
   onReady() {
     console.log("on ready set state");
-    this.setState({ ...this.state, visible: true });
+    this.setState({ ...this.state });
   }
   onProcessStart(data) {
     const { startTime, duration, record_by_user, sessionId } = data;
@@ -356,54 +363,54 @@ class MediaBridge extends Component {
     this.props.updateAll(init_mask);
     if (!accident_stop) {
       this.sendDataToServer();
+      this.setState({
+        ...this.state,
+        loading: true,
+      });
+      setTimeout(() => {
+        this.setState({
+          ...this.state,
+          loading: false,
+        });
+      }, 10000);
     } else {
       this.record = {
         record_count: 0,
         record_detail: [],
       };
     }
-    this.setState({
-      ...this.state,
-      loading: true,
-    });
-    // setTimeout(() => {
-    //   this.onReady();
-    // }, 10000);
   }
   onUploadingFinish(data) {
-    let partner = "host";
-    if (this.state.user == "host") {
-      partner = "guest";
-    }
-    const your_answers = data[this.state.user];
-    const partner_answers = data[partner];
-    let correct_count = 0;
-    console.log("upload, ", data);
-
-    for (let i = 0; i < 3; i++) {
-      if (your_answers[i]["question2"] == partner_answers[i]["question1"]) {
-        correct_count += 1;
-      }
-    }
-    const accuracy = Math.round((correct_count / 3) * 10000) / 100 + "%";
-    const survey_accuracy = ` Hey! You made ${correct_count} over 3 correct guess in the previous conversation `;
-
-    this.setState({
-      ...this.state,
-      intro: {
-        content: survey_accuracy,
-        visible: true,
-      },
-    });
-    setTimeout(() => {
-      this.setState({
-        ...this.state,
-        intro: {
-          content: introduction,
-          visible: false,
-        },
-      });
-    }, 5000);
+    // let partner = "host";
+    // if (this.state.user == "host") {
+    //   partner = "guest";
+    // }
+    // const your_answers = data[this.state.user];
+    // const partner_answers = data[partner];
+    // let correct_count = 0;
+    // console.log("upload, ", data);
+    // for (let i = 0; i < 3; i++) {
+    //   if (your_answers[i]["question2"] == partner_answers[i]["question1"]) {
+    //     correct_count += 1;
+    //   }
+    // }
+    // const survey_accuracy = ` Hey! You made ${correct_count} over 3 correct guess in the previous conversation `;
+    // this.setState({
+    //   ...this.state,
+    //   intro: {
+    //     content: survey_accuracy,
+    //     visible: true,
+    //   },
+    // });
+    // setTimeout(() => {
+    //   this.setState({
+    //     ...this.state,
+    //     intro: {
+    //       content: introduction,
+    //       visible: false,
+    //     },
+    //   });
+    // }, 5000);
   }
 
   onStageControl(data) {
@@ -415,12 +422,7 @@ class MediaBridge extends Component {
       if (topic.length == 1) {
         this.setState({
           ...this.state,
-          visible: true,
-          attention: topic,
-          topic: {
-            content: topic[0],
-            visible: true,
-          },
+          side_prompt: topic[0],
           intro: {
             content: introduction,
             visible: false,
@@ -486,11 +488,7 @@ class MediaBridge extends Component {
     });
   }
   onFace(data) {
-    if (
-      this.state.user == data &&
-      !this.state.process &&
-      !this.state.intro.visible
-    ) {
+    if (this.state.user == data && !this.state.process) {
       this.setState({
         ...this.state,
         ready: true,
@@ -889,21 +887,19 @@ class MediaBridge extends Component {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>
         <canvas className="canvas" ref={(ref) => (this.canvasRef = ref)} />
-        {this.state.intro.visible && (
-          <div className="topic">
-            <p
-              style={{
-                color: "white",
-                fontSize: "30px",
-                margin: "0 auto",
-                fontWeight: "bold",
-              }}
-            >
-              {this.state.intro.content}
-            </p>
-          </div>
+        {this.state.process && (
+          <SideBar
+            stage={this.state.stage}
+            side_prompt={this.state.side_prompt}
+          />
         )}
-        {this.state.process && !this.state.visible && (
+        {/* No face detected, showing introduction */}
+        {!this.state.intro.visible && !this.state.process && <Introduction />}
+        {/* Face detected before process showing details */}
+        {this.state.intro.visible && !this.state.process && <IntroFaceDetect />}
+        {this.state.loading && <Thankyou />}
+
+        {/* {this.state.process && !this.state.visible && (
           <div className="chatblock">
             <p
               style={{
@@ -916,16 +912,21 @@ class MediaBridge extends Component {
               {this.state.topic.content}
             </p>
           </div>
-        )}
+        )} */}
         {/* <text className="clock">{this.state.time_diff}</text> */}
-        <div className="clock">
-          <Clock time_diff={this.state.time_diff}></Clock>
-        </div>
-        <GYModal title="Attention" visible={this.state.survey_in_progress}>
+        {this.state.process && (
+          <div className="clock">
+            <Clock
+              time_diff={this.state.time_diff}
+              end={this.state.survey_in_progress}
+            ></Clock>
+          </div>
+        )}
+        {/* <GYModal title="Attention" visible={this.state.survey_in_progress}>
           <h1 style={{ color: "white" }}>
             We have some quesions for you on Ipad!
           </h1>
-        </GYModal>
+        </GYModal> */}
         <GYModal title="Attention" visible={this.state.visible}>
           <h1 style={{ color: "white" }}>{this.state.attention}</h1>
         </GYModal>

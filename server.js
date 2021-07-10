@@ -262,12 +262,12 @@ async function storeData(room) {
     topic: topic_selected,
     duration: current_cfg["setting"][0]["duration"],
     host: {
-      emotion: emotion_data["host"],
       question: question_data["host"],
+      emotion: emotion_data["host"],
     },
     guest: {
-      emotion: emotion_data["guest"],
       question: question_data["guest"],
+      emotion: emotion_data["guest"],
     },
   };
   topic_selected = [];

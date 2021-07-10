@@ -1,6 +1,7 @@
 import React from "react";
 
 export default function Clock(props) {
+  const { end } = props;
   const min = parseInt(props.time_diff / 60);
   const sec = props.time_diff - min * 60;
   let minstr = "0" + min.toString();
@@ -10,8 +11,12 @@ export default function Clock(props) {
   } else {
     secstr = sec.toString();
   }
-
-  const showtime = minstr + " : " + secstr;
+  let showtime = "";
+  if (end) {
+    showtime = "TIME'S UP";
+  } else {
+    showtime = minstr + " : " + secstr;
+  }
 
   return (
     <div>

@@ -4,6 +4,7 @@ button {
   font-size: 1.6vw;
   margin: 0;
   font-family: Sans-Serif;
+  background-color: black;
 }
 @media (max-width: 1024px) {
   body,
@@ -39,15 +40,56 @@ input[type="checkbox"] {
   margin-inline: 10px;
 }
 
+.sv_main {
+  font-size: 15px;
+  background-color: black;
+}
+.sv_body {
+  background-color: black;
+}
+.sv_main .sv_container .sv_body {
+  padding: 1em 1em 1.6428em 1em;
+  background-color: black;
+}
 .sv_main .sv_container .sv_body .sv_p_root .sv_page_title {
-  font-size: 1.5em;
+  font-size: 0;
+  background-color: black;
+}
+.sv_main.sv_default_css .sv_p_root > .sv_row:nth-child(2n) {
+  background-color: black;
+  border: black;
+}
+.sv_main.sv_default_css .sv_p_root > .sv_row:nth-child(2n + 1) {
+  background-color: black;
+  border: black;
+}
+
+.sv_p_root {
+  background-color: black;
+}
+.sv_custom_header {
+  background-color: black;
 }
 .sv_row {
   font-size: 1.5em;
+  background-color: black;
+  color: white;
+  border-color: black;
 }
 .sv_nav {
-  font-size: 2em;
+  padding: 1em 0;
+  min-height: 2em;
+  background-color: black;
 }
+.sv_main input[type="button"],
+.sv_main button {
+  width: 100%;
+  margin: 0 auto;
+  background-color: white;
+  color: black;
+  font-size: 20px;
+}
+
 .checkboxtext {
   /* Checkbox text */
   margin-left: 10px;
@@ -169,19 +211,81 @@ input[type="checkbox"] {
   z-index: 10;
   /* background-color: transparent; */
 }
+.consent_form {
+  z-index: 20;
+  text-align: left;
+  background-color: black;
+  margin: auto;
+  font-size: 20px;
+}
+.survey_topic {
+  overflow: scroll;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 20;
+  text-align: center;
+  background-color: black;
+  margin: auto;
+}
+
+.survey_topic_container {
+  width: 50%;
+  margin: 0 auto;
+}
+.survey_diable_checkbox {
+  text-align: left;
+  margin: 10px;
+  color: grey;
+}
+.survey_checkbox {
+  text-align: left;
+  margin: 10px;
+}
+.survey_ready_button {
+  background-color: white;
+  color: black;
+  width: 100%;
+}
+.survey_topic_head {
+  color: white;
+  font-size: 40px;
+  margin: 0 auto;
+  font-weight: bold;
+  padding: 50px;
+}
+.survey_topic_text {
+  color: white;
+  font-size: 20px;
+  margin: 0 auto;
+  font-weight: bold;
+}
 .topic {
   position: absolute;
-  height: 40%;
+  height: 60%;
   width: 70%;
   z-index: 20;
   text-align: center;
   right: 15%;
-  background-color: #1ab394;
+  background-color: black;
   border-radius: 50px;
   padding: 30px;
   margin: auto;
   top: 0;
   bottom: 0;
+}
+.topic_head {
+  color: white;
+  font-size: 40px;
+  margin: 0 auto;
+  font-weight: bold;
+  padding: 100px;
+}
+.topic_text {
+  color: white;
+  font-size: 20px;
+  margin: 0 auto;
+  font-weight: bold;
 }
 .chatblock {
   position: absolute;
@@ -196,9 +300,36 @@ input[type="checkbox"] {
 .clock {
   position: absolute;
   z-index: 10;
-  left: 15px;
-  bottom: 0;
+  margin: 10px;
+  top: 18%;
   font-size: 2em;
+  width: 17%;
+  color: black;
+  text-align: center;
+  background-color: white;
+}
+.sidebar_container {
+  width: 17%;
+  position: absolute;
+  z-index: 10;
+  height: 69%;
+  top: 30%;
+  margin: 10px;
+  text-align: center;
+  border-color: white;
+  border-style: solid;
+  background-color: black;
+}
+.sidebar_foot {
+  position: absolute;
+  bottom: 10%;
+  margin: 0 auto;
+  width: 100%;
+}
+.sidebar_prompt {
+  margin: 10px;
+  position: absolute;
+  top: 20%;
 }
 .media-bridge,
 .local-video,
