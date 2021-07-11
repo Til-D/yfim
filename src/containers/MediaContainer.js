@@ -68,7 +68,6 @@ class MediaBridge extends Component {
       the process. Or the conversation will be terminated.",
       visible: false,
       ready: false,
-      modalContent: "Are you Ready to Start ?",
       loading: false,
       topic: {
         content: "Welcome, please have a seat",
@@ -78,7 +77,7 @@ class MediaBridge extends Component {
         visible: false,
         content: introduction,
       },
-
+      result: "",
       controlData: {},
       survey_in_progress: false,
     };
@@ -381,36 +380,24 @@ class MediaBridge extends Component {
     }
   }
   onUploadingFinish(data) {
-    // let partner = "host";
-    // if (this.state.user == "host") {
-    //   partner = "guest";
-    // }
-    // const your_answers = data[this.state.user];
-    // const partner_answers = data[partner];
-    // let correct_count = 0;
-    // console.log("upload, ", data);
-    // for (let i = 0; i < 3; i++) {
-    //   if (your_answers[i]["question2"] == partner_answers[i]["question1"]) {
-    //     correct_count += 1;
-    //   }
-    // }
-    // const survey_accuracy = ` Hey! You made ${correct_count} over 3 correct guess in the previous conversation `;
-    // this.setState({
-    //   ...this.state,
-    //   intro: {
-    //     content: survey_accuracy,
-    //     visible: true,
-    //   },
-    // });
-    // setTimeout(() => {
-    //   this.setState({
-    //     ...this.state,
-    //     intro: {
-    //       content: introduction,
-    //       visible: false,
-    //     },
-    //   });
-    // }, 5000);
+    let partner = "host";
+    if (this.state.user == "host") {
+      partner = "guest";
+    }
+    const your_answers = data[this.state.user];
+    const partner_answers = data[partner];
+    let correct_count = 0;
+    console.log("upload, ", data);
+    for (let i = 0; i < 3; i++) {
+      if (your_answers[i]["question2"] == partner_answers[i]["question1"]) {
+        correct_count += 1;
+      }
+    }
+    const survey_accuracy = `In the conversation, you made ${correct_count} over 3 correct guess `;
+    this.setState({
+      ...this.state,
+      result: survey_accuracy,
+    });
   }
 
   onStageControl(data) {
@@ -897,7 +884,7 @@ class MediaBridge extends Component {
         {!this.state.intro.visible && !this.state.process && <Introduction />}
         {/* Face detected before process showing details */}
         {this.state.intro.visible && !this.state.process && <IntroFaceDetect />}
-        {this.state.loading && <Thankyou />}
+        {this.state.loading && <Thankyou result={this.state.result} />}
 
         {/* {this.state.process && !this.state.visible && (
           <div className="chatblock">

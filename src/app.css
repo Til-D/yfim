@@ -63,7 +63,10 @@ input[type="checkbox"] {
   background-color: black;
   border: black;
 }
-
+.sv_complete_btn {
+  height: 60px;
+  font-size: 25px;
+}
 .sv_p_root {
   background-color: black;
 }
