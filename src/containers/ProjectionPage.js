@@ -9,7 +9,7 @@ const v_blue =
 const v_green =
   "https://yourfaceismute.s3.ap-southeast-2.amazonaws.com/Gradient-green.mp4";
 
-const video_set = [v_yellow, v_red, v_green];
+const video_set = [v_green, v_yellow, v_red];
 
 export default function ProjectionPage(props) {
   const [videoid, setVideoid] = useState(1);
