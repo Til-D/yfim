@@ -4,7 +4,7 @@ import ConsentForm from "./ConsentForm";
 export default function SurveyFaceDetect(props) {
   const [rating, setRating] = useState("kids");
   const [checked, setCheck] = useState(false);
-  const [record, setRecord] = useState(false);
+  const [record, setRecord] = useState(true);
   const [consentF, setConsentF] = useState(false);
   function onSubmit() {
     props.handler({ rating, record });
