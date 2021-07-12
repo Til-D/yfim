@@ -6,7 +6,7 @@ export const surveyJSON = {
         {
           type: "radiogroup",
           name: "question1",
-          title: "Which emotion describes your current feeling best?",
+          title: "Which emotion describes your current feelings best?",
           choices: [
             {
               value: "item1",
@@ -34,7 +34,7 @@ export const surveyJSON = {
           type: "radiogroup",
           name: "question2",
           title:
-            "How do you think does your conversation partner currently feel?",
+            "How do you think your conversation partner currently feels?",
           choices: [
             {
               value: "item1",
