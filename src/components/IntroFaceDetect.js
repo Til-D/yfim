@@ -9,14 +9,12 @@ export default function IntroFaceDetect() {
         <br />
         <br />
         In each part you will be given a prompt to explore with your
-        <br />
         conversation partner whilst different parts of your face will be
-        <br />
         obfuscated.
         <br />
         <br />
-        After each part, you will recieve question about how you are
-        <br /> feeling and how you perceive your partner to be feeling.
+        After each part, you will recieve question about how you are feeling and
+        how you perceive your partner to be feeling.
         <br />
         <br />
         Tap ‘Start’ on the iPad to begin the experience.

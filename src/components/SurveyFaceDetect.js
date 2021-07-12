@@ -13,6 +13,7 @@ export default function SurveyFaceDetect(props) {
     setCheck(event.target.checked);
     if (event.target.checked && rating != "kids") {
       setRating("kids");
+      setRecord(false);
     }
     if (!event.target.checked && rating != "mature") {
       setRating("mature");
@@ -32,10 +33,10 @@ export default function SurveyFaceDetect(props) {
           <br />
           <br />
           Your Face is Muted explores how a lack of non-verbal cues affects
-          critical <br />
-          conversations and our ability to empathise. By continuing in this
-          experience, you <br />
-          give consent to the researchers involved.
+          critical conversations and our ability to empathise.
+          <br />
+          By continuing in this experience, you give consent to the researchers
+          involved.
         </p>
         <br />
         <br />
@@ -52,7 +53,12 @@ export default function SurveyFaceDetect(props) {
         </div>
 
         <div className={checked ? "survey_diable_checkbox" : "survey_checkbox"}>
-          <input type="checkbox" onChange={handleCheck2} disabled={checked} />
+          <input
+            type="checkbox"
+            onChange={handleCheck2}
+            disabled={checked}
+            checked={record}
+          />
           <span class="checkboxtext"> I agree to have my voice recorded</span>
         </div>
         <button className="survey_ready_button" onClick={onSubmit}>
