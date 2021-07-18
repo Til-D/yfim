@@ -85,6 +85,7 @@ class MediaBridge extends Component {
       record_count: 0,
       record_detail: [],
     };
+    this.emo_result = [];
     this.survey_count = 0;
     this.controlParams = props.controlParams;
     this.detections = null;
@@ -377,6 +378,7 @@ class MediaBridge extends Component {
         record_count: 0,
         record_detail: [],
       };
+      this.emo_result = [];
     }
   }
   onUploadingFinish(data) {
@@ -401,7 +403,15 @@ class MediaBridge extends Component {
   }
 
   onStageControl(data) {
-    console.log("stage control receiving");
+    if (this.state.stage != 0) {
+      console.log(this.state);
+      this.emo_result.push(this.record);
+    }
+    this.record = {
+      record_count: 0,
+      record_detail: [],
+    };
+    console.log("stage control receiving", this.emo_result);
     const { mask, topic } = data;
     // update mask when stage change
     if (this.state.stage == 0) {
@@ -790,7 +800,8 @@ class MediaBridge extends Component {
     console.log(e);
   }
   sendDataToServer() {
-    const emo_record = this.record;
+    this.emo_result.push(this.record);
+    const emo_record = this.emo_result;
     console.log(
       "sending data to server ",
       JSON.parse(JSON.stringify(emo_record))

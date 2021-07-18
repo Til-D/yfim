@@ -8,11 +8,13 @@ const v_blue =
   "https://yourfaceismute.s3.ap-southeast-2.amazonaws.com/Gradient-blue.mp4";
 const v_green =
   "https://yourfaceismute.s3.ap-southeast-2.amazonaws.com/Gradient-green.mp4";
+const v_white =
+  "https://yourfaceismute.s3.ap-southeast-2.amazonaws.com/Gradient-white.mp4";
 
-const video_set = [v_green, v_yellow, v_red];
+const video_set = [v_white, v_green, v_yellow, v_red];
 
 export default function ProjectionPage(props) {
-  const [videoid, setVideoid] = useState(1);
+  const [videoid, setVideoid] = useState(0);
 
   useEffect(() => {
     const socket = io.connect();
@@ -20,12 +22,13 @@ export default function ProjectionPage(props) {
       room: props.match.params.room,
       user: props.match.params.user,
     });
-
+    socket.on("process-stop", () => {
+      setVideoid(0);
+    });
     socket.on("stage-control", (data) => {
       const { stage } = data;
-      if (stage > 3) {
-        setVideoid(1);
-      } else {
+      console.log("stage ", stage);
+      if (stage < 4) {
         setVideoid(stage);
       }
     });
@@ -49,7 +52,7 @@ export default function ProjectionPage(props) {
           top: 0,
         }}
       >
-        <source src={video_set[videoid - 1]} type="video/mp4"></source>
+        <source src={video_set[videoid]} type="video/mp4"></source>
       </video>
     </div>
   );

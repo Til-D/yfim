@@ -248,8 +248,11 @@ function processStop(room, accident_stop) {
   clearInterval(timmer);
   // socket send stop
 
-  io.to(room).emit("process-stop", { accident_stop });
-  io.to("survey-" + room).emit("process-stop", { accident_stop });
+  // io.to(room).emit("process-stop", { accident_stop });
+  io.to(room)
+    .to("survey-" + room)
+    .to("projection-" + room)
+    .emit("process-stop", { accident_stop });
 }
 async function storeData(room) {
   const results = {
