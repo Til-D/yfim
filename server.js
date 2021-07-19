@@ -351,6 +351,13 @@ io.sockets.on("connection", (socket) => {
     socket.join("survey-" + room);
     survey_socket[user] = socket;
   });
+  socket.on("data-connect", () => {
+    db.view("test", "test", function (err, data) {
+      const len = data.rows.length;
+      console.log(data.rows, len);
+      socket.emit("data-retrieve", data.rows);
+    });
+  });
   // survey send and control
   socket.on("survey-start", (data) => {
     console.log("survey start", data);
