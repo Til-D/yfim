@@ -295,6 +295,7 @@ class MediaBridge extends Component {
         record_count: 0,
         record_detail: [],
       };
+      this.emo_result = [];
       if (record_by_user[this.state.user]) {
         this.startRecording();
       }
@@ -373,6 +374,11 @@ class MediaBridge extends Component {
           loading: false,
         });
       }, 20000);
+      this.record = {
+        record_count: 0,
+        record_detail: [],
+      };
+      this.emo_result = [];
     } else {
       this.record = {
         record_count: 0,
@@ -391,7 +397,10 @@ class MediaBridge extends Component {
     let correct_count = 0;
     console.log("upload, ", data);
     for (let i = 0; i < 3; i++) {
-      if (your_answers[i]["question2"] == partner_answers[i]["question1"]) {
+      if (
+        your_answers[i]["result"]["question2"] ==
+        partner_answers[i]["result"]["question1"]
+      ) {
         correct_count += 1;
       }
     }
@@ -405,7 +414,7 @@ class MediaBridge extends Component {
   onStageControl(data) {
     if (this.state.stage != 0) {
       console.log(this.state);
-      this.emo_result.push(this.record);
+      this.emo_result.push(this.record.record_detail);
     }
     this.record = {
       record_count: 0,
@@ -438,6 +447,7 @@ class MediaBridge extends Component {
     this.setState({
       ...this.state,
       stage: 1,
+      time_slot: 0,
       controlData: {
         mask: mask[this.state.user],
         topic: topic,
@@ -555,6 +565,7 @@ class MediaBridge extends Component {
             .withFaceLandmarks()
             .withFaceExpressions();
           // console.log("detections", this.detections);
+          let utc = new Date().getTime();
           try {
             this.faceAttributes = getFeatureAttributes(this.detections);
             if (!this.state.process) {
@@ -606,9 +617,10 @@ class MediaBridge extends Component {
             console.log("Can't detect face on remote side", this.losingface);
           }
 
-          if (this.state.process) {
+          if (this.state.process && !this.state.survey_in_progress) {
             try {
               const emo_data = {
+                timeStamp: utc,
                 time_slot: this.state.time_slot,
                 emotion: this.detections.expressions,
               };
@@ -897,21 +909,6 @@ class MediaBridge extends Component {
         {this.state.intro.visible && !this.state.process && <IntroFaceDetect />}
         {this.state.loading && <Thankyou result={this.state.result} />}
 
-        {/* {this.state.process && !this.state.visible && (
-          <div className="chatblock">
-            <p
-              style={{
-                color: "#EC7500",
-                fontSize: "30px",
-                margin: "0 auto",
-                fontWeight: "bold",
-              }}
-            >
-              {this.state.topic.content}
-            </p>
-          </div>
-        )} */}
-        {/* <text className="clock">{this.state.time_diff}</text> */}
         {this.state.process && (
           <div className="clock">
             <Clock
@@ -920,23 +917,11 @@ class MediaBridge extends Component {
             ></Clock>
           </div>
         )}
-        {/* <GYModal title="Attention" visible={this.state.survey_in_progress}>
-          <h1 style={{ color: "white" }}>
-            We have some quesions for you on Ipad!
-          </h1>
-        </GYModal> */}
+
         <GYModal title="Attention" visible={this.state.visible}>
           <h1 style={{ color: "white" }}>{this.state.attention}</h1>
         </GYModal>
 
-        {/* <GYModal
-          title="Enjoy your talk"
-          visible={this.state.topic.visible}
-          onOk={() => {}}
-          onCancel={() => {}}
-        >
-          <h1 style={{ color: "black" }}>{this.state.topic.content}</h1>
-        </GYModal> */}
         <video
           className="remote-video"
           ref={(ref) => (this.remoteVideo = ref)}

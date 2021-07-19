@@ -84,6 +84,7 @@ record_by_user = {
 const mask_set = ["endWithEyes", "endWithMouth", "opposite"];
 
 var sessionId;
+var startTime;
 var timmer;
 var current_cfg;
 var current_rating;
@@ -260,7 +261,8 @@ async function storeData(room) {
     host: question_data["host"],
   };
   const data = {
-    _id: sessionId,
+    _id: startTime.toString(),
+    start_time: sessionId,
     mask_setting: current_cfg["name"],
     topic: topic_selected,
     duration: current_cfg["setting"][0]["duration"],
@@ -362,7 +364,7 @@ io.sockets.on("connection", (socket) => {
     if (survey_ready["guest"] && survey_ready["host"]) {
       survey_in_progress = false;
       survey_ready = { host: false, guest: false };
-      let startTime = new Date().getTime();
+      let stage_startTime = new Date().getTime();
       let extend_time = 0;
       if (stage == 2) {
         extend_time = 150;
@@ -372,7 +374,7 @@ io.sockets.on("connection", (socket) => {
       }
       let duration = extend_time;
       console.log("survey-end", duration);
-      io.to(room).emit("survey-end", { startTime, duration, stage });
+      io.to(room).emit("survey-end", { stage_startTime, duration, stage });
       io.to("projection-" + room).emit("stage-control", { stage });
     }
   });
@@ -411,10 +413,11 @@ io.sockets.on("connection", (socket) => {
       ) {
         try {
           console.log("both ready, start the process");
-          let startTime = new Date().getTime();
+          startTime = new Date().getTime();
           // processStart(room, startTime, current_cfg);
 
           sessionId = generateId(new Date(startTime));
+
           let mask_id = Math.floor(Math.random() * 3);
           current_cfg = require("./assets/MaskSetting/" +
             mask_set[mask_id] +
@@ -479,7 +482,7 @@ io.sockets.on("connection", (socket) => {
       question_data[user] = data;
     } else if (data_type == "emotion") {
       emotion_ready[user] = true;
-      emotion_data[user] = data.record_detail;
+      emotion_data[user] = data;
     }
     if (
       emotion_ready["host"] &&

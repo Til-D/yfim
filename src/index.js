@@ -9,6 +9,7 @@ import DashBoard from "./containers/DashBoard";
 import RoomControl from "./containers/RoomControl";
 import SurveyPage from "./components/SurveyPage";
 import NotFound from "./components/NotFound";
+import DataMonitor from "./containers/DataMonitor";
 
 import styles from "./app.css";
 import ProjectionPage from "./containers/ProjectionPage";
@@ -27,6 +28,7 @@ render(
           path="/projection/:room/:user"
           component={ProjectionPage}
         />
+        <Route exact path="/data" component={DataMonitor} />
       </Switch>
     </BrowserRouter>
   </Provider>,

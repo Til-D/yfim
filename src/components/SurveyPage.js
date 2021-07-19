@@ -100,8 +100,13 @@ function SurveyPage(props) {
       room,
       user,
     });
+    let submit_time = new Date().getTime();
+    let result = {
+      submit_time,
+      result: survey.data,
+    };
     let curr_answer = answer;
-    curr_answer.push(survey.data);
+    curr_answer.push(result);
     setAnswer(curr_answer);
     console.log("get answer, ", answer, survey.data);
   }
