@@ -16,7 +16,7 @@ export default function (props) {
     socket.on("data-retrieve", (data) => {
       setResult(data);
       const len = data.length;
-      setData_show(data[len - 1]);
+      setData_show(data[0]);
     });
     // fetch("http://localhost:5984/occlusion_mask/_design/test/_view/test", {
     //   headers: headers,
