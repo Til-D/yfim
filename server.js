@@ -260,20 +260,43 @@ async function storeData(room) {
     guest: question_data["guest"],
     host: question_data["host"],
   };
+  let phase_result = [];
+  for (let i = 0; i < 3; i++) {
+    const data = {
+      topic: topic_selected[i],
+      mask_setting: current_cfg["setting"][i + 1],
+      host: {
+        survey: question_data["host"][i],
+        emotions: emotion_data["host"][i],
+      },
+      guest: {
+        survey: question_data["guest"][i],
+        emotions: emotion_data["guest"][i],
+      },
+    };
+    phase_result.push(data);
+  }
+  // const data = {
+  //   _id: startTime.toString(),
+  //   start_time: sessionId,
+  //   mask_setting: current_cfg["name"],
+  //   topic: topic_selected,
+  //   duration: current_cfg["setting"][0]["duration"],
+  //   host: {
+  //     question: question_data["host"],
+  //     emotion: emotion_data["host"],
+  //   },
+  //   guest: {
+  //     question: question_data["guest"],
+  //     emotion: emotion_data["guest"],
+  //   },
+  // };
   const data = {
     _id: startTime.toString(),
     start_time: sessionId,
-    mask_setting: current_cfg["name"],
-    topic: topic_selected,
-    duration: current_cfg["setting"][0]["duration"],
-    host: {
-      question: question_data["host"],
-      emotion: emotion_data["host"],
-    },
-    guest: {
-      question: question_data["guest"],
-      emotion: emotion_data["guest"],
-    },
+    phase_01: phase_result[0],
+    phase_02: phase_result[1],
+    phase_03: phase_result[2],
   };
   topic_selected = [];
   emotion_ready = { host: false, guest: false };

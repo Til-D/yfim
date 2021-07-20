@@ -313,7 +313,7 @@ class MediaBridge extends Component {
         } else if (!this.state.survey_in_progress & (time_left >= 0)) {
           this.setState({
             ...this.state,
-            sessionId: sessionId,
+            sessionId: startTime,
             process: true,
             recording: record_by_user[this.state.user],
             time_slot: this.state.time_slot + 1,

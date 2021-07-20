@@ -15,6 +15,7 @@ function SurveyPage(props) {
   const [faceOn, setFaceOn] = useState(false);
   const [ready, setReady] = useState(false);
   const [stage, setStage] = useState(1);
+  const [final_stage, setFinalStage] = useState(false);
   const { room, user } = props.match.params;
   const [answer, setAnswer] = useState([]);
   const [socket_s, setSocket] = useState();
@@ -33,8 +34,14 @@ function SurveyPage(props) {
     });
     socket.on("survey-start", (data) => {
       const { stage } = data;
+
+      if (stage == 3 || stage == 4) {
+        setSurveyOn(true);
+        setFinalStage(true);
+      } else {
+        setSurveyOn(true);
+      }
       setStage(stage + 1);
-      setSurveyOn(true);
     });
     socket.on("face-detected", () => {
       console.log("face detected");
@@ -73,6 +80,7 @@ function SurveyPage(props) {
   function resetParams() {
     setStage(1);
     setSurveyOn(false);
+    setFinalStage(false);
     setFaceOn(false);
     setProcess(false);
     setReady(false);
@@ -96,6 +104,7 @@ function SurveyPage(props) {
     //   callback function
 
     setSurveyOn(false);
+    setFinalStage(false);
     socket_s.emit("survey-end", {
       room,
       user,
@@ -127,14 +136,14 @@ function SurveyPage(props) {
       {process && !surveyOn && <SurveyOngoing stage={stage} />}
       {loading && <SurveyThankyou />}
 
-      {surveyOn && stage != 4 && (
+      {surveyOn && !final_stage && (
         <Survey.Survey
           model={model}
           isExpanded={true}
           onComplete={sendDataToServer}
         />
       )}
-      {surveyOn && stage == 4 && (
+      {surveyOn && final_stage && (
         <Survey.Survey
           model={final_model}
           isExpanded={true}
