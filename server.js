@@ -99,19 +99,8 @@ function generateId(stime) {
   let hours = stime.getHours();
   let minutes = stime.getMinutes();
   let seconds = stime.getSeconds();
-  let datestr = "";
-  datestr +=
-    year +
-    "/" +
-    month +
-    "/" +
-    day +
-    "/" +
-    hours +
-    "/" +
-    minutes +
-    "/" +
-    seconds;
+  let datestr = year * 10000 + month * 100 + day;
+
   // datestr += year + "/" + month + "/" + day;
   // let timestr = "";
   // timestr += hours + "/" + minutes + "/" + seconds;
@@ -119,7 +108,7 @@ function generateId(stime) {
   //   dateId: datestr,
   //   timeId: timestr,
   // };
-  const sid = datestr;
+  const sid = datestr.toString();
   sessionId = sid;
   return sid;
 }
@@ -375,7 +364,7 @@ io.sockets.on("connection", (socket) => {
     survey_socket[user] = socket;
   });
   socket.on("data-connect", () => {
-    db.view("test", "test", function (err, data) {
+    db.view("search", "all", function (err, data) {
       const len = data.rows.length;
       console.log(data.rows, len);
       socket.emit("data-retrieve", data.rows);

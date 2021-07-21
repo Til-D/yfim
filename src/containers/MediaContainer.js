@@ -287,7 +287,7 @@ class MediaBridge extends Component {
   onProcessStart(data) {
     const { startTime, duration, record_by_user, sessionId } = data;
     console.log("set intro invisible");
-    console.log("process start", startTime, duration);
+    console.log("process start", startTime, duration, sessionId);
     console.log("record", record_by_user, record_by_user[this.state.user]);
     if (!this.state.process) {
       //init
