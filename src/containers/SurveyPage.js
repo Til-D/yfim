@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
-import { surveyJSON } from "./Survey_JSON";
-import { survey_Final } from "./Survey_Final";
+import { surveyJSON } from "../components/Survey_JSON";
+import { survey_Final } from "../components/Survey_Final";
 import * as Survey from "survey-react";
 import "survey-react/survey.css";
-import SurveyIntro from "./SurveyIntro";
-import SurveyFaceDetect from "./SurveyFaceDetect";
-import SurveyOngoing from "./SurveyOngoing";
-import SurveyReady from "./SurveyReady";
-import SurveyThankyou from "./SurveyThankyou";
+import SurveyIntro from "../components/SurveyIntro";
+import SurveyFaceDetect from "../components/SurveyFaceDetect";
+import SurveyOngoing from "../components/SurveyOngoing";
+import SurveyReady from "../components/SurveyReady";
+import SurveyThankyou from "../components/SurveyThankyou";
 
 function SurveyPage(props) {
   const [surveyOn, setSurveyOn] = useState(false);

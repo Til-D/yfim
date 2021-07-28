@@ -7,7 +7,7 @@ import Home from "./containers/HomePage";
 import Room from "./containers/RoomPage";
 import DashBoard from "./containers/DashBoard";
 import RoomControl from "./containers/RoomControl";
-import SurveyPage from "./components/SurveyPage";
+import SurveyPage from "./containers/SurveyPage";
 import NotFound from "./components/NotFound";
 import DataMonitor from "./containers/DataMonitor";
 

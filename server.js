@@ -280,12 +280,19 @@ async function storeData(room) {
   //     emotion: emotion_data["guest"],
   //   },
   // };
+  const audio = {
+    host: record_by_user["host"] ? startTime.toString() + "_host.webm" : "none",
+    guest: record_by_user["guest"]
+      ? startTime.toString() + "_guest.webm"
+      : "none",
+  };
   const data = {
     _id: startTime.toString(),
     start_time: sessionId,
     phase_01: phase_result[0],
     phase_02: phase_result[1],
     phase_03: phase_result[2],
+    audio: audio,
   };
   topic_selected = [];
   emotion_ready = { host: false, guest: false };
@@ -297,6 +304,10 @@ async function storeData(room) {
   question_data = {
     host: {},
     guest: {},
+  };
+  record_by_user = {
+    host: false,
+    guest: false,
   };
   console.log(data);
   io.in(room).emit("upload-finish", results);
@@ -456,10 +467,6 @@ io.sockets.on("connection", (socket) => {
           });
           io.to("survey-" + room).emit("process-start");
           ready_user_by_room[room] = {
-            host: false,
-            guest: false,
-          };
-          record_by_user = {
             host: false,
             guest: false,
           };
