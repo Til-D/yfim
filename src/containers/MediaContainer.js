@@ -413,11 +413,15 @@ class MediaBridge extends Component {
     let correct_count = 0;
     console.log("upload, ", data);
     for (let i = 0; i < 3; i++) {
-      if (
-        your_answers[i]["result"]["question2"] ==
-        partner_answers[i]["result"]["question1"]
-      ) {
-        correct_count += 1;
+      try {
+        if (
+          your_answers[i]["result"]["question2"] ==
+          partner_answers[i]["result"]["question1"]
+        ) {
+          correct_count += 1;
+        }
+      } catch (err) {
+        console.log("someone not pick one option");
       }
     }
     const survey_accuracy = `In the conversation, you made ${correct_count} over 3 correct guess `;
