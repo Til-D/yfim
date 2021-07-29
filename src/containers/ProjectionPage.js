@@ -13,6 +13,8 @@ const v_white =
 
 const video_set = [v_white, v_green, v_yellow, v_red];
 
+// io connect, reset process stop, update when stage change
+
 export default function ProjectionPage(props) {
   const [videoid, setVideoid] = useState(0);
 

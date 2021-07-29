@@ -69,10 +69,6 @@ class MediaBridge extends Component {
       visible: false,
       ready: false,
       loading: false,
-      topic: {
-        content: "Welcome, please have a seat",
-        visible: false,
-      },
       intro: {
         visible: false,
         content: introduction,
@@ -146,8 +142,11 @@ class MediaBridge extends Component {
     this.props.socket.on("control", this.onControl);
     this.props.socket.on("recording", this.startRecording);
     this.remoteVideo.addEventListener("play", () => {
+      // start detect remote's face and process
       this.showEmotion();
     });
+
+    // audio recorder initialize
     this.localVideo.addEventListener("play", () => {
       let audio_track = this.localStream.getAudioTracks()[0];
       let audio_stream = new MediaStream();
@@ -158,12 +157,12 @@ class MediaBridge extends Component {
       this.chunks = [];
       // listen for data from media recorder
       this.mediaRecorder.ondataavailable = (e) => {
+        // not record audio during survey
         if (e.data && e.data.size > 0 && !this.state.survey_in_progress) {
           this.chunks.push(e.data);
         }
       };
     });
-    //Canvas
   }
   componentWillUnmount() {
     this.props.media(null);
@@ -174,9 +173,11 @@ class MediaBridge extends Component {
     this.props.socket.emit("leave");
     clearInterval(this.timmer);
   }
+
   async showEmotion() {
     this.detections = this.detectFace();
   }
+  // load faceapi models for detection
   async loadModel() {
     const MODEL_URL = "/models";
     await faceapi.loadTinyFaceDetectorModel(MODEL_URL);
@@ -186,6 +187,8 @@ class MediaBridge extends Component {
   }
 
   // survey progress control
+  // 1. calculate finish time, for clock display
+  // 2. update face mask setting and topic
   onSurveyEnd(data) {
     const { duration, stage } = data;
     this.survey_count += 1;
@@ -254,6 +257,8 @@ class MediaBridge extends Component {
 
     console.log("survey-end", data, this.endTime);
   }
+
+  // update sidebar prompt when survey start
   onSurveyStart() {
     this.setState({
       ...this.state,
@@ -284,6 +289,11 @@ class MediaBridge extends Component {
     console.log("on ready set state");
     this.setState({ ...this.state });
   }
+
+  // accept start time, sync time same with server
+  // 1. initilize emotion data variables, endtime(for clock)
+  // 2. set up interval that count down the clock
+
   onProcessStart(data) {
     const { startTime, duration, record_by_user, sessionId } = data;
     console.log("set intro invisible");
@@ -302,6 +312,8 @@ class MediaBridge extends Component {
       console.log("process start counting");
       this.process_duration = duration;
       this.endTime = startTime + 1000 * 31;
+
+      // set interval
       this.timmer = setInterval(() => {
         let nowTime = new Date().getTime();
         let time_left;
@@ -328,9 +340,11 @@ class MediaBridge extends Component {
       });
     }
   }
+
   onReset() {
     this.props.socket.emit("reset", { room: this.props.room });
   }
+  // reset all parameters when process stop
   onProcessStop(data) {
     const { accident_stop } = data;
     if (this.state.recording) {
@@ -387,6 +401,8 @@ class MediaBridge extends Component {
       this.emo_result = [];
     }
   }
+
+  // get data from server, show results for users
   onUploadingFinish(data) {
     let partner = "host";
     if (this.state.user == "host") {
@@ -411,6 +427,8 @@ class MediaBridge extends Component {
     });
   }
 
+  // update mask and topic and clock time for new stage, triggerred by server socket message
+  //
   onStageControl(data) {
     if (this.state.stage != 0) {
       console.log(this.state);
@@ -454,6 +472,8 @@ class MediaBridge extends Component {
       },
     });
   }
+
+  // get setting and control(mask) data at the beginning of process
   onControl(control_data) {
     const { user, controlData } = control_data;
     if (user == this.state.user) {
@@ -481,6 +501,7 @@ class MediaBridge extends Component {
     }
   }
 
+  // if losing promote user's face, send socket message to server
   onFaceDetect() {
     console.log("face detected");
     let user;
@@ -494,6 +515,8 @@ class MediaBridge extends Component {
       user,
     });
   }
+
+  // face detected event listener
   onFace(data) {
     if (this.state.user == data && !this.state.process) {
       this.setState({
@@ -506,6 +529,8 @@ class MediaBridge extends Component {
       });
     }
   }
+
+  // audio recording
 
   startRecording() {
     // e.preventDefault();
@@ -542,6 +567,10 @@ class MediaBridge extends Component {
     // this.setState({ videos });
   }
 
+  // main function for chat room
+  // 1. faceapi doc: https://justadudewhohacks.github.io/face-api.js/docs/index.html
+  // 2. create canvas based on remote video size
+  // 3.
   detectFace() {
     const canvasTmp = faceapi.createCanvasFromMedia(this.remoteVideo);
     const canvasTmp2 = faceapi.createCanvasFromMedia(this.localVideo);
@@ -764,7 +793,9 @@ class MediaBridge extends Component {
   sendData(msg) {
     this.dc.send(JSON.stringify(msg));
   }
+
   // Set up the data channel message handler
+  // transfer data from peers
   setupDataHandlers() {
     this.dc.onmessage = (e) => {
       var msg = JSON.parse(e.data);
@@ -893,6 +924,7 @@ class MediaBridge extends Component {
       this.props.getUserMedia.then(attachMediaIfReady);
     }
   }
+  // components: SideBar, Clock, GYModal(popup window, loseface attention), Introduction, Introduction when face detected, Thankyou, local and remote video
   render() {
     return (
       <div className={`media-bridge ${this.state.bridge}`}>

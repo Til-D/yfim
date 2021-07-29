@@ -10,6 +10,8 @@ import SurveyOngoing from "../components/SurveyOngoing";
 import SurveyReady from "../components/SurveyReady";
 import SurveyThankyou from "../components/SurveyThankyou";
 
+// survey-react : https://www.npmjs.com/package/survey-react
+
 function SurveyPage(props) {
   const [surveyOn, setSurveyOn] = useState(false);
   const [faceOn, setFaceOn] = useState(false);
@@ -22,6 +24,7 @@ function SurveyPage(props) {
   const [process, setProcess] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // socket event, room-idle, survey start and ending, process start and stop
   useEffect(() => {
     const socket = io.connect();
     socket.emit("survey-connect", {

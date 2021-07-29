@@ -5,7 +5,6 @@ import store from "./store";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import Home from "./containers/HomePage";
 import Room from "./containers/RoomPage";
-import DashBoard from "./containers/DashBoard";
 import RoomControl from "./containers/RoomControl";
 import SurveyPage from "./containers/SurveyPage";
 import NotFound from "./components/NotFound";
@@ -36,13 +35,3 @@ render(
 );
 
 if (module.hot) module.hot.accept();
-
-// DashBoard:{
-//   RoomControl,
-//   xxx...
-// }
-// RoomControl:{
-//   Survey,
-//   Compete,
-//   xxx...
-// }

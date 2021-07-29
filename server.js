@@ -312,7 +312,6 @@ async function storeData(room) {
   console.log(data);
   io.in(room).emit("upload-finish", results);
   const response = await db.insert(data);
-  console.log("restore", response);
 }
 
 io.sockets.on("connection", (socket) => {

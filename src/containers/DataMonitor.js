@@ -6,6 +6,9 @@ var headers = new Headers();
 
 headers.append("Authorization", "Basic " + btoa("admin:admin"));
 
+// as database port is not open in the MRC instance, query data from server
+// use ReactJson to show data in Json format
+
 export default function (props) {
   const [result, setResult] = useState();
   const [data_show, setData_show] = useState();
@@ -18,16 +21,6 @@ export default function (props) {
       const len = data.length;
       setData_show(data[len - 1]);
     });
-    // fetch("http://localhost:5984/occlusion_mask/_design/test/_view/test", {
-    //   headers: headers,
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     const len = data.rows.length;
-    //     console.log(data.rows, len);
-    //     setResult(data.rows);
-    //     setData_show(data.rows[len - 1]);
-    //   });
   }, []);
   return (
     <div style={{ padding: "15px" }}>

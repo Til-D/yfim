@@ -18,6 +18,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// Control page for administrators, deprecated now
+
 export default function ControlPage(props) {
   const room = props.match.params.room;
   const socket = io.connect();

@@ -3,6 +3,8 @@ import { PropTypes } from "prop-types";
 import { Link } from "react-router-dom";
 import ToggleFullScreen from "./ToggleFullScreen";
 
+// deprecated now
+// Button for media controls, exit, mute, etc
 const Communication = (props) => (
   <div className="auth">
     <div className="media-controls">
