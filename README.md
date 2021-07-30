@@ -15,11 +15,41 @@ npm start or yarn start
 
 ```
 
+Start the server
+
+```bash
+nohup yarn start &
+```
+
+You can find all the output in the nohup.out file
+
+ssl files: (public and private key)
+at the first time to start the server, you need to copy and rename the valid public and private key into the repo directory
+cp /etc/letsencrypt/live/www.happychat.tech/fullchain.pem ./rtc-video-room-cert.pem
+cp /etc/letsencrypt/live/www.happychat.tech/privkey.pem ./rtc-video-room-key.pem
+
+nginx: just for reverse proxy as server only open 80, 443 port outside
+config file: /etc/nginx/sites-available/default
+
+remember to restart nginx when you change the setting by using
+
 The app can be accessed at:
 
 ```bash
 https://localhost:3000
 ```
+
+## Development
+
+the website user see is in the dist/index.html, it have a main.js, which will be updated by webpack when we updates the code in src/
+
+change files in the src/ directory when you need to change html or js or css, before you start, run the following command
+
+```bash
+yarn run watch
+```
+
+save your change and wait, it will take some time to pack the change and update the main.js
 
 ## Structure
 
