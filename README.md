@@ -106,6 +106,16 @@ For each stage emotion:
 }
 ```
 
+## Code Structure
+
+The three main screens are managed as follows
+
+- Main video screen: (MediaContainer.js)[src/containers/MediaContainer.js]
+- Survey screen: (SurveyPage.js)[src/containers/SurveyPage.js]
+- Projection screen: (ProjectionPage.js)[src/containers/ProjectionPage.js]
+
+Main app flow and modules are managed by the (MediaContainer.js)[src/containers/MediaContainer.js] file.
+
 ## Demo
 
 https://www.happychat.tech
