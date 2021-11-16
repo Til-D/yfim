@@ -610,6 +610,9 @@ class MediaBridge extends Component {
               lose_face_f = false;
             }
           } catch (err) {
+            
+            console.log(err);
+
             if (this.state.survey_in_progress) {
               this.losingface += 0.5;
             } else {
