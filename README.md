@@ -164,4 +164,4 @@ https://www.happychat.tech
 - [Tilman Dingler](https://github.com/Til-D/)
 
 
-Release under The MIT License (MIT), copyright: Tilman Dingler, 2017
+Release under The MIT License (MIT), copyright: Tilman Dingler, 2021
