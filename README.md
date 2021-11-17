@@ -162,6 +162,8 @@ https://www.happychat.tech
 # Authors
 - Hao Huang
 - [Tilman Dingler](https://github.com/Til-D/)
+- Zhanna Sarsenbayeva
+- Weiwei Jiang
 
 
 Release under The MIT License (MIT), copyright: Tilman Dingler, 2021
