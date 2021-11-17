@@ -158,3 +158,10 @@ https://www.happychat.tech
 # Ideas
 
 - at the end of the experience, display how accurate participants were able to guess their partner's emotion throughout the experience (i.e., guessed emotion vs. self-reported ground truth)
+
+# Authors
+- Hao Huang
+- [Tilman Dingler](https://github.com/Til-D/)
+
+
+Release under The MIT License (MIT), copyright: Tilman Dingler, 2017
