@@ -7,20 +7,27 @@ const sio = require("socket.io");
 const favicon = require("serve-favicon");
 const compression = require("compression");
 const bodyParser = require("body-parser");
-const nano = require("nano")("http://admin:admin@localhost:5984");
+require('dotenv').config();
+// const nano = require("nano")("http://admin:admin@localhost:5984");
 
 // authenticate
 
 const tableName = "occlusion_mask";
 
-const db = nano.db.use(tableName);
-
-// async function asyncCall() {
-//   const survey_db = nano.db.use("survey");
-//   const response = await survey_db.insert({ happy: true }, "rabbit");
-//   return response;
-// }
-// asyncCall();
+// const db = nano.db.use(tableName);
+const nano = require('nano')(process.env.COUCHDB_URL);
+var couch;
+nano.db.create(process.env.DB_NAME).then((data) => {
+  // success - response is in 'data'
+  console.log('New database created: ' + process.env.DB_NAME);
+  couch = nano.use(process.env.DB_NAME);
+  app.set('couch', couch);
+}).catch((err) => {
+  // failure - error information is in 'err'
+  console.log('Connected to existing database: ' + process.env.DB_NAME);
+  couch = nano.use(process.env.DB_NAME);
+  app.set('couch', couch);
+})
 
 const app = express(),
   options = {
@@ -33,6 +40,8 @@ const app = express(),
       ? http.createServer(app).listen(port)
       : https.createServer(options, app).listen(port),
   io = sio(server);
+
+console.log("starting server on port: " + port);
 
 app.use(function (req, res, next) {
   req.io = io;

@@ -7,4 +7,15 @@
 
 ./vscode
 
-./.DS_Store
+# Mac stuff
+.DS_Store
+
+# Environment variables
+.env
+.env_server
+
+# Logs
+nohup.out
+
+# Misc
+package-lock.json

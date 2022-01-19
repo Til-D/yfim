@@ -175,15 +175,31 @@ class MediaBridge extends Component {
   }
 
   async showEmotion() {
+    console.log('++ showEmotion(): start face detection');
     this.detections = this.detectFace();
   }
   // load faceapi models for detection
   async loadModel() {
+    console.log("++ loading model");
     const MODEL_URL = "/models";
-    await faceapi.loadTinyFaceDetectorModel(MODEL_URL);
-    await faceapi.loadFaceLandmarkModel(MODEL_URL);
-    await faceapi.loadFaceRecognitionModel(MODEL_URL);
-    await faceapi.loadFaceExpressionModel(MODEL_URL);
+    const tinyFaceDetectorModel = await faceapi.loadTinyFaceDetectorModel(MODEL_URL);
+    const faceLandmarkModel = await faceapi.loadFaceLandmarkModel(MODEL_URL);
+    const faceRecognitionModel = await faceapi.loadFaceRecognitionModel(MODEL_URL);
+    const faceExpressionModel = await faceapi.loadFaceExpressionModel(MODEL_URL);
+
+    // console.log(faceapi.nets);
+
+    // console.log("+ tinyFaceDetectorModel loaded:");
+    // console.log(tinyFaceDetectorModel);
+
+    // console.log("+ faceLandmarkModel loaded:");
+    // console.log(faceLandmarkModel);
+
+    // console.log("+ faceRecognitionModel loaded:");
+    // console.log(faceRecognitionModel);
+
+    // console.log("+ faceExpressionModel loaded:");
+    // console.log(faceExpressionModel);
   }
 
   // survey progress control
@@ -365,7 +381,7 @@ class MediaBridge extends Component {
       loading: false,
       ready: false,
       topic: {
-        content: "Welcome, please have a seat",
+        content: "Welcome! Please have a seat.",
         visible: false,
       },
       intro: {
@@ -507,10 +523,11 @@ class MediaBridge extends Component {
 
   // if losing promote user's face, send socket message to server
   onFaceDetect() {
-    console.log("face detected");
+    console.log("+ Face detected");
+    // console.log(faceapi.nets);
     let user;
     if (this.state.user == "guest") {
-      user = "host";
+      user = "host"; //why?
     } else {
       user = "guest";
     }
@@ -522,6 +539,9 @@ class MediaBridge extends Component {
 
   // face detected event listener
   onFace(data) {
+
+    console.log('- onFace()');
+
     if (this.state.user == data && !this.state.process) {
       this.setState({
         ...this.state,
@@ -589,84 +609,101 @@ class MediaBridge extends Component {
     return new Promise(
       function (resolve) {
         let lose_face_f = false;
-        setInterval(async () => {
-          this.detections = await faceapi
-            .detectSingleFace(
-              this.remoteVideo,
-              new faceapi.TinyFaceDetectorOptions()
-            )
-            .withFaceLandmarks()
-            .withFaceExpressions();
-          // console.log("detections", this.detections);
-          let utc = new Date().getTime();
-          try {
-            this.faceAttributes = getFeatureAttributes(this.detections);
-            if (!this.state.process) {
-              this.onFaceDetect();
-            }
-            this.losingface = 0;
-            if (lose_face_f) {
-              this.sendData("recover");
-              lose_face_f = false;
-            }
-          } catch (err) {
-            
-            console.log(err);
 
-            if (this.state.survey_in_progress) {
-              this.losingface += 0.5;
-            } else {
-              this.losingface += 1;
-            }
-            this.losingface %= 22;
-            if (this.losingface >= 10 && this.losingface < 20) {
-              if (this.state.process) {
-                // Restart whole process
-                if (!lose_face_f) {
-                  lose_face_f = true;
-                  this.sendData("lose-face");
-                }
+        this.faceDetectionInProgress = false;
+
+        // PROBLEM: every second this gets put into a cue while await faceapi.detectSingleFace takes >1 sec to produce result
+        setInterval(async () => {
+          
+          if(!this.faceDetectionInProgress) {  
+
+            console.log("Triggering face detection..");
+            this.faceDetectionInProgress = true;
+
+            this.detections = await faceapi
+              .detectSingleFace(
+                this.remoteVideo,
+                new faceapi.TinyFaceDetectorOptions()
+              )
+              .withFaceLandmarks()
+              .withFaceExpressions();
+            // console.log("detections", this.detections);
+            let utc = new Date().getTime();
+            try {
+              this.faceAttributes = getFeatureAttributes(this.detections);
+              if (!this.state.process) {
+                this.onFaceDetect();
+              }
+              this.losingface = 0;
+              if (lose_face_f) {
+                this.sendData("recover");
+                lose_face_f = false;
+              }
+            } catch (err) {
+              
+              // console.log(err);
+
+              if (this.state.survey_in_progress) {
+                this.losingface += 0.5;
               } else {
-                if (!lose_face_f) {
-                  lose_face_f = true;
-                  this.sendData("room-idle");
+                this.losingface += 1;
+              }
+              this.losingface %= 22; // why?
+              if (this.losingface >= 10 && this.losingface < 20) {
+                if (this.state.process) {
+                  // Restart whole process
+                  if (!lose_face_f) {
+                    lose_face_f = true;
+                    this.sendData("lose-face");
+                  }
+                } else {
+                  if (!lose_face_f) {
+                    lose_face_f = true;
+                    this.sendData("room-idle");
+                  }
                 }
+
+                console.log("WARNING: Lost face tracking for more than 10 secs.");
+              }
+              if (this.losingface >= 20 && this.state.process) {
+                // Restart whole process
+                this.onReset();
+                console.log("WARNING: Your partner seems to have left.");
+              }
+              if (
+                this.losingface >= 20 &&
+                !this.state.process &&
+                !this.state.ready
+              ) {
+                // Restart whole process
+                this.props.socket.emit("room-idle", { room: this.props.room });
+                console.log("The room seems to be idle.");
               }
 
-              console.log("losing face for more than 10 secs");
-            }
-            if (this.losingface >= 20 && this.state.process) {
-              // Restart whole process
-              this.onReset();
-              console.log("You partner seems to leave");
-            }
-            if (
-              this.losingface >= 20 &&
-              !this.state.process &&
-              !this.state.ready
-            ) {
-              // Restart whole process
-              this.props.socket.emit("room-idle", { room: this.props.room });
-              console.log("You partner seems to leave");
+              console.log("WARNING: Can't detect face on remote side", this.losingface);
             }
 
-            console.log("Can't detect face on remote side", this.losingface);
+            if (this.state.process && !this.state.survey_in_progress) {
+              try {
+                const emo_data = {
+                  timeStamp: utc,
+                  time_slot: this.state.time_slot,
+                  emotion: this.detections.expressions,
+                };
+                this.record.record_detail.push(emo_data);
+                this.record.record_count += 1;
+              } catch (err) {}
+            }
+
+            if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
+            else this.drawCanvas(false);
+
+            // console.log('setting detection in progress to false');
+            this.faceDetectionInProgress = false;
+
+          } else {
+          console.log('-- skipped. Face detection in progress');
           }
-
-          if (this.state.process && !this.state.survey_in_progress) {
-            try {
-              const emo_data = {
-                timeStamp: utc,
-                time_slot: this.state.time_slot,
-                emotion: this.detections.expressions,
-              };
-              this.record.record_detail.push(emo_data);
-              this.record.record_count += 1;
-            } catch (err) {}
-          }
-
-          if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
-          else this.drawCanvas(false);
         }, 1000);
       }.bind(this)
     );
