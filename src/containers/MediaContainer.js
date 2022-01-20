@@ -13,8 +13,11 @@ import Thankyou from "../components/Thankyou";
 import SideBar from "../components/SideBar";
 var FileSaver = require("file-saver");
 
+const RECORD_AUDIO = false;
+const RECORD_VIDEO = false;
+
 const introduction =
-  "Welcome to Your Face is Muted! This experience consists of three stages. For each one, the screen in front of you will show a prompt with a topic to discuss with your conversation partner.\
+  "Welcome to `Your Face is Muted`! This experience consists of three stages. In each, the screen in front of you will show a prompt with a topic to discuss with your conversation partner.\
 Throughout the discussion, different parts of your face will be obfuscated. The iPad next to you will occasionally prompt you with questions about you and your partner's current emotion. Let's see how accurate you can read how they feel! \
 Sounds good? \
 Then click the start button on the iPad and converse away!";
@@ -311,6 +314,9 @@ class MediaBridge extends Component {
   // 2. set up interval that count down the clock
 
   onProcessStart(data) {
+
+    // hier weitermachen: find the main screen and figure out why it's not triggered by this
+
     const { startTime, duration, record_by_user, sessionId } = data;
     console.log("set intro invisible");
     console.log("process start", startTime, duration, sessionId);
@@ -450,6 +456,9 @@ class MediaBridge extends Component {
   // update mask and topic and clock time for new stage, triggerred by server socket message
   //
   onStageControl(data) {
+
+    console.log('- onStageControl()', data);
+
     if (this.state.stage != 0) {
       console.log(this.state);
       this.emo_result.push(this.record.record_detail);
@@ -558,37 +567,48 @@ class MediaBridge extends Component {
 
   startRecording() {
     // e.preventDefault();
-    // wipe old data chunks
-    this.chunks = [];
-    // start recorder with 10ms buffer
-    this.mediaRecorder.start(10);
-    // say that we're recording
-    this.setState({ recording: true });
+    if(RECORD_AUDIO) {
+      // wipe old data chunks
+      this.chunks = [];
+      // start recorder with 10ms buffer
+      this.mediaRecorder.start(10);
+      // say that we're recording
+      this.setState({ recording: true });
+    } else {
+      console.log("- AUDIO RECORDING IS DISABLED");
+      this.setState({ recording: false });
+    }
   }
 
   stopRecording(accident_stop) {
     // e.preventDefault();
-    console.log("stopping recording");
-    // stop the recorder
-    this.mediaRecorder.stop();
-    // say that we're not recording
-    this.setState({ recording: false });
-    // save the video to memory
-    if (!accident_stop) {
-      this.saveVideo();
+    if(RECORD_AUDIO) {
+      console.log("stopping recording");
+      // stop the recorder
+      this.mediaRecorder.stop();
+      // say that we're not recording
+      this.setState({ recording: false });
+      // save the video to memory
+      if (!accident_stop) {
+        this.saveVideo();
+      }
     }
   }
 
   saveVideo() {
-    // convert saved chunks to blob
-    const blob = new Blob(this.chunks, { type: "video/webm" });
-    // generate video url from blob
-    // const videoURL = window.URL.createObjectURL(blob);
-    // append videoURL to list of saved videos for rendering
-    let filename = this.state.sessionId + "_" + this.state.user;
-    FileSaver.saveAs(blob, filename);
-    // const videos = this.state.videos.concat([videoURL]);
-    // this.setState({ videos });
+    if(RECORD_VIDEO) {
+      // convert saved chunks to blob
+      const blob = new Blob(this.chunks, { type: "video/webm" });
+      // generate video url from blob
+      // const videoURL = window.URL.createObjectURL(blob);
+      // append videoURL to list of saved videos for rendering
+      let filename = this.state.sessionId + "_" + this.state.user;
+      FileSaver.saveAs(blob, filename);
+      // const videos = this.state.videos.concat([videoURL]);
+      // this.setState({ videos });
+    } else {
+      console.log("- VIDEO RECORDING IS DISABLED");
+    }
   }
 
   // main function for chat room
@@ -903,69 +923,73 @@ class MediaBridge extends Component {
     this.record.record_count = 0;
   }
   init() {
-    // wait for local media to be ready
-    const attachMediaIfReady = () => {
-      this.dc = this.pc.createDataChannel("chat");
-      this.setupDataHandlers();
-      console.log("attachMediaIfReady");
-      this.pc
-        .createOffer()
-        .then(this.setDescription)
-        .then(this.sendDescription)
-        .catch(this.handleError); // An error occurred, so handle the failure to connect
-    };
-    // set up the peer connection
-    // this is one of Google's public STUN servers
-    // make sure your offer/answer role does not change. If user A does a SLD
-    // with type=offer initially, it must do that during  the whole session
-    this.pc = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: "turn:139.180.183.4:3478",
-          username: "hao",
-          credential: "158131hh2232A",
-        },
-        {
-          urls: "stun:stun.l.google.com:19302",
-        },
-      ],
-    });
-    // when our browser gets a candidate, send it to the peer
-    this.pc.onicecandidate = (e) => {
-      console.log(e, "onicecandidate");
-      if (e.candidate) {
-        this.props.socket.send({
-          type: "candidate",
-          candidate: e.candidate,
-        });
-      }
-    };
-    // when the other side added a media stream, show it on screen
-    this.pc.onaddstream = (e) => {
-      console.log("onaddstream", e);
-      this.remoteStream = e.stream;
-      this.remoteVideo.srcObject = this.remoteStream = e.stream;
-      this.setState({ ...this.state, bridge: "established" });
-    };
-    this.pc.ondatachannel = (e) => {
-      // data channel
-      this.dc = e.channel;
-      this.setupDataHandlers();
-      this.sendData({
-        peerMediaStream: {
-          video: this.localStream.getVideoTracks()[0].enabled,
-        },
+    try {
+      // wait for local media to be ready
+      const attachMediaIfReady = () => {
+        this.dc = this.pc.createDataChannel("chat");
+        this.setupDataHandlers();
+        console.log("attachMediaIfReady");
+        this.pc
+          .createOffer()
+          .then(this.setDescription)
+          .then(this.sendDescription)
+          .catch(this.handleError); // An error occurred, so handle the failure to connect
+      };
+      // set up the peer connection
+      // this is one of Google's public STUN servers
+      // make sure your offer/answer role does not change. If user A does a SLD
+      // with type=offer initially, it must do that during  the whole session
+      this.pc = new RTCPeerConnection({
+        iceServers: [
+          {
+            urls: "turn:139.180.183.4:3478",
+            username: "hao",
+            credential: "158131hh2232A",
+          },
+          {
+            urls: "stun:stun.l.google.com:19302",
+          },
+        ],
       });
-      //sendData('hello');
-    };
-    // attach local media to the peer connection
-    this.localStream
-      .getTracks()
-      .forEach((track) => this.pc.addTrack(track, this.localStream));
-    // call if we were the last to connect (to increase
-    // chances that everything is set up properly at both ends)
-    if (this.state.user === "host") {
-      this.props.getUserMedia.then(attachMediaIfReady);
+      // when our browser gets a candidate, send it to the peer
+      this.pc.onicecandidate = (e) => {
+        // console.log(e, "onicecandidate");
+        if (e.candidate) {
+          this.props.socket.send({
+            type: "candidate",
+            candidate: e.candidate,
+          });
+        }
+      };
+      // when the other side added a media stream, show it on screen
+      this.pc.onaddstream = (e) => {
+        console.log("onaddstream", e);
+        this.remoteStream = e.stream;
+        this.remoteVideo.srcObject = this.remoteStream = e.stream;
+        this.setState({ ...this.state, bridge: "established" });
+      };
+      this.pc.ondatachannel = (e) => {
+        // data channel
+        this.dc = e.channel;
+        this.setupDataHandlers();
+        this.sendData({
+          peerMediaStream: {
+            video: this.localStream.getVideoTracks()[0].enabled,
+          },
+        });
+        //sendData('hello');
+      };
+      // attach local media to the peer connection
+      this.localStream
+        .getTracks()
+        .forEach((track) => this.pc.addTrack(track, this.localStream));
+      // call if we were the last to connect (to increase
+      // chances that everything is set up properly at both ends)
+      if (this.state.user === "host") {
+        this.props.getUserMedia.then(attachMediaIfReady);
+      }
+    } catch (error) {
+      console.log('ERROR: Could not init WebRTC', error);
     }
   }
   // components: SideBar, Clock, GYModal(popup window, loseface attention), Introduction, Introduction when face detected, Thankyou, local and remote video

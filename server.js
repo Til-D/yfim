@@ -8,15 +8,16 @@ const favicon = require("serve-favicon");
 const compression = require("compression");
 const bodyParser = require("body-parser");
 require('dotenv').config();
+var hash = require('object-hash');
+
+
+// CouchDB
 // const nano = require("nano")("http://admin:admin@localhost:5984");
-
-// authenticate
-
+const nano = require('nano')(process.env.COUCHDB_URL);
 const tableName = "occlusion_mask";
 
 // const db = nano.db.use(tableName);
-const nano = require('nano')(process.env.COUCHDB_URL);
-var couch;
+
 nano.db.create(process.env.DB_NAME).then((data) => {
   // success - response is in 'data'
   console.log('New database created: ' + process.env.DB_NAME);
@@ -27,7 +28,7 @@ nano.db.create(process.env.DB_NAME).then((data) => {
   console.log('Connected to existing database: ' + process.env.DB_NAME);
   couch = nano.use(process.env.DB_NAME);
   app.set('couch', couch);
-})
+});
 
 const app = express(),
   options = {
@@ -65,7 +66,7 @@ rating_by_user = {};
 projection_room_list = {};
 survey_room_list = {};
 
-survey_socket = {
+survey_socket = { //? Does the app support multiple concurring conversations in different rooms? What happens if new rooms are opened?
   guest: undefined,
   host: undefined,
 };
@@ -85,7 +86,7 @@ question_data = {
   host: {},
   guest: {},
 };
-record_by_user = {
+record_by_user = { //What's this?
   host: false,
   guest: false,
 };
@@ -93,6 +94,7 @@ record_by_user = {
 const mask_set = ["endWithEyes", "endWithMouth", "opposite"];
 
 var sessionId;
+var sessionRev;
 var startTime;
 var timmer;
 var current_cfg;
@@ -102,13 +104,13 @@ var survey_in_progress = false;
 var stage;
 
 function generateId(stime) {
-  let year = stime.getFullYear();
-  let month = stime.getMonth() + 1;
-  let day = stime.getDate();
-  let hours = stime.getHours();
-  let minutes = stime.getMinutes();
-  let seconds = stime.getSeconds();
-  let datestr = year * 10000 + month * 100 + day;
+  // let year = stime.getFullYear();
+  // let month = stime.getMonth() + 1;
+  // let day = stime.getDate();
+  // let hours = stime.getHours();
+  // let minutes = stime.getMinutes();
+  // let seconds = stime.getSeconds();
+  // let datestr = year * 10000 + month * 100 + day;
 
   // datestr += year + "/" + month + "/" + day;
   // let timestr = "";
@@ -117,13 +119,16 @@ function generateId(stime) {
   //   dateId: datestr,
   //   timeId: timestr,
   // };
-  const sid = datestr.toString();
-  sessionId = sid;
-  return sid;
+
+    // creating a hash from current timestamp and random number
+    return hash(new Date().getTime().toString() + Math.floor(Math.random() * 100000) + 1);
+    
+  // const sid = datestr.toString();
+  // sessionId = response.id;
 }
 
 function processStart(room, start_time, cfg) {
-  console.log("process start", room);
+  console.log("+ process start in room: " + room);
   console.log("config ", cfg);
   stage = 0;
   const { duration } = cfg["setting"][0];
@@ -143,6 +148,7 @@ function processStart(room, start_time, cfg) {
     let count = 0;
     // start chatting
     timmer = setInterval(() => {
+
       let nowTime = new Date().getTime();
       if (survey_in_progress) {
         let extend_time = 0;
@@ -167,8 +173,9 @@ function processStart(room, start_time, cfg) {
           let topic = icebreaker[rindex];
 
           topic_selected.push(topic);
+          console.log('- sending update to projection in room: ' + room);
           io.sockets
-            .in(room)
+            .to(room)
             .to("projection-" + room)
             .emit("stage-control", {
               mask: mask_setting,
@@ -180,6 +187,7 @@ function processStart(room, start_time, cfg) {
         //stage2
         if (stage != 2) {
           // previous stage finish, raise a survey
+          console.log('- sending survey start to room: ' + room + ' (stage: ' + stage + ')');
           io.to("survey-" + room)
             .to(room)
             .emit("survey-start", { stage: stage });
@@ -191,7 +199,8 @@ function processStart(room, start_time, cfg) {
           const rindex = Math.floor(Math.random() * wouldyou.length);
           let topic = wouldyou[rindex];
           topic_selected.push(topic);
-          io.sockets.in(room).emit("stage-control", {
+          console.log('- sending stage control to room: ' + room + ' (stage: ' + stage + ', mask: ' + mask_setting + ', topic: ' + topic + ')');
+          io.sockets.to(room).emit("stage-control", {
             mask: mask_setting,
             topic: [topic],
             stage,
@@ -200,6 +209,7 @@ function processStart(room, start_time, cfg) {
       } else if (time_left < 90 && time_left > 0) {
         //stage3
         if (stage != 3) {
+          console.log('- sending survey start to room: ' + room + ' (stage: ' + stage + ')');
           io.to("survey-" + room)
             .to(room)
             .emit("survey-start", { stage: stage });
@@ -211,8 +221,9 @@ function processStart(room, start_time, cfg) {
           const rindex = Math.floor(Math.random() * quest.length);
           let topic = quest[rindex];
           topic_selected.push(topic);
+          console.log('- sending stage control to room: ' + room + ' (stage: ' + stage + ', mask: ' + mask_setting + ', topic: ' + topic + ')');
           io.sockets
-            .in(room)
+            .to(room)
             .emit("stage-control", { mask: mask_setting, topic, stage });
         }
       }
@@ -220,6 +231,7 @@ function processStart(room, start_time, cfg) {
       if (time_left <= 0) {
         if (stage != 4) {
           stage = 4;
+          console.log('- sending survey start to room: ' + room + ' (stage: ' + stage + ')');
           io.to("survey-" + room)
             .to(room)
             .emit("survey-start", { stage: stage });
@@ -232,6 +244,9 @@ function processStart(room, start_time, cfg) {
           processStop(room, false);
         }
       }
+
+      console.log('- Second timer for room: ' + room + ', stage: ' + stage + ', time left: ' + time_left);
+
     }, 1000);
   } else {
     console.log("timmer running", typeof timmer);
@@ -319,12 +334,27 @@ async function storeData(room) {
     guest: false,
   };
   console.log(data);
-  io.in(room).emit("upload-finish", results);
-  const response = await db.insert(data);
+  io.to(room).emit("upload-finish", results);
+  const response = await db.insert(data).then((res) => {
+    console.log('+ SUCCESS: all data saved in db: ');
+    console.log(res);
+  }).catch((error) => {
+    console.log('- ERROR: could not save data in db');
+    console.log(error);
+  });
 }
 
 io.sockets.on("connection", (socket) => {
+  
+  console.log("+ new connection from a socket");
+  // console.log(socket);ç
+
   let room = "";
+
+  socket.on("disconnecting", () => {
+    console.log('- client left room: ');
+    console.log(socket.rooms);
+  });
   // sending to all clients in the room (channel) except sender
   socket.on("message", (message) =>
     socket.broadcast.to(room).emit("message", message)
@@ -332,59 +362,77 @@ io.sockets.on("connection", (socket) => {
   socket.on("find", () => {
     const url = socket.request.headers.referer.split("/");
     room = url[url.length - 1];
+
+    console.log(' - trying to locate room: ' + room);
+
     const sr = io.sockets.adapter.rooms[room];
     if (sr === undefined) {
       // no room with such name is found so create it
       socket.join(room);
       socket.emit("create");
+      console.log('+ new room created: ' + room);
     } else if (sr.length === 1) {
       socket.emit("join");
+      console.log('- room (' + room + ') exists: try to join.');
+      socket.join(room);
     } else {
       // max two clients
       socket.emit("full", room);
+      console.log('- room (' + room + ') exists but is full');
     }
   });
   socket.on("auth", (data) => {
     data.sid = socket.id;
     // sending to all clients in the room (channel) except sender
     socket.broadcast.to(room).emit("approve", data);
+    console.log('- authenticate client in room ' + room);
   });
   socket.on("accept", (id) => {
     io.sockets.connected[id].join(room);
     // sending to all clients in 'game' room(channel), include sender
-    io.in(room).emit("bridge");
+    io.to(room).emit("bridge");
+    console.log('- accept client in room ' + room);
   });
-  socket.on("reject", () => socket.emit("full"));
+  socket.on("reject", () => {
+    socket.emit("full")
+    console.log('- rejected');
+  });
 
   socket.on("leave", () => {
     // sending to all clients in the room (channel) except sender
     socket.broadcast.to(room).emit("hangup");
     socket.leave(room);
+    console.log('- client left room: ' + room);
   });
   // control room record
   socket.on("control-room", (data) => {
     const room = data.room;
     control_room_list[room] = socket;
+    console.log('- received control-room message for room: ' + room);
   });
   socket.on("room-idle", (data) => {
     const { room } = data;
     // console.log(`room ${room} is idle now`);
     io.to("survey-" + room).emit("room-idle");
+    console.log('- room idle: ' + room + ' -> initiate process stop');
     processStop(room, true);
   });
   socket.on("projection-connect", (data) => {
     const { room, user } = data;
     socket.join("projection-" + room);
     projection_socket[user] = socket;
+    console.log('+ a projection was connected in room: " ' + room + ', user: ' + user);
   });
   socket.on("survey-connect", (data) => {
     const { room, user } = data;
     socket.join("survey-" + room);
     survey_socket[user] = socket;
+    console.log('+ a survey was connected in room: ' + room + ', user: ' + user);
   });
   socket.on("data-connect", () => {
     db.view("search", "all", function (err, data) {
       const len = data.rows.length;
+      console.log('- on data-connect()');
       console.log(data.rows, len);
       socket.emit("data-retrieve", data.rows);
     });
@@ -395,10 +443,13 @@ io.sockets.on("connection", (socket) => {
     const params_room = data.room;
     socket.broadcast.to(params_room).emit("survey-start");
     socket.broadcast.to("survey-" + params_room).emit("survey-start");
+    console.log('+ send survey and room control in room: " ' + room);
   });
   socket.on("survey-end", (data) => {
     const { room, user } = data;
+    console.log('- survey was ended in room: " ' + room + ', user: ' + user);
     survey_ready[user] = true;
+    console.log('- Who`s ready? Guest: ' + survey_ready["guest"] + ', Host: ' + survey_ready["host"]);
     if (survey_ready["guest"] && survey_ready["host"]) {
       survey_in_progress = false;
       survey_ready = { host: false, guest: false };
@@ -411,18 +462,20 @@ io.sockets.on("connection", (socket) => {
         extend_time = 90;
       }
       let duration = extend_time;
-      console.log("survey-end", duration);
+      console.log("moving on: after", duration);
       io.to(room).emit("survey-end", { stage_startTime, duration, stage });
       io.to("projection-" + room).emit("stage-control", { stage });
     }
   });
   socket.on("reset", (data) => {
     const { room } = data;
+    console.log('- resetting room: ' + room);
     processStop(room, true);
   });
 
   socket.on("face-detected", (data) => {
     const { room, user } = data;
+    console.log('- face-detected received in room: ' + room + ', user: ' + user);
     if (survey_socket[user] != undefined) {
       const sid = survey_socket[user].id;
       io.to(sid).emit("face-detected");
@@ -435,12 +488,17 @@ io.sockets.on("connection", (socket) => {
     current_cfg = data.cfg;
     current_rating = data.topic;
 
+    console.log('+ process-control received: ');
+    console.log(current_cfg);
+    console.log(current_rating);
+
     socket.broadcast.to(params_room).emit("process-control");
   });
   socket.on("process-ready", (data) => {
     const { room, user, rating, record } = data;
     // socket.broadcast.to(room).emit("process-start");
-    console.log(`${user} in room ${room} is ready recording: `, record);
+    console.log(`+ ${user} in room ${room} is ready to record: `, record);
+
     if (room in ready_user_by_room) {
       ready_user_by_room[room][user] = true;
       rating_by_user[user] = rating;
@@ -450,7 +508,7 @@ io.sockets.on("connection", (socket) => {
         ready_user_by_room[room]["guest"]
       ) {
         try {
-          console.log("both ready, start the process");
+          console.log("+ both ready: start process");
           startTime = new Date().getTime();
           // processStart(room, startTime, current_cfg);
 
@@ -464,7 +522,12 @@ io.sockets.on("connection", (socket) => {
           if (rating_by_user["host"] == rating_by_user["guest"]) {
             current_rating = rating_by_user["host"];
           }
-          console.log(current_rating, rating_by_user);
+
+          console.log('- current rating:');
+          console.log(current_rating);
+          console.log('- rating by user:');
+          console.log(rating_by_user);
+
           processStart(room, startTime, current_cfg);
           const { duration } = current_cfg["setting"][0];
           io.to(room).emit("process-start", {
@@ -474,17 +537,21 @@ io.sockets.on("connection", (socket) => {
             sessionId,
           });
           io.to("survey-" + room).emit("process-start");
+
+          console.log('- resetting ready_user_by_room for next survey (?)');
           ready_user_by_room[room] = {
             host: false,
             guest: false,
           };
         } catch (err) {
-          console.log("please confirm that the admin have start the process");
+          console.log("Ooops! Something went wrong: Please confirm that the admin has started the process");
           console.log(err);
         }
 
         // socket.broadcast.to(room).emit("process-start");
         // socket.emit("process-start");
+      } else {
+        console.log('- not all users ready yet');
       }
     } else {
       ready_user_by_room[room] = {
@@ -495,21 +562,39 @@ io.sockets.on("connection", (socket) => {
       rating_by_user[user] = rating;
       record_by_user[user] = record;
     }
+    console.log('- ready_user_by_room:');
+    console.log(ready_user_by_room);
+
+    console.log('- rating_by_user:');
+    console.log(rating_by_user);
+
+    console.log('- record_by_user:');
+    console.log(record_by_user);
   });
   socket.on("process-in-progress", (data) => {
+
+    console.log('- process-in-progress');
     console.log(data);
+
     const params_room = data.room;
     control_socket = control_room_list[params_room];
     control_socket.emit("process-in-progress", { time_diff: data.time_diff });
   });
   socket.on("process-stop", (data) => {
+
+    console.log('- process-stop');
+    console.log(data);
+
     const params_room = data.room;
     control_socket = control_room_list[params_room];
     control_socket.emit("process-stop");
   });
 
   socket.on("data-send", (data_get) => {
+    
+    console.log('- data-send');
     console.log(data_get);
+
     const { data_type, data, user, room } = data_get;
     if (data_type == "question") {
       question_ready[user] = true;
@@ -529,9 +614,12 @@ io.sockets.on("connection", (socket) => {
   });
 
   socket.on("control", (data) => {
+
+    console.log('- control');
+    console.log(data);
+
     const params_room = data.room;
     const params_data = data.data;
-    console.log("control data:", data);
     socket.broadcast.to(params_room).emit("control", params_data);
   });
 });
