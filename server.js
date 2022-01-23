@@ -394,11 +394,12 @@ chatio.on("connection", (socket) => {
     } else if (rooms.length < 2) {
       console.log("++ reconnect from recover ", rooms.length);
       socket.join("test");
-      chatio.emit("process-stop", { accident_stop: true });
+
       console.log("++ reconnect to test room");
     }
     console.log("++ reconnect from recover ", rooms.length);
   }
+  chatio.emit("process-stop", { accident_stop: true });
 
   let room = "";
 
@@ -670,16 +671,16 @@ chatio.on("connection", (socket) => {
     }
     setTimeout(() => {
       console.log("waiting for data uploading");
+      if (
+        emotion_ready["host"] &&
+        emotion_ready["guest"] &&
+        question_ready["host"] &&
+        question_ready["guest"]
+      ) {
+        console.log("- call store data");
+        storeData(room);
+      }
     }, 5000);
-    if (
-      emotion_ready["host"] &&
-      emotion_ready["guest"] &&
-      question_ready["host"] &&
-      question_ready["guest"]
-    ) {
-      console.log("- call store data");
-      storeData(room);
-    }
   });
 
   socket.on("control", (data) => {
