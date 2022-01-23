@@ -386,7 +386,7 @@ chatio.on("connection", (socket) => {
   console.log("+ new connection from a socket");
   let rooms = chatio.adapter.rooms["test"];
 
-  if (!startFlag) {
+  if (startFlag) {
     if (rooms === undefined) {
       socket.join("test");
       rooms = chatio.adapter.rooms["test"];
@@ -699,14 +699,12 @@ controlio.on("connection", (socket) => {
   if (rooms === undefined) {
     socket.join("survey-test");
     rooms = controlio.adapter.rooms["survey-test"];
-    console.log("++ reconnect from recover ", rooms.length);
+    console.log("++ control reconnect from recover ", rooms.length);
   } else if (rooms.length < 2) {
-    console.log("++ reconnect from recover ", rooms.length);
+    console.log("++ control reconnect from recover ", rooms.length);
     socket.join("survey-test");
     controlio.emit("room-idle");
-    console.log("++ reconnect to test room");
   }
-  console.log("++ reconnect from recover ", rooms.length);
 
   socket.on("disconnecting", () => {
     console.log("- client left room: ");
