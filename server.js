@@ -7,28 +7,31 @@ const sio = require("socket.io");
 const favicon = require("serve-favicon");
 const compression = require("compression");
 const bodyParser = require("body-parser");
-require('dotenv').config();
-var hash = require('object-hash');
-
+require("dotenv").config();
+var hash = require("object-hash");
+const { SingleEntryPlugin } = require("webpack");
 
 // CouchDB
 // const nano = require("nano")("http://admin:admin@localhost:5984");
-const nano = require('nano')(process.env.COUCHDB_URL);
+const nano = require("nano")(process.env.COUCHDB_URL);
 const tableName = "occlusion_mask";
 
 // const db = nano.db.use(tableName);
 
-nano.db.create(process.env.DB_NAME).then((data) => {
-  // success - response is in 'data'
-  console.log('New database created: ' + process.env.DB_NAME);
-  couch = nano.use(process.env.DB_NAME);
-  app.set('couch', couch);
-}).catch((err) => {
-  // failure - error information is in 'err'
-  console.log('Connected to existing database: ' + process.env.DB_NAME);
-  couch = nano.use(process.env.DB_NAME);
-  app.set('couch', couch);
-});
+nano.db
+  .create(process.env.DB_NAME)
+  .then((data) => {
+    // success - response is in 'data'
+    console.log("New database created: " + process.env.DB_NAME);
+    couch = nano.use(process.env.DB_NAME);
+    app.set("couch", couch);
+  })
+  .catch((err) => {
+    // failure - error information is in 'err'
+    console.log("Connected to existing database: " + process.env.DB_NAME);
+    couch = nano.use(process.env.DB_NAME);
+    app.set("couch", couch);
+  });
 
 const app = express(),
   options = {
@@ -42,6 +45,8 @@ const app = express(),
       : https.createServer(options, app).listen(port),
   io = sio(server);
 
+chatio = io.of("chat");
+controlio = io.of("control");
 console.log("starting server on port: " + port);
 
 app.use(function (req, res, next) {
@@ -66,7 +71,8 @@ rating_by_user = {};
 projection_room_list = {};
 survey_room_list = {};
 
-survey_socket = { //? Does the app support multiple concurring conversations in different rooms? What happens if new rooms are opened?
+survey_socket = {
+  //? Does the app support multiple concurring conversations in different rooms? What happens if new rooms are opened?
   guest: undefined,
   host: undefined,
 };
@@ -86,7 +92,8 @@ question_data = {
   host: {},
   guest: {},
 };
-record_by_user = { //What's this?
+record_by_user = {
+  //What's this?
   host: false,
   guest: false,
 };
@@ -120,9 +127,11 @@ function generateId(stime) {
   //   timeId: timestr,
   // };
 
-    // creating a hash from current timestamp and random number
-    return hash(new Date().getTime().toString() + Math.floor(Math.random() * 100000) + 1);
-    
+  // creating a hash from current timestamp and random number
+  return hash(
+    new Date().getTime().toString() + Math.floor(Math.random() * 100000) + 1
+  );
+
   // const sid = datestr.toString();
   // sessionId = response.id;
 }
@@ -148,7 +157,6 @@ function processStart(room, start_time, cfg) {
     let count = 0;
     // start chatting
     timmer = setInterval(() => {
-
       let nowTime = new Date().getTime();
       if (survey_in_progress) {
         let extend_time = 0;
@@ -173,7 +181,7 @@ function processStart(room, start_time, cfg) {
           let topic = icebreaker[rindex];
 
           topic_selected.push(topic);
-          console.log('- sending update to projection in room: ' + room);
+          console.log("- sending update to projection in room: " + room);
           io.sockets
             .to(room)
             .to("projection-" + room)
@@ -187,10 +195,15 @@ function processStart(room, start_time, cfg) {
         //stage2
         if (stage != 2) {
           // previous stage finish, raise a survey
-          console.log('- sending survey start to room: ' + room + ' (stage: ' + stage + ')');
-          io.to("survey-" + room)
-            .to(room)
-            .emit("survey-start", { stage: stage });
+          console.log(
+            "- sending survey start to room: " +
+              room +
+              " (stage: " +
+              stage +
+              ")"
+          );
+          chatio.emit("survey-start", { stage: stage });
+          controlio.to("survey-" + room).emit("survey-start", { stage: stage });
           survey_in_progress = true;
           stage = 2;
           //send mask
@@ -199,8 +212,18 @@ function processStart(room, start_time, cfg) {
           const rindex = Math.floor(Math.random() * wouldyou.length);
           let topic = wouldyou[rindex];
           topic_selected.push(topic);
-          console.log('- sending stage control to room: ' + room + ' (stage: ' + stage + ', mask: ' + mask_setting + ', topic: ' + topic + ')');
-          io.sockets.to(room).emit("stage-control", {
+          console.log(
+            "- sending stage control to room: " +
+              room +
+              " (stage: " +
+              stage +
+              ", mask: " +
+              mask_setting +
+              ", topic: " +
+              topic +
+              ")"
+          );
+          chatio.to(room).emit("stage-control", {
             mask: mask_setting,
             topic: [topic],
             stage,
@@ -209,10 +232,15 @@ function processStart(room, start_time, cfg) {
       } else if (time_left < 90 && time_left > 0) {
         //stage3
         if (stage != 3) {
-          console.log('- sending survey start to room: ' + room + ' (stage: ' + stage + ')');
-          io.to("survey-" + room)
-            .to(room)
-            .emit("survey-start", { stage: stage });
+          console.log(
+            "- sending survey start to room: " +
+              room +
+              " (stage: " +
+              stage +
+              ")"
+          );
+          chatio.emit("survey-start", { stage: stage });
+          controlio.to("survey-" + room).emit("survey-start", { stage: stage });
           survey_in_progress = true;
           stage = 3;
           //send mask
@@ -221,20 +249,33 @@ function processStart(room, start_time, cfg) {
           const rindex = Math.floor(Math.random() * quest.length);
           let topic = quest[rindex];
           topic_selected.push(topic);
-          console.log('- sending stage control to room: ' + room + ' (stage: ' + stage + ', mask: ' + mask_setting + ', topic: ' + topic + ')');
-          io.sockets
-            .to(room)
-            .emit("stage-control", { mask: mask_setting, topic, stage });
+          console.log(
+            "- sending stage control to room: " +
+              room +
+              " (stage: " +
+              stage +
+              ", mask: " +
+              mask_setting +
+              ", topic: " +
+              topic +
+              ")"
+          );
+          chatio.emit("stage-control", { mask: mask_setting, topic, stage });
         }
       }
 
       if (time_left <= 0) {
         if (stage != 4) {
           stage = 4;
-          console.log('- sending survey start to room: ' + room + ' (stage: ' + stage + ')');
-          io.to("survey-" + room)
-            .to(room)
-            .emit("survey-start", { stage: stage });
+          console.log(
+            "- sending survey start to room: " +
+              room +
+              " (stage: " +
+              stage +
+              ")"
+          );
+          chatio.emit("survey-start", { stage: stage });
+          controlio.to("survey-" + room).emit("survey-start", { stage: stage });
           survey_in_progress = true;
         }
         if (!stop && !survey_in_progress) {
@@ -245,8 +286,14 @@ function processStart(room, start_time, cfg) {
         }
       }
 
-      console.log('- Second timer for room: ' + room + ', stage: ' + stage + ', time left: ' + time_left);
-
+      console.log(
+        "- Second timer for room: " +
+          room +
+          ", stage: " +
+          stage +
+          ", time left: " +
+          time_left
+      );
     }, 1000);
   } else {
     console.log("timmer running", typeof timmer);
@@ -263,7 +310,8 @@ function processStop(room, accident_stop) {
   // socket send stop
 
   // io.to(room).emit("process-stop", { accident_stop });
-  io.to(room)
+  chatio.to(room).emit("process-stop", { accident_stop });
+  controlio
     .to("survey-" + room)
     .to("projection-" + room)
     .emit("process-stop", { accident_stop });
@@ -289,21 +337,7 @@ async function storeData(room) {
     };
     phase_result.push(data);
   }
-  // const data = {
-  //   _id: startTime.toString(),
-  //   start_time: sessionId,
-  //   mask_setting: current_cfg["name"],
-  //   topic: topic_selected,
-  //   duration: current_cfg["setting"][0]["duration"],
-  //   host: {
-  //     question: question_data["host"],
-  //     emotion: emotion_data["host"],
-  //   },
-  //   guest: {
-  //     question: question_data["guest"],
-  //     emotion: emotion_data["guest"],
-  //   },
-  // };
+
   const audio = {
     host: record_by_user["host"] ? startTime.toString() + "_host.webm" : "none",
     guest: record_by_user["guest"]
@@ -334,25 +368,42 @@ async function storeData(room) {
     guest: false,
   };
   console.log(data);
-  io.to(room).emit("upload-finish", results);
-  const response = await db.insert(data).then((res) => {
-    console.log('+ SUCCESS: all data saved in db: ');
-    console.log(res);
-  }).catch((error) => {
-    console.log('- ERROR: could not save data in db');
-    console.log(error);
-  });
+  chatio.to(room).emit("upload-finish", results);
+  const response = await db
+    .insert(data)
+    .then((res) => {
+      console.log("+ SUCCESS: all data saved in db: ");
+      console.log(res);
+    })
+    .catch((error) => {
+      console.log("- ERROR: could not save data in db");
+      console.log(error);
+    });
 }
 
-io.sockets.on("connection", (socket) => {
-  
+chatio.on("connection", (socket) => {
+  let startFlag = false;
   console.log("+ new connection from a socket");
-  // console.log(socket);ç
+  let rooms = chatio.adapter.rooms["test"];
+
+  if (!startFlag) {
+    if (rooms === undefined) {
+      socket.join("test");
+      rooms = chatio.adapter.rooms["test"];
+      console.log("++ reconnect from recover ", rooms.length);
+    } else if (rooms.length < 2) {
+      console.log("++ reconnect from recover ", rooms.length);
+      socket.join("test");
+      chatio.emit("process-stop", { accident_stop: true });
+      console.log("++ reconnect to test room");
+    }
+    console.log("++ reconnect from recover ", rooms.length);
+  }
 
   let room = "";
 
   socket.on("disconnecting", () => {
-    console.log('- client left room: ');
+    console.log("- client left room: ");
     console.log(socket.rooms);
   });
   // sending to all clients in the room (channel) except sender
@@ -360,79 +411,85 @@ io.sockets.on("connection", (socket) => {
     socket.broadcast.to(room).emit("message", message)
   );
   socket.on("find", () => {
+    startFlag = true;
     const url = socket.request.headers.referer.split("/");
     room = url[url.length - 1];
 
-    console.log(' - trying to locate room: ' + room);
+    console.log(" - trying to locate room: " + room);
 
-    const sr = io.sockets.adapter.rooms[room];
+    const sr = chatio.adapter.rooms[room];
     if (sr === undefined) {
       // no room with such name is found so create it
       socket.join(room);
       socket.emit("create");
-      console.log('+ new room created: ' + room);
+      console.log("+ new room created: " + room);
     } else if (sr.length === 1) {
       socket.emit("join");
-      console.log('- room (' + room + ') exists: try to join.');
+      console.log("- room (" + room + ") exists: try to join.");
       socket.join(room);
     } else {
       // max two clients
       socket.emit("full", room);
-      console.log('- room (' + room + ') exists but is full');
+      console.log("- room (" + room + ") exists but is full");
     }
   });
   socket.on("auth", (data) => {
     data.sid = socket.id;
     // sending to all clients in the room (channel) except sender
     socket.broadcast.to(room).emit("approve", data);
-    console.log('- authenticate client in room ' + room);
+    console.log("- authenticate client in room " + room);
   });
   socket.on("accept", (id) => {
-    io.sockets.connected[id].join(room);
+    // io.sockets.connected[id].join(room);
     // sending to all clients in 'game' room(channel), include sender
-    io.to(room).emit("bridge");
-    console.log('- accept client in room ' + room);
+    chatio.emit("bridge");
+    console.log("- accept client in room " + room);
   });
   socket.on("reject", () => {
-    socket.emit("full")
-    console.log('- rejected');
+    socket.emit("full");
+    console.log("- rejected");
   });
 
   socket.on("leave", () => {
     // sending to all clients in the room (channel) except sender
     socket.broadcast.to(room).emit("hangup");
     socket.leave(room);
-    console.log('- client left room: ' + room);
+    console.log("- client left room: " + room);
+    clearInterval(timmer);
   });
   // control room record
   socket.on("control-room", (data) => {
     const room = data.room;
     control_room_list[room] = socket;
-    console.log('- received control-room message for room: ' + room);
+    console.log("- received control-room message for room: " + room);
   });
   socket.on("room-idle", (data) => {
     const { room } = data;
     // console.log(`room ${room} is idle now`);
     io.to("survey-" + room).emit("room-idle");
-    console.log('- room idle: ' + room + ' -> initiate process stop');
+    console.log("- room idle: " + room + " -> initiate process stop");
     processStop(room, true);
   });
   socket.on("projection-connect", (data) => {
     const { room, user } = data;
     socket.join("projection-" + room);
     projection_socket[user] = socket;
-    console.log('+ a projection was connected in room: " ' + room + ', user: ' + user);
+    console.log(
+      '+ a projection was connected in room: " ' + room + ", user: " + user
+    );
   });
   socket.on("survey-connect", (data) => {
     const { room, user } = data;
     socket.join("survey-" + room);
     survey_socket[user] = socket;
-    console.log('+ a survey was connected in room: ' + room + ', user: ' + user);
+    console.log(
+      "+ a survey was connected in room: " + room + ", user: " + user
+    );
   });
   socket.on("data-connect", () => {
     db.view("search", "all", function (err, data) {
       const len = data.rows.length;
-      console.log('- on data-connect()');
+      console.log("- on data-connect()");
       console.log(data.rows, len);
       socket.emit("data-retrieve", data.rows);
     });
@@ -447,9 +504,14 @@ io.sockets.on("connection", (socket) => {
   });
   socket.on("survey-end", (data) => {
     const { room, user } = data;
-    console.log('- survey was ended in room: " ' + room + ', user: ' + user);
+    console.log('- survey was ended in room: " ' + room + ", user: " + user);
     survey_ready[user] = true;
-    console.log('- Who`s ready? Guest: ' + survey_ready["guest"] + ', Host: ' + survey_ready["host"]);
+    console.log(
+      "- Who`s ready? Guest: " +
+        survey_ready["guest"] +
+        ", Host: " +
+        survey_ready["host"]
+    );
     if (survey_ready["guest"] && survey_ready["host"]) {
       survey_in_progress = false;
       survey_ready = { host: false, guest: false };
@@ -469,17 +531,255 @@ io.sockets.on("connection", (socket) => {
   });
   socket.on("reset", (data) => {
     const { room } = data;
-    console.log('- resetting room: ' + room);
+    console.log("- resetting room: " + room);
     processStop(room, true);
   });
 
   socket.on("face-detected", (data) => {
     const { room, user } = data;
-    console.log('- face-detected received in room: ' + room + ', user: ' + user);
+    console.log(
+      "- face-detected received in room: " + room + ", user: " + user
+    );
+
+    controlio.to("survey-test").emit("face-detected");
+    chatio.to(room).emit("face-detected", user);
+  });
+  socket.on("process-control", (data) => {
+    const params_room = data.room;
+
+    current_cfg = data.cfg;
+    current_rating = data.topic;
+
+    console.log("+ process-control received: ");
+    console.log(current_cfg);
+    console.log(current_rating);
+
+    socket.broadcast.to(params_room).emit("process-control");
+  });
+  socket.on("process-ready", (data) => {
+    const { room, user, rating, record } = data;
+    // socket.broadcast.to(room).emit("process-start");
+    console.log(`+ ${user} in room ${room} is ready to record: `, record);
+
+    if (room in ready_user_by_room) {
+      ready_user_by_room[room][user] = true;
+      rating_by_user[user] = rating;
+      record_by_user[user] = record;
+      if (
+        ready_user_by_room[room]["host"] &&
+        ready_user_by_room[room]["guest"]
+      ) {
+        console.log(
+          "- process start, both users are ready",
+          ready_user_by_room
+        );
+        try {
+          console.log("+ both ready: start process");
+          startTime = new Date().getTime();
+          // processStart(room, startTime, current_cfg);
+
+          sessionId = generateId(new Date(startTime));
+
+          let mask_id = Math.floor(Math.random() * 3);
+          current_cfg = require("./assets/MaskSetting/" +
+            mask_set[mask_id] +
+            ".json");
+          current_rating = "general";
+          if (rating_by_user["host"] == rating_by_user["guest"]) {
+            current_rating = rating_by_user["host"];
+          }
+
+          console.log("- current rating:");
+          console.log(current_rating);
+          console.log("- rating by user:");
+          console.log(rating_by_user);
+
+          processStart(room, startTime, current_cfg);
+          const { duration } = current_cfg["setting"][0];
+          chatio.to(room).emit("process-start", {
+            startTime,
+            duration,
+            record_by_user,
+            sessionId,
+          });
+          controlio.to("survey-" + room).emit("process-start");
+
+          console.log("- resetting ready_user_by_room for next survey (?)");
+          ready_user_by_room[room] = {
+            host: false,
+            guest: false,
+          };
+        } catch (err) {
+          console.log(
+            "Ooops! Something went wrong: Please confirm that the admin has started the process"
+          );
+          console.log(err);
+        }
+
+        // socket.broadcast.to(room).emit("process-start");
+        // socket.emit("process-start");
+      } else {
+        console.log("- not all users ready yet");
+      }
+    } else {
+      ready_user_by_room[room] = {
+        host: false,
+        guest: false,
+      };
+      ready_user_by_room[room][user] = true;
+      rating_by_user[user] = rating;
+      record_by_user[user] = record;
+    }
+    console.log("- ready_user_by_room:");
+    console.log(ready_user_by_room);
+
+    console.log("- rating_by_user:");
+    console.log(rating_by_user);
+
+    console.log("- record_by_user:");
+    console.log(record_by_user);
+  });
+  socket.on("process-in-progress", (data) => {
+    console.log("- process-in-progress");
+    console.log(data);
+
+    const params_room = data.room;
+    control_socket = control_room_list[params_room];
+    control_socket.emit("process-in-progress", { time_diff: data.time_diff });
+  });
+  socket.on("process-stop", (data) => {
+    console.log("- process-stop");
+    console.log(data);
+
+    const params_room = data.room;
+    control_socket = control_room_list[params_room];
+    control_socket.emit("process-stop");
+  });
+
+  socket.on("data-send", (data_get) => {
+    console.log("- data-send");
+    console.log(data_get);
+
+    const { data_type, data, user, room } = data_get;
+    if (data_type == "question") {
+      question_ready[user] = true;
+      question_data[user] = data;
+    } else if (data_type == "emotion") {
+      emotion_ready[user] = true;
+      emotion_data[user] = data;
+    }
+    setTimeout(() => {
+      console.log("waiting for data uploading");
+    }, 5000);
+    if (
+      emotion_ready["host"] &&
+      emotion_ready["guest"] &&
+      question_ready["host"] &&
+      question_ready["guest"]
+    ) {
+      console.log("- call store data");
+      storeData(room);
+    }
+  });
+
+  socket.on("control", (data) => {
+    console.log("- control");
+    console.log(data);
+
+    const params_room = data.room;
+    const params_data = data.data;
+    socket.broadcast.to(params_room).emit("control", params_data);
+  });
+});
+
+controlio.on("connection", (socket) => {
+  console.log("+ new connection from a socket");
+  let rooms = controlio.adapter.rooms["survey-test"];
+
+  if (rooms === undefined) {
+    socket.join("survey-test");
+    rooms = controlio.adapter.rooms["survey-test"];
+    console.log("++ reconnect from recover ", rooms.length);
+  } else if (rooms.length < 2) {
+    console.log("++ reconnect from recover ", rooms.length);
+    socket.join("survey-test");
+    controlio.emit("room-idle");
+    console.log("++ reconnect to test room");
+  }
+  console.log("++ reconnect from recover ", rooms.length);
+
+  socket.on("disconnecting", () => {
+    console.log("- client left room: ");
+    console.log(socket.rooms);
+  });
+
+  //survey
+  socket.on("survey-connect", (data) => {
+    const { room, user } = data;
+    socket.join("survey-" + room);
+    survey_socket[user] = socket;
+    console.log(
+      "+ a survey was connected in room: " + room + ", user: " + user
+    );
+  });
+  socket.on("data-connect", () => {
+    db.view("search", "all", function (err, data) {
+      const len = data.rows.length;
+      console.log("- on data-connect()");
+      console.log(data.rows, len);
+      socket.emit("data-retrieve", data.rows);
+    });
+  });
+  // survey send and control
+  socket.on("survey-start", (data) => {
+    console.log("survey start", data);
+    const params_room = data.room;
+    socket.broadcast.to(params_room).emit("survey-start");
+    socket.broadcast.to("survey-" + params_room).emit("survey-start");
+    console.log('+ send survey and room control in room: " ' + room);
+  });
+  socket.on("survey-end", (data) => {
+    const { room, user } = data;
+    console.log('- survey was ended in room: " ' + room + ", user: " + user);
+    survey_ready[user] = true;
+    console.log(
+      "- Who`s ready? Guest: " +
+        survey_ready["guest"] +
+        ", Host: " +
+        survey_ready["host"]
+    );
+    if (survey_ready["guest"] && survey_ready["host"]) {
+      survey_in_progress = false;
+      survey_ready = { host: false, guest: false };
+      let stage_startTime = new Date().getTime();
+      let extend_time = 0;
+      if (stage == 2) {
+        extend_time = 150;
+      }
+      if (stage == 3) {
+        extend_time = 90;
+      }
+      let duration = extend_time;
+      console.log("moving on: after", duration);
+      chatio.to(room).emit("survey-end", { stage_startTime, duration, stage });
+      controlio.to("projection-" + room).emit("stage-control", { stage });
+    }
+  });
+  socket.on("reset", (data) => {
+    const { room } = data;
+    console.log("- resetting room: " + room);
+    processStop(room, true);
+  });
+
+  socket.on("face-detected", (data) => {
+    const { room, user } = data;
+    console.log(
+      "- face-detected received in room: " + room + ", user: " + user
+    );
     if (survey_socket[user] != undefined) {
       const sid = survey_socket[user].id;
-      io.to(sid).emit("face-detected");
-      io.to(room).emit("face-detected", user);
+      controlio.to("survey-test").emit("face-detected");
+      chatio.to(room).emit("face-detected", user);
     }
   });
   socket.on("process-control", (data) => {
@@ -488,7 +788,7 @@ io.sockets.on("connection", (socket) => {
     current_cfg = data.cfg;
     current_rating = data.topic;
 
-    console.log('+ process-control received: ');
+    console.log("+ process-control received: ");
     console.log(current_cfg);
     console.log(current_rating);
 
@@ -508,7 +808,7 @@ io.sockets.on("connection", (socket) => {
         ready_user_by_room[room]["guest"]
       ) {
         try {
-          console.log("+ both ready: start process");
+          console.log("+ both ready: start process", ready_user_by_room);
           startTime = new Date().getTime();
           // processStart(room, startTime, current_cfg);
 
@@ -523,35 +823,37 @@ io.sockets.on("connection", (socket) => {
             current_rating = rating_by_user["host"];
           }
 
-          console.log('- current rating:');
+          console.log("- current rating:");
           console.log(current_rating);
-          console.log('- rating by user:');
+          console.log("- rating by user:");
           console.log(rating_by_user);
 
           processStart(room, startTime, current_cfg);
           const { duration } = current_cfg["setting"][0];
-          io.to(room).emit("process-start", {
+          chatio.to(room).emit("process-start", {
             startTime,
             duration,
             record_by_user,
             sessionId,
           });
-          io.to("survey-" + room).emit("process-start");
+          controlio.to("survey-" + room).emit("process-start");
 
-          console.log('- resetting ready_user_by_room for next survey (?)');
+          console.log("- resetting ready_user_by_room for next survey (?)");
           ready_user_by_room[room] = {
             host: false,
             guest: false,
           };
         } catch (err) {
-          console.log("Ooops! Something went wrong: Please confirm that the admin has started the process");
+          console.log(
+            "Ooops! Something went wrong: Please confirm that the admin has started the process"
+          );
           console.log(err);
         }
 
         // socket.broadcast.to(room).emit("process-start");
         // socket.emit("process-start");
       } else {
-        console.log('- not all users ready yet');
+        console.log("- not all users ready yet");
       }
     } else {
       ready_user_by_room[room] = {
@@ -562,18 +864,17 @@ io.sockets.on("connection", (socket) => {
       rating_by_user[user] = rating;
       record_by_user[user] = record;
     }
-    console.log('- ready_user_by_room:');
+    console.log("- ready_user_by_room:");
     console.log(ready_user_by_room);
 
-    console.log('- rating_by_user:');
+    console.log("- rating_by_user:");
     console.log(rating_by_user);
 
-    console.log('- record_by_user:');
+    console.log("- record_by_user:");
     console.log(record_by_user);
   });
   socket.on("process-in-progress", (data) => {
-
-    console.log('- process-in-progress');
+    console.log("- process-in-progress");
     console.log(data);
 
     const params_room = data.room;
@@ -581,41 +882,15 @@ io.sockets.on("connection", (socket) => {
     control_socket.emit("process-in-progress", { time_diff: data.time_diff });
   });
   socket.on("process-stop", (data) => {
-
-    console.log('- process-stop');
+    console.log("- process-stop");
     console.log(data);
 
     const params_room = data.room;
     control_socket = control_room_list[params_room];
     control_socket.emit("process-stop");
   });
-
-  socket.on("data-send", (data_get) => {
-    
-    console.log('- data-send');
-    console.log(data_get);
-
-    const { data_type, data, user, room } = data_get;
-    if (data_type == "question") {
-      question_ready[user] = true;
-      question_data[user] = data;
-    } else if (data_type == "emotion") {
-      emotion_ready[user] = true;
-      emotion_data[user] = data;
-    }
-    if (
-      emotion_ready["host"] &&
-      emotion_ready["guest"] &&
-      question_ready["host"] &&
-      question_ready["guest"]
-    ) {
-      storeData(room);
-    }
-  });
-
   socket.on("control", (data) => {
-
-    console.log('- control');
+    console.log("- control");
     console.log(data);
 
     const params_room = data.room;
