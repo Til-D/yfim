@@ -311,10 +311,7 @@ function processStop(room, accident_stop) {
 
   // io.to(room).emit("process-stop", { accident_stop });
   chatio.to(room).emit("process-stop", { accident_stop });
-  controlio
-    .to("survey-" + room)
-    .to("projection-" + room)
-    .emit("process-stop", { accident_stop });
+  controlio.emit("process-stop", { accident_stop });
 }
 async function storeData(room) {
   const results = {
