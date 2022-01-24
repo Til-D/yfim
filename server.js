@@ -228,6 +228,7 @@ function processStart(room, start_time, cfg) {
             topic: [topic],
             stage,
           });
+          controlio.to("projection-test").emit("stage-control", { stage });
         }
       } else if (time_left < 90 && time_left > 0) {
         //stage3
@@ -260,7 +261,10 @@ function processStart(room, start_time, cfg) {
               topic +
               ")"
           );
-          chatio.emit("stage-control", { mask: mask_setting, topic, stage });
+          chatio
+            .to("test")
+            .emit("stage-control", { mask: mask_setting, topic, stage });
+          controlio.to("projection-test").emit("stage-control", { stage });
         }
       }
 
@@ -738,7 +742,9 @@ controlio.on("connection", (socket) => {
       let duration = extend_time;
       console.log("moving on: after", duration);
       chatio.to(room).emit("survey-end", { stage_startTime, duration, stage });
-      controlio.to("projection-" + room).emit("stage-control", { stage });
+      projectio.to("projection-test").emit("stage-control", {
+        stage,
+      });
     }
   });
   socket.on("reset", (data) => {
