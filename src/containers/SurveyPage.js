@@ -57,6 +57,7 @@ function SurveyPage(props) {
     });
     socket.on("process-stop", (data) => {
       const { accident_stop } = data;
+      console.log("- process-stop", accident_stop);
       if (!accident_stop) {
         console.log("process-stop", answer);
         socket.emit("data-send", {

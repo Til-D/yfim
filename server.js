@@ -182,14 +182,19 @@ function processStart(room, start_time, cfg) {
 
           topic_selected.push(topic);
           console.log("- sending update to projection in room: " + room);
-          io.sockets
-            .to(room)
-            .to("projection-" + room)
-            .emit("stage-control", {
-              mask: mask_setting,
-              topic: [topic],
-              stage,
-            });
+          chatio.to("test").emit("stage-control", {
+            mask: mask_setting,
+            topic: [topic],
+            stage,
+          });
+          // io.sockets
+          //   .to(room)
+          //   .to("projection-" + room)
+          //   .emit("stage-control", {
+          //     mask: mask_setting,
+          //     topic: [topic],
+          //     stage,
+          //   });
         }
       } else if (time_left < 150 && time_left > 90) {
         //stage2
@@ -312,7 +317,7 @@ function processStop(room, accident_stop) {
 
   // io.to(room).emit("process-stop", { accident_stop });
   chatio.to(room).emit("process-stop", { accident_stop });
-  controlio.emit("process-stop", { accident_stop });
+  controlio.to("survey-test").emit("process-stop", { accident_stop });
 }
 async function storeData(room) {
   const results = {
@@ -367,7 +372,7 @@ async function storeData(room) {
   };
   console.log(data);
   chatio.to(room).emit("upload-finish", results);
-  const response = await db
+  const response = await couch
     .insert(data)
     .then((res) => {
       console.log("+ SUCCESS: all data saved in db: ");

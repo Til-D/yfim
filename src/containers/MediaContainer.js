@@ -463,8 +463,8 @@ class MediaBridge extends Component {
     console.log("- onStageControl()", data);
 
     if (this.state.stage != 0) {
-      console.log(this.state);
       this.emo_result.push(this.record.record_detail);
+      console.log("- stage control, ", this.state, this.emo_result);
     }
     this.record = {
       record_count: 0,
@@ -910,7 +910,9 @@ class MediaBridge extends Component {
     console.log(e);
   }
   sendDataToServer() {
-    this.emo_result.push(this.record);
+    let eresult = this.record;
+    this.emo_result.push(this.record.record_detail);
+    console.log("+ finish, sending data, ", this.emo_result, eresult);
     const emo_record = this.emo_result;
     console.log(
       "sending data to server ",
