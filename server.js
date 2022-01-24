@@ -47,6 +47,8 @@ const app = express(),
 
 chatio = io.of("chat");
 controlio = io.of("control");
+projectio = io.of("projection");
+
 console.log("starting server on port: " + port);
 
 app.use(function (req, res, next) {
@@ -73,10 +75,6 @@ survey_room_list = {};
 
 survey_socket = {
   //? Does the app support multiple concurring conversations in different rooms? What happens if new rooms are opened?
-  guest: undefined,
-  host: undefined,
-};
-projection_socket = {
   guest: undefined,
   host: undefined,
 };
@@ -187,14 +185,11 @@ function processStart(room, start_time, cfg) {
             topic: [topic],
             stage,
           });
-          // io.sockets
-          //   .to(room)
-          //   .to("projection-" + room)
-          //   .emit("stage-control", {
-          //     mask: mask_setting,
-          //     topic: [topic],
-          //     stage,
-          //   });
+          projectio.to("projection-test").emit("stage-control", {
+            mask: mask_setting,
+            topic: [topic],
+            stage,
+          });
         }
       } else if (time_left < 150 && time_left > 90) {
         //stage2
@@ -318,6 +313,7 @@ function processStop(room, accident_stop) {
   // io.to(room).emit("process-stop", { accident_stop });
   chatio.to(room).emit("process-stop", { accident_stop });
   controlio.to("survey-test").emit("process-stop", { accident_stop });
+  projectio.to("projection-test").emit("process-stop", { accident_stop });
 }
 async function storeData(room) {
   const results = {
@@ -476,14 +472,6 @@ chatio.on("connection", (socket) => {
     console.log("- room idle: " + room + " -> initiate process stop");
     processStop(room, true);
   });
-  socket.on("projection-connect", (data) => {
-    const { room, user } = data;
-    socket.join("projection-" + room);
-    projection_socket[user] = socket;
-    console.log(
-      '+ a projection was connected in room: " ' + room + ", user: " + user
-    );
-  });
   socket.on("survey-connect", (data) => {
     const { room, user } = data;
     socket.join("survey-" + room);
@@ -531,8 +519,8 @@ chatio.on("connection", (socket) => {
       }
       let duration = extend_time;
       console.log("moving on: after", duration);
-      io.to(room).emit("survey-end", { stage_startTime, duration, stage });
-      io.to("projection-" + room).emit("stage-control", { stage });
+      chatio.to(room).emit("survey-end", { stage_startTime, duration, stage });
+      projectio.to("projection-test").emit("stage-control", { stage });
     }
   });
   socket.on("reset", (data) => {
@@ -644,22 +632,6 @@ chatio.on("connection", (socket) => {
 
     console.log("- record_by_user:");
     console.log(record_by_user);
-  });
-  socket.on("process-in-progress", (data) => {
-    console.log("- process-in-progress");
-    console.log(data);
-
-    const params_room = data.room;
-    control_socket = control_room_list[params_room];
-    control_socket.emit("process-in-progress", { time_diff: data.time_diff });
-  });
-  socket.on("process-stop", (data) => {
-    console.log("- process-stop");
-    console.log(data);
-
-    const params_room = data.room;
-    control_socket = control_room_list[params_room];
-    control_socket.emit("process-stop");
   });
 
   socket.on("data-send", (data_get) => {
@@ -877,14 +849,6 @@ controlio.on("connection", (socket) => {
     console.log("- record_by_user:");
     console.log(record_by_user);
   });
-  socket.on("process-in-progress", (data) => {
-    console.log("- process-in-progress");
-    console.log(data);
-
-    const params_room = data.room;
-    control_socket = control_room_list[params_room];
-    control_socket.emit("process-in-progress", { time_diff: data.time_diff });
-  });
   socket.on("process-stop", (data) => {
     console.log("- process-stop");
     console.log(data);
@@ -927,5 +891,17 @@ controlio.on("connection", (socket) => {
     const params_room = data.room;
     const params_data = data.data;
     socket.broadcast.to(params_room).emit("control", params_data);
+  });
+});
+
+projectio.on("connection", (socket) => {
+  socket.join("projection-test");
+
+  socket.on("projection-connect", (data) => {
+    const { room, user } = data;
+    // socket.join("projection-" + room);
+    console.log(
+      '+ a projection was connected in room: " ' + room + ", user: " + user
+    );
   });
 });

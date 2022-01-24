@@ -303,10 +303,6 @@ class MediaBridge extends Component {
         }
       );
     } else {
-      this.props.socket.emit("process-in-progress", {
-        room: this.props.room,
-        time_diff: this.state.time_diff,
-      });
     }
   }
   onReady() {
@@ -360,10 +356,6 @@ class MediaBridge extends Component {
         }
       }, 1000);
     } else {
-      this.props.socket.emit("process-in-progress", {
-        room: this.props.room,
-        time_diff: this.state.time_diff,
-      });
     }
   }
 
