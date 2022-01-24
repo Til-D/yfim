@@ -300,6 +300,7 @@ function processStart(room, start_time, cfg) {
   }
 }
 function processStop(room, accident_stop) {
+  console.log("+ process stop ", accident_stop);
   if (accident_stop) {
     topic_selected = [];
   }
@@ -886,6 +887,31 @@ controlio.on("connection", (socket) => {
     const params_room = data.room;
     control_socket = control_room_list[params_room];
     control_socket.emit("process-stop");
+  });
+  socket.on("data-send", (data_get) => {
+    console.log("- data-send");
+    console.log(data_get);
+
+    const { data_type, data, user, room } = data_get;
+    if (data_type == "question") {
+      question_ready[user] = true;
+      question_data[user] = data;
+    } else if (data_type == "emotion") {
+      emotion_ready[user] = true;
+      emotion_data[user] = data;
+    }
+    setTimeout(() => {
+      console.log("waiting for data uploading");
+      if (
+        emotion_ready["host"] &&
+        emotion_ready["guest"] &&
+        question_ready["host"] &&
+        question_ready["guest"]
+      ) {
+        console.log("- call store data");
+        storeData(room);
+      }
+    }, 5000);
   });
   socket.on("control", (data) => {
     console.log("- control");
