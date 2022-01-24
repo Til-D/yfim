@@ -391,6 +391,7 @@ chatio.on("connection", (socket) => {
     } else if (rooms.length < 2) {
       console.log("++ reconnect from recover ", rooms.length);
       socket.join("test");
+      chatio.emit("reconnect");
 
       console.log("++ reconnect to test room");
     }
@@ -403,6 +404,7 @@ chatio.on("connection", (socket) => {
   socket.on("disconnecting", () => {
     console.log("- client left room: ");
     console.log(socket.rooms);
+    processStop("test", true);
   });
   // sending to all clients in the room (channel) except sender
   socket.on("message", (message) =>

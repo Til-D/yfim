@@ -131,6 +131,7 @@ class MediaBridge extends Component {
     );
 
     this.props.socket.on("process-start", this.onProcessStart);
+    this.props.socket.on("reconnect", this.onReconnect);
     this.props.socket.on("process-stop", this.onProcessStop);
     this.props.socket.on("process-control", this.onProcessControl);
     this.props.socket.on("reset", this.onReset);
@@ -178,17 +179,23 @@ class MediaBridge extends Component {
   }
 
   async showEmotion() {
-    console.log('++ showEmotion(): start face detection');
+    console.log("++ showEmotion(): start face detection");
     this.detections = this.detectFace();
   }
   // load faceapi models for detection
   async loadModel() {
     console.log("++ loading model");
     const MODEL_URL = "/models";
-    const tinyFaceDetectorModel = await faceapi.loadTinyFaceDetectorModel(MODEL_URL);
+    const tinyFaceDetectorModel = await faceapi.loadTinyFaceDetectorModel(
+      MODEL_URL
+    );
     const faceLandmarkModel = await faceapi.loadFaceLandmarkModel(MODEL_URL);
-    const faceRecognitionModel = await faceapi.loadFaceRecognitionModel(MODEL_URL);
-    const faceExpressionModel = await faceapi.loadFaceExpressionModel(MODEL_URL);
+    const faceRecognitionModel = await faceapi.loadFaceRecognitionModel(
+      MODEL_URL
+    );
+    const faceExpressionModel = await faceapi.loadFaceExpressionModel(
+      MODEL_URL
+    );
 
     // console.log(faceapi.nets);
 
@@ -203,6 +210,11 @@ class MediaBridge extends Component {
 
     // console.log("+ faceExpressionModel loaded:");
     // console.log(faceExpressionModel);
+  }
+
+  onReconnect() {
+    this.props.socket.emit("find");
+    console.log("reconnecting to room");
   }
 
   // survey progress control
@@ -314,7 +326,6 @@ class MediaBridge extends Component {
   // 2. set up interval that count down the clock
 
   onProcessStart(data) {
-
     // hier weitermachen: find the main screen and figure out why it's not triggered by this
 
     const { startTime, duration, record_by_user, sessionId } = data;
@@ -456,8 +467,7 @@ class MediaBridge extends Component {
   // update mask and topic and clock time for new stage, triggerred by server socket message
   //
   onStageControl(data) {
-
-    console.log('- onStageControl()', data);
+    console.log("- onStageControl()", data);
 
     if (this.state.stage != 0) {
       console.log(this.state);
@@ -548,8 +558,7 @@ class MediaBridge extends Component {
 
   // face detected event listener
   onFace(data) {
-
-    console.log('- onFace()');
+    console.log("- onFace()");
 
     if (this.state.user == data && !this.state.process) {
       this.setState({
@@ -567,7 +576,7 @@ class MediaBridge extends Component {
 
   startRecording() {
     // e.preventDefault();
-    if(RECORD_AUDIO) {
+    if (RECORD_AUDIO) {
       // wipe old data chunks
       this.chunks = [];
       // start recorder with 10ms buffer
@@ -582,7 +591,7 @@ class MediaBridge extends Component {
 
   stopRecording(accident_stop) {
     // e.preventDefault();
-    if(RECORD_AUDIO) {
+    if (RECORD_AUDIO) {
       console.log("stopping recording");
       // stop the recorder
       this.mediaRecorder.stop();
@@ -596,7 +605,7 @@ class MediaBridge extends Component {
   }
 
   saveVideo() {
-    if(RECORD_VIDEO) {
+    if (RECORD_VIDEO) {
       // convert saved chunks to blob
       const blob = new Blob(this.chunks, { type: "video/webm" });
       // generate video url from blob
@@ -634,9 +643,7 @@ class MediaBridge extends Component {
 
         // PROBLEM: every second this gets put into a cue while await faceapi.detectSingleFace takes >1 sec to produce result
         setInterval(async () => {
-          
-          if(!this.faceDetectionInProgress) {  
-
+          if (!this.faceDetectionInProgress) {
             console.log("Triggering face detection..");
             this.faceDetectionInProgress = true;
 
@@ -660,7 +667,6 @@ class MediaBridge extends Component {
                 lose_face_f = false;
               }
             } catch (err) {
-              
               // console.log(err);
 
               if (this.state.survey_in_progress) {
@@ -683,7 +689,9 @@ class MediaBridge extends Component {
                   }
                 }
 
-                console.log("WARNING: Lost face tracking for more than 10 secs.");
+                console.log(
+                  "WARNING: Lost face tracking for more than 10 secs."
+                );
               }
               if (this.losingface >= 20 && this.state.process) {
                 // Restart whole process
@@ -700,7 +708,10 @@ class MediaBridge extends Component {
                 console.log("The room seems to be idle.");
               }
 
-              console.log("WARNING: Can't detect face on remote side", this.losingface);
+              console.log(
+                "WARNING: Can't detect face on remote side",
+                this.losingface
+              );
             }
 
             if (this.state.process && !this.state.survey_in_progress) {
@@ -720,9 +731,8 @@ class MediaBridge extends Component {
 
             // console.log('setting detection in progress to false');
             this.faceDetectionInProgress = false;
-
           } else {
-          console.log('-- skipped. Face detection in progress');
+            console.log("-- skipped. Face detection in progress");
           }
         }, 1000);
       }.bind(this)
@@ -989,7 +999,7 @@ class MediaBridge extends Component {
         this.props.getUserMedia.then(attachMediaIfReady);
       }
     } catch (error) {
-      console.log('ERROR: Could not init WebRTC', error);
+      console.log("ERROR: Could not init WebRTC", error);
     }
   }
   // components: SideBar, Clock, GYModal(popup window, loseface attention), Introduction, Introduction when face detected, Thankyou, local and remote video
