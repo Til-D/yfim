@@ -23,7 +23,7 @@ class RoomPage extends Component {
     this.state = {
       survey: false,
     };
-    this.socket = io.connect();
+    this.socket = io.connect("/chat");
 
     console.log("socket create", this.socket);
   }

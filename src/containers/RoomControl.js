@@ -141,7 +141,7 @@ export default function RoomControl(props) {
   const classes = useStyles();
   const room = props.match.params.room;
   useEffect(() => {
-    const socket = io.connect();
+    const socket = io.connect("/control");
     socket.emit("control-room", { room: room });
     socket.on("process-in-progress", (data) => {
       console.log(data);

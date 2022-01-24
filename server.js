@@ -335,7 +335,7 @@ async function storeData(room) {
   };
   console.log(data);
   io.to(room).emit("upload-finish", results);
-  const response = await couch.insert(data).then((res) => {
+  const response = await db.insert(data).then((res) => {
     console.log('+ SUCCESS: all data saved in db: ');
     console.log(res);
   }).catch((error) => {
@@ -430,7 +430,7 @@ io.sockets.on("connection", (socket) => {
     console.log('+ a survey was connected in room: ' + room + ', user: ' + user);
   });
   socket.on("data-connect", () => {
-    couch.view("search", "all", function (err, data) {
+    db.view("search", "all", function (err, data) {
       const len = data.rows.length;
       console.log('- on data-connect()');
       console.log(data.rows, len);
