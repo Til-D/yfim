@@ -23,7 +23,11 @@ class RoomPage extends Component {
     this.state = {
       survey: false,
     };
-    this.socket = io.connect("/chat");
+    this.socket = io.connect("/chat", {
+      reconnection: true,
+      reconnectionDelay: 5000,
+      reconnectionAttempts: 20,
+    });
 
     console.log("socket create", this.socket);
   }
@@ -39,6 +43,7 @@ class RoomPage extends Component {
             media={(media) => (this.media = media)}
             socket={this.socket}
             getUserMedia={this.getUserMedia}
+            username={this.props.match.params.room}
           />
           <CommunicationContainer
             socket={this.socket}

@@ -57,7 +57,7 @@ class MediaBridge extends Component {
     super(props);
     this.state = {
       bridge: "",
-      user: "host",
+      user: props.user,
       recording: false,
       time_slot: 0,
       time_diff: 0,
@@ -120,7 +120,6 @@ class MediaBridge extends Component {
     this.onFace = this.onFace.bind(this);
     this.mask_configuration = [];
     this.losingface = 0;
-
     // this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
@@ -131,7 +130,6 @@ class MediaBridge extends Component {
     );
 
     this.props.socket.on("process-start", this.onProcessStart);
-    this.props.socket.on("reconnect", this.onReconnect);
     this.props.socket.on("process-stop", this.onProcessStop);
     this.props.socket.on("process-control", this.onProcessControl);
     this.props.socket.on("reset", this.onReset);
@@ -210,11 +208,6 @@ class MediaBridge extends Component {
 
     // console.log("+ faceExpressionModel loaded:");
     // console.log(faceExpressionModel);
-  }
-
-  onReconnect() {
-    this.props.socket.emit("find");
-    console.log("reconnecting to room");
   }
 
   // survey progress control
@@ -845,7 +838,7 @@ class MediaBridge extends Component {
   }
 
   onRemoteHangup() {
-    this.setState({ ...this.state, user: "host", bridge: "host-hangup" });
+    this.setState({ ...this.state, bridge: "host-hangup" });
   }
   onMessage(message) {
     if (message.type === "offer") {
@@ -908,7 +901,7 @@ class MediaBridge extends Component {
     this.props.socket.send(this.pc.localDescription);
   }
   hangup() {
-    this.setState({ ...this.state, user: "guest", bridge: "guest-hangup" });
+    this.setState({ ...this.state, bridge: "guest-hangup" });
     this.pc.close();
     this.props.socket.emit("room-idle", { room: this.props.room });
     this.props.socket.emit("leave");
@@ -940,7 +933,7 @@ class MediaBridge extends Component {
         this.setupDataHandlers();
         console.log("attachMediaIfReady");
         this.pc
-          .createOffer()
+          .createOffer({ iceRestart: true })
           .then(this.setDescription)
           .then(this.sendDescription)
           .catch(this.handleError); // An error occurred, so handle the failure to connect
@@ -960,6 +953,24 @@ class MediaBridge extends Component {
             urls: "stun:stun.l.google.com:19302",
           },
         ],
+      });
+      this.pc.addEventListener("iceconnectionstatechange", (event) => {
+        let pcstate = this.pc.iceConnectionState;
+        console.log("iceconnection change ", pcstate);
+        if (
+          pcstate === "failed" ||
+          pcstate === "closed" ||
+          pcstate === "disconnected"
+        ) {
+          /* possibly reconfigure the connection in some way here */
+          /* then request ICE restart */
+          this.reconnecttimer = setInterval(() => {
+            console.log("iceconnection trying to reconnect");
+            location.reload();
+          }, 5000);
+        } else {
+          clearInterval(this.reconnecttimer);
+        }
       });
       // when our browser gets a candidate, send it to the peer
       this.pc.onicecandidate = (e) => {

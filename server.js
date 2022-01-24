@@ -300,7 +300,7 @@ function processStart(room, start_time, cfg) {
   }
 }
 function processStop(room, accident_stop) {
-  console.log("+ process stop ", accident_stop);
+  console.log("+ process stop ");
   if (accident_stop) {
     topic_selected = [];
   }
@@ -414,7 +414,7 @@ chatio.on("connection", (socket) => {
   socket.on("find", () => {
     startFlag = true;
     const url = socket.request.headers.referer.split("/");
-    room = url[url.length - 1];
+    room = url[url.length - 2];
 
     console.log(" - trying to locate room: " + room);
 
@@ -888,6 +888,7 @@ controlio.on("connection", (socket) => {
     control_socket = control_room_list[params_room];
     control_socket.emit("process-stop");
   });
+
   socket.on("data-send", (data_get) => {
     console.log("- data-send");
     console.log(data_get);
@@ -913,6 +914,7 @@ controlio.on("connection", (socket) => {
       }
     }, 5000);
   });
+
   socket.on("control", (data) => {
     console.log("- control");
     console.log(data);

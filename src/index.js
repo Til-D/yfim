@@ -18,7 +18,7 @@ render(
     <BrowserRouter>
       <Switch>
         <Route exact path="/" component={Home} />
-        <Route exact path="/r/:room" component={Room} />
+        <Route exact path="/r/:room/:user" component={Room} />
         {/* <Route path="*" component={NotFound} /> */}
         <Route exact path="/control/:room" component={RoomControl} />
         <Route exact path="/s/:room/:user" component={SurveyPage} />
