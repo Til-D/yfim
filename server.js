@@ -180,12 +180,12 @@ function processStart(room, start_time, cfg) {
 
           topic_selected.push(topic);
           console.log("- sending update to projection in room: " + room);
-          chatio.to("test").emit("stage-control", {
+          chatio.emit("stage-control", {
             mask: mask_setting,
             topic: [topic],
             stage,
           });
-          projectio.to("projection-test").emit("stage-control", {
+          projectio.emit("stage-control", {
             mask: mask_setting,
             topic: [topic],
             stage,
@@ -203,7 +203,7 @@ function processStart(room, start_time, cfg) {
               ")"
           );
           chatio.emit("survey-start", { stage: stage });
-          controlio.to("survey-" + room).emit("survey-start", { stage: stage });
+          controlio.emit("survey-start", { stage: stage });
           survey_in_progress = true;
           stage = 2;
           //send mask
@@ -223,12 +223,12 @@ function processStart(room, start_time, cfg) {
               topic +
               ")"
           );
-          chatio.to(room).emit("stage-control", {
+          chatio.emit("stage-control", {
             mask: mask_setting,
             topic: [topic],
             stage,
           });
-          controlio.to("projection-test").emit("stage-control", { stage });
+          controlio.emit("stage-control", { stage });
         }
       } else if (time_left < 90 && time_left > 0) {
         //stage3
@@ -241,7 +241,7 @@ function processStart(room, start_time, cfg) {
               ")"
           );
           chatio.emit("survey-start", { stage: stage });
-          controlio.to("survey-" + room).emit("survey-start", { stage: stage });
+          controlio.emit("survey-start", { stage: stage });
           survey_in_progress = true;
           stage = 3;
           //send mask
@@ -261,10 +261,8 @@ function processStart(room, start_time, cfg) {
               topic +
               ")"
           );
-          chatio
-            .to("test")
-            .emit("stage-control", { mask: mask_setting, topic, stage });
-          controlio.to("projection-test").emit("stage-control", { stage });
+          chatio.emit("stage-control", { mask: mask_setting, topic, stage });
+          controlio.emit("stage-control", { stage });
         }
       }
 
@@ -279,7 +277,7 @@ function processStart(room, start_time, cfg) {
               ")"
           );
           chatio.emit("survey-start", { stage: stage });
-          controlio.to("survey-" + room).emit("survey-start", { stage: stage });
+          controlio.emit("survey-start", { stage: stage });
           survey_in_progress = true;
         }
         if (!stop && !survey_in_progress) {
@@ -315,9 +313,9 @@ function processStop(room, accident_stop) {
   // socket send stop
 
   // io.to(room).emit("process-stop", { accident_stop });
-  chatio.to(room).emit("process-stop", { accident_stop });
-  controlio.to("survey-test").emit("process-stop", { accident_stop });
-  projectio.to("projection-test").emit("process-stop", { accident_stop });
+  chatio.emit("process-stop", { accident_stop });
+  controlio.emit("process-stop", { accident_stop });
+  projectio.emit("process-stop", { accident_stop });
 }
 async function storeData(room) {
   const results = {
@@ -371,7 +369,7 @@ async function storeData(room) {
     guest: false,
   };
   console.log(data);
-  chatio.to(room).emit("upload-finish", results);
+  chatio.emit("upload-finish", results);
   const response = await couch
     .insert(data)
     .then((res) => {
@@ -386,7 +384,7 @@ async function storeData(room) {
 
 chatio.on("connection", (socket) => {
   let startFlag = false;
-  console.log("+ new connection from a socket");
+  console.log("+ new connection from a chat socket");
   let rooms = chatio.adapter.rooms["test"];
 
   if (startFlag) {
@@ -472,7 +470,7 @@ chatio.on("connection", (socket) => {
   socket.on("room-idle", (data) => {
     const { room } = data;
     // console.log(`room ${room} is idle now`);
-    io.to("survey-" + room).emit("room-idle");
+    controlio.emit("room-idle");
     console.log("- room idle: " + room + " -> initiate process stop");
     processStop(room, true);
   });
@@ -523,8 +521,8 @@ chatio.on("connection", (socket) => {
       }
       let duration = extend_time;
       console.log("moving on: after", duration);
-      chatio.to(room).emit("survey-end", { stage_startTime, duration, stage });
-      projectio.to("projection-test").emit("stage-control", { stage });
+      chatio.emit("survey-end", { stage_startTime, duration, stage });
+      projectio.emit("stage-control", { stage });
     }
   });
   socket.on("reset", (data) => {
@@ -539,8 +537,8 @@ chatio.on("connection", (socket) => {
       "- face-detected received in room: " + room + ", user: " + user
     );
 
-    controlio.to("survey-test").emit("face-detected");
-    chatio.to(room).emit("face-detected", user);
+    controlio.emit("face-detected");
+    chatio.emit("face-detected", user);
   });
   socket.on("process-control", (data) => {
     const params_room = data.room;
@@ -594,13 +592,13 @@ chatio.on("connection", (socket) => {
 
           processStart(room, startTime, current_cfg);
           const { duration } = current_cfg["setting"][0];
-          chatio.to(room).emit("process-start", {
+          chatio.emit("process-start", {
             startTime,
             duration,
             record_by_user,
             sessionId,
           });
-          controlio.to("survey-" + room).emit("process-start");
+          controlio.emit("process-start");
 
           console.log("- resetting ready_user_by_room for next survey (?)");
           ready_user_by_room[room] = {
@@ -741,8 +739,8 @@ controlio.on("connection", (socket) => {
       }
       let duration = extend_time;
       console.log("moving on: after", duration);
-      chatio.to(room).emit("survey-end", { stage_startTime, duration, stage });
-      projectio.to("projection-test").emit("stage-control", {
+      chatio.emit("survey-end", { stage_startTime, duration, stage });
+      projectio.emit("stage-control", {
         stage,
       });
     }
@@ -760,8 +758,8 @@ controlio.on("connection", (socket) => {
     );
     if (survey_socket[user] != undefined) {
       const sid = survey_socket[user].id;
-      controlio.to("survey-test").emit("face-detected");
-      chatio.to(room).emit("face-detected", user);
+      controlio.emit("face-detected");
+      chatio.emit("face-detected", user);
     }
   });
   socket.on("process-control", (data) => {
@@ -812,13 +810,13 @@ controlio.on("connection", (socket) => {
 
           processStart(room, startTime, current_cfg);
           const { duration } = current_cfg["setting"][0];
-          chatio.to(room).emit("process-start", {
+          chatio.emit("process-start", {
             startTime,
             duration,
             record_by_user,
             sessionId,
           });
-          controlio.to("survey-" + room).emit("process-start");
+          controlio.emit("process-start");
 
           console.log("- resetting ready_user_by_room for next survey (?)");
           ready_user_by_room[room] = {
