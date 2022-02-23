@@ -276,12 +276,7 @@ class MediaBridge extends Component {
 
   onResults(results) {
     // Draw the overlays.
-    let user;
-    if (this.state.user == "guest") {
-      user = "host"; //why?
-    } else {
-      user = "guest";
-    }
+
     let lose_face_f = false;
     const canvasCtx = this.canvasRef.getContext("2d");
     if (results.multiFaceLandmarks) {
@@ -330,6 +325,13 @@ class MediaBridge extends Component {
       }
       for (const landmarks of results.multiFaceLandmarks) {
         if (landmarks[27].x > 0) {
+          console.log("+ Face detected");
+          let user;
+          if (this.state.user == "guest") {
+            user = "host"; //why?
+          } else {
+            user = "guest";
+          }
           this.props.socket.emit("face-detected", {
             room: this.props.room,
             user,
