@@ -1,9 +1,6 @@
 import React, { Component } from "react";
 import { PropTypes } from "prop-types";
 import store from "../store";
-import * as faceapi from "face-api.js";
-import getFeatureAttributes from "../utils/getFeatureAttributes";
-import ToolBar from "../components/ToolBar";
 import { connect } from "react-redux";
 import Clock from "./Clock";
 import GYModal from "../components/Modal";
@@ -13,9 +10,6 @@ import Thankyou from "../components/Thankyou";
 import SideBar from "../components/SideBar";
 import * as FaceMesh from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
-import { drawConnectors } from "@mediapipe/drawing_utils";
-import * as drawingUtils from "@mediapipe/drawing_utils";
-import { withThemeCreator } from "@material-ui/styles";
 var FileSaver = require("file-saver");
 
 const RECORD_AUDIO = false;
@@ -1003,16 +997,17 @@ class MediaBridge extends Component {
         this.setState({ ...this.state, bridge: "established" });
         console.log("sending cam");
         console.log("setting camera");
-        this.camera = new Camera(this.remoteVideo, {
-          onFrame: async () => {
-            await this.faceDetection.send({
-              image: this.remoteVideo,
-            });
-          },
-          width: 1280,
-          height: 720,
-        });
-        this.camera.start();
+
+        // this.camera = new Camera(this.remoteVideo, {
+        //   onFrame: async () => {
+        //     await this.faceDetection.send({
+        //       image: this.remoteVideo,
+        //     });
+        //   },
+        //   width: 1280,
+        //   height: 720,
+        // });
+        // this.camera.start();
       };
       this.pc.ondatachannel = (e) => {
         // data channel
