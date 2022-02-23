@@ -45,8 +45,8 @@ function SurveyPage(props) {
       setStage(stage + 1);
     });
     socket.on("face-detected", (data) => {
-      console.log("face detected");
-      if (props.match.params.user == data) setFaceOn(true);
+      console.log("face detected", data);
+      setFaceOn(true);
     });
     socket.on("process-start", () => {
       console.log("process start");
