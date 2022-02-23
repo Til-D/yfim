@@ -325,7 +325,6 @@ class MediaBridge extends Component {
       }
       for (const landmarks of results.multiFaceLandmarks) {
         if (landmarks[27].x > 0) {
-          console.log("+ Face detected");
           let user;
           if (this.state.user == "guest") {
             user = "host"; //why?
@@ -680,8 +679,6 @@ class MediaBridge extends Component {
 
   // face detected event listener
   onFace(data) {
-    console.log("- onFace()");
-
     if (this.state.user == data && !this.state.process) {
       this.setState({
         ...this.state,

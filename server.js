@@ -533,7 +533,7 @@ chatio.on("connection", (socket) => {
 
   socket.on("face-detected", (data) => {
     const { room, user } = data;
-    controlio.emit("face-detected");
+    controlio.emit("face-detected", user);
     chatio.emit("face-detected", user);
   });
   socket.on("process-control", (data) => {
@@ -728,7 +728,7 @@ controlio.on("connection", (socket) => {
     // );
     if (survey_socket[user] != undefined) {
       // console.log("sending face detected");
-      controlio.emit("face-detected");
+      controlio.emit("face-detected", user);
       chatio.emit("face-detected", user);
     }
   });
