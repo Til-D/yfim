@@ -17,7 +17,6 @@ function SurveyPage(props) {
   const [faceOn, setFaceOn] = useState(false);
   const [ready, setReady] = useState(false);
   const [stage, setStage] = useState(1);
-  const [final_stage, setFinalStage] = useState(false);
   const { room, user } = props.match.params;
   const [answer, setAnswer] = useState([]);
   const [socket_s, setSocket] = useState();
@@ -40,7 +39,6 @@ function SurveyPage(props) {
 
       if (stage == 3 || stage == 4) {
         setSurveyOn(true);
-        setFinalStage(true);
       } else {
         setSurveyOn(true);
       }
@@ -55,9 +53,10 @@ function SurveyPage(props) {
       setReady(false);
       setProcess(true);
     });
+
     socket.on("process-stop", (data) => {
       const { accident_stop } = data;
-      console.log("- process-stop", accident_stop);
+      console.log("- process-stop", accident_stop, answer);
       if (!accident_stop) {
         console.log("process-stop", answer);
         socket.emit("data-send", {
@@ -70,9 +69,11 @@ function SurveyPage(props) {
         setTimeout(() => {
           setLoading(false);
         }, 20000);
+        setAnswer([]);
+      } else {
+        setAnswer([]);
       }
 
-      setAnswer([]);
       resetParams();
     });
     socket.on("reset", () => {
@@ -84,7 +85,6 @@ function SurveyPage(props) {
   function resetParams() {
     setStage(1);
     setSurveyOn(false);
-    setFinalStage(false);
     setFaceOn(false);
     setProcess(false);
     setReady(false);
@@ -97,9 +97,6 @@ function SurveyPage(props) {
     socket_s.emit("process-ready", { room, user, rating, record });
     setReady(true);
   }
-  // socket.join(props.match.params.room);
-  // Need to move this to control panel
-
   // Survey.StylesManager.applyTheme("winter");
   const model = new Survey.Model(surveyJSON);
   const final_model = new Survey.Model(survey_Final);
@@ -108,15 +105,18 @@ function SurveyPage(props) {
     //   callback function
 
     setSurveyOn(false);
-    setFinalStage(false);
     socket_s.emit("survey-end", {
       room,
       user,
     });
     let submit_time = new Date().getTime();
+    const default_data = {
+      question1: "none",
+      question2: "none",
+    };
     let result = {
       submit_time,
-      result: survey.data,
+      result: survey.data ? survey.data : default_data,
     };
     let curr_answer = answer;
     curr_answer.push(result);
@@ -140,20 +140,20 @@ function SurveyPage(props) {
       {process && !surveyOn && <SurveyOngoing stage={stage} />}
       {loading && <SurveyThankyou />}
 
-      {surveyOn && !final_stage && (
+      {surveyOn && (
         <Survey.Survey
           model={model}
           isExpanded={true}
           onComplete={sendDataToServer}
         />
       )}
-      {surveyOn && final_stage && (
+      {/* {surveyOn && final_stage && (
         <Survey.Survey
           model={final_model}
           isExpanded={true}
           onComplete={sendDataToServer}
         />
-      )}
+      )} */}
     </div>
   );
 }

@@ -329,11 +329,11 @@ async function storeData(room) {
       mask_setting: current_cfg["setting"][i + 1],
       host: {
         survey: question_data["host"][i],
-        emotions: emotion_data["host"][i],
+        // emotions: emotion_data["host"][i],
       },
       guest: {
         survey: question_data["guest"][i],
-        emotions: emotion_data["guest"][i],
+        // emotions: emotion_data["guest"][i],
       },
     };
     phase_result.push(data);
@@ -533,10 +533,6 @@ chatio.on("connection", (socket) => {
 
   socket.on("face-detected", (data) => {
     const { room, user } = data;
-    console.log(
-      "- face-detected received in room: " + room + ", user: " + user
-    );
-
     controlio.emit("face-detected");
     chatio.emit("face-detected", user);
   });
@@ -636,32 +632,6 @@ chatio.on("connection", (socket) => {
     console.log(record_by_user);
   });
 
-  socket.on("data-send", (data_get) => {
-    console.log("- data-send");
-    console.log(data_get);
-
-    const { data_type, data, user, room } = data_get;
-    if (data_type == "question") {
-      question_ready[user] = true;
-      question_data[user] = data;
-    } else if (data_type == "emotion") {
-      emotion_ready[user] = true;
-      emotion_data[user] = data;
-    }
-    setTimeout(() => {
-      console.log("waiting for data uploading");
-      if (
-        emotion_ready["host"] &&
-        emotion_ready["guest"] &&
-        question_ready["host"] &&
-        question_ready["guest"]
-      ) {
-        console.log("- call store data");
-        storeData(room);
-      }
-    }, 5000);
-  });
-
   socket.on("control", (data) => {
     console.log("- control");
     console.log(data);
@@ -753,11 +723,11 @@ controlio.on("connection", (socket) => {
 
   socket.on("face-detected", (data) => {
     const { room, user } = data;
-    console.log(
-      "- face-detected received in room: " + room + ", user: " + user
-    );
+    // console.log(
+    //   "- face-detected received in room: " + room + ", user: " + user
+    // );
     if (survey_socket[user] != undefined) {
-      const sid = survey_socket[user].id;
+      // console.log("sending face detected");
       controlio.emit("face-detected");
       chatio.emit("face-detected", user);
     }
@@ -876,12 +846,7 @@ controlio.on("connection", (socket) => {
     }
     setTimeout(() => {
       console.log("waiting for data uploading");
-      if (
-        emotion_ready["host"] &&
-        emotion_ready["guest"] &&
-        question_ready["host"] &&
-        question_ready["guest"]
-      ) {
+      if (question_ready["host"] && question_ready["guest"]) {
         console.log("- call store data");
         storeData(room);
       }

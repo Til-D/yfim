@@ -11,11 +11,6 @@ import Introduction from "../components/Introduction";
 import IntroFaceDetect from "../components/IntroFaceDetect";
 import Thankyou from "../components/Thankyou";
 import SideBar from "../components/SideBar";
-import * as FaceMesh from "@mediapipe/face_mesh";
-import { Camera } from "@mediapipe/camera_utils";
-import { drawConnectors } from "@mediapipe/drawing_utils";
-import * as drawingUtils from "@mediapipe/drawing_utils";
-import { withThemeCreator } from "@material-ui/styles";
 var FileSaver = require("file-saver");
 
 const RECORD_AUDIO = false;
@@ -95,7 +90,6 @@ class MediaBridge extends Component {
     this.detections = null;
     this.process_duration = 10;
     this.endTime = 0;
-    this.onResults = this.onResults.bind(this);
     this.onRemoteHangup = this.onRemoteHangup.bind(this);
     this.onMessage = this.onMessage.bind(this);
     this.sendData = this.sendData.bind(this);
@@ -105,6 +99,8 @@ class MediaBridge extends Component {
     this.hangup = this.hangup.bind(this);
     this.init = this.init.bind(this);
     this.setDescription = this.setDescription.bind(this);
+    this.showEmotion = this.showEmotion.bind(this);
+    this.detectFace = this.detectFace.bind(this);
     this.drawCanvas = this.drawCanvas.bind(this);
     this.onControl = this.onControl.bind(this);
     this.sendDataToServer = this.sendDataToServer.bind(this);
@@ -116,32 +112,16 @@ class MediaBridge extends Component {
     this.onStageControl = this.onStageControl.bind(this);
     this.onProcessStop = this.onProcessStop.bind(this);
     this.onUploadingFinish = this.onUploadingFinish.bind(this);
+    this.onFaceDetect = this.onFaceDetect.bind(this);
     this.onReset = this.onReset.bind(this);
     this.onSurveyEnd = this.onSurveyEnd.bind(this);
     this.onSurveyStart = this.onSurveyStart.bind(this);
     this.onFace = this.onFace.bind(this);
     this.mask_configuration = [];
     this.losingface = 0;
-
-    this.faceDetection = new FaceMesh.FaceMesh({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-      },
-    });
-    this.faceDetection.setOptions({
-      selfieMode: false,
-      maxNumFaces: 1,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-    });
-    // this.faceDetection.setOptions({
-    //   model: "short",
-    //   minDetectionConfidence: 0.5,
-    // });
-    this.faceDetection.onResults(this.onResults);
+    // this.setControlParams = this.setControlParams.bind(this);
   }
   componentDidMount() {
-    // this.loadModel();
     this.props.media(this);
     this.props.getUserMedia.then(
       (stream) => (this.localVideo.srcObject = this.localStream = stream)
@@ -163,7 +143,7 @@ class MediaBridge extends Component {
     this.props.socket.on("recording", this.startRecording);
     this.remoteVideo.addEventListener("play", () => {
       // start detect remote's face and process
-      // this.showEmotion();
+      this.showEmotion();
     });
 
     // audio recorder initialize
@@ -194,10 +174,11 @@ class MediaBridge extends Component {
     clearInterval(this.timmer);
   }
 
-  // async showEmotion() {
-  //   console.log("++ showEmotion(): start face detection");
-  //   // this.detections = this.detectFace();
-  // }
+  async showEmotion() {
+    console.log("++ showEmotion(): start face detection");
+    this.detections = this.detectFace();
+  }
+  // load faceapi models for detection
 
   // survey progress control
   // 1. calculate finish time, for clock display
@@ -278,170 +259,6 @@ class MediaBridge extends Component {
       survey_in_progress: true,
       side_prompt: "We have some questions for you on Ipad",
     });
-  }
-
-  onResults(results) {
-    // Draw the overlays.
-    let user;
-    if (this.state.user == "guest") {
-      user = "host"; //why?
-    } else {
-      user = "guest";
-    }
-    let lose_face_f = false;
-    const canvasCtx = this.canvasRef.getContext("2d");
-    if (results.multiFaceLandmarks) {
-      if (results.multiFaceLandmarks.length < 1) {
-        console.log("- unable to detect face ", this.losingface);
-        if (this.state.survey_in_progress) {
-          this.losingface += 0.03;
-        } else {
-          this.losingface += 0.08;
-        }
-        console.log("losing face", this.losingface);
-        this.losingface %= 21; // why?
-        if (this.losingface >= 10 && this.losingface < 20) {
-          if (this.state.process) {
-            // Restart whole process
-            if (!lose_face_f) {
-              lose_face_f = true;
-              this.sendData("lose-face");
-            }
-          } else {
-            if (!lose_face_f) {
-              lose_face_f = true;
-              this.sendData("room-idle");
-            }
-          }
-
-          console.log("WARNING: Lost face tracking for more than 10 secs.");
-        }
-        if (this.losingface >= 20 && this.state.process) {
-          // Restart whole process
-          this.onReset();
-          console.log("WARNING: Your partner seems to have left.");
-        }
-        if (this.losingface >= 20 && !this.state.process && !this.state.ready) {
-          // Restart whole process
-          this.props.socket.emit("room-idle", { room: this.props.room });
-          console.log("The room seems to be idle.");
-        }
-
-        console.log(
-          "WARNING: Can't detect face on remote side",
-          this.losingface,
-          this.state.process,
-          this.state.ready
-        );
-      }
-      for (const landmarks of results.multiFaceLandmarks) {
-        if (landmarks[27].x > 0) {
-          this.props.socket.emit("face-detected", {
-            room: this.props.room,
-            user,
-          });
-          this.losingface = 0;
-        }
-
-        this.canvasRef.width = 1280;
-        this.canvasRef.height = 720;
-
-        if (this.state.process) {
-          canvasCtx.save();
-          canvasCtx.clearRect(
-            0,
-            0,
-            this.canvasRef.width,
-            this.canvasRef.height
-          );
-          const {
-            eyes: eyesCtrl,
-            mouth: mouthCtrl,
-            bar: barCtrl,
-          } = this.props.controlParams.feature_show;
-          canvasCtx.fillStyle = "black";
-          if (this.state.stage > 1) {
-            canvasCtx.fillRect(
-              0,
-              0,
-              this.canvasRef.width,
-              this.canvasRef.height
-            );
-          }
-
-          if (eyesCtrl.toggle) {
-            const mesh = landmarks;
-
-            // Left eye bounds (top, left, bottom, right) are the points (27, 130, 23, 243)
-            let lTop = mesh[27].y;
-            let lLeft = mesh[130].x;
-            let lBot = mesh[23].y;
-            let lRig = mesh[243].x;
-            let lWid = lRig - lLeft;
-            let lHei = lBot - lTop;
-
-            // Right eye bounds (top, left, bottom, right) are the points (257, 463, 253, 359)
-            let rTop = mesh[257].y;
-            let rLeft = mesh[463].x;
-            let rBot = mesh[253].y;
-            let rRig = mesh[359].x;
-            let rWid = rRig - rLeft;
-            let rHei = rBot - rTop;
-
-            canvasCtx.clearRect(
-              lLeft * this.canvasRef.width,
-              lTop * this.canvasRef.height - 10,
-              lWid * this.canvasRef.width,
-              lHei * this.canvasRef.height + 10
-            );
-
-            canvasCtx.clearRect(
-              rLeft * this.canvasRef.width,
-              rTop * this.canvasRef.height - 10,
-              rWid * this.canvasRef.width,
-              rHei * this.canvasRef.height + 10
-            );
-          }
-
-          if (mouthCtrl.toggle) {
-            const mesh = landmarks;
-            let mTop = mesh[0].y;
-            let mLeft = mesh[76].x;
-            let mBot = mesh[17].y;
-            let mRig = mesh[291].x;
-            let mWid = mRig - mLeft;
-            let mHei = mBot - mTop;
-
-            canvasCtx.clearRect(
-              mLeft * this.canvasRef.width,
-              mTop * this.canvasRef.height,
-              mWid * this.canvasRef.width,
-              mHei * this.canvasRef.height + 10
-            );
-          }
-          if (barCtrl.toggle) {
-            let spanx = this.canvasRef.width / 10;
-            let spany = this.canvasRef.height / 10;
-            if (barCtrl.direction) {
-              ctx.clearRect(
-                barCtrl.position * spanx,
-                0,
-                spanx * barCtrl.sliderIndex,
-                this.canvasRef.height
-              );
-            } else {
-              ctx.clearRect(
-                0,
-                barCtrl.position * spany,
-                this.canvasRef.width,
-                spany * barCtrl.sliderIndex
-              );
-            }
-          }
-        }
-      }
-    }
-    canvasCtx.restore();
   }
   // configure process setting
   onProcessControl() {
@@ -678,6 +495,22 @@ class MediaBridge extends Component {
     }
   }
 
+  // if losing promote user's face, send socket message to server
+  onFaceDetect() {
+    console.log("+ Face detected");
+    // console.log(faceapi.nets);
+    let user;
+    if (this.state.user == "guest") {
+      user = "host"; //why?
+    } else {
+      user = "guest";
+    }
+    this.props.socket.emit("face-detected", {
+      room: this.props.room,
+      user,
+    });
+  }
+
   // face detected event listener
   onFace(data) {
     console.log("- onFace()");
@@ -742,6 +575,124 @@ class MediaBridge extends Component {
     }
   }
 
+  // main function for chat room
+  // 1. faceapi doc: https://justadudewhohacks.github.io/face-api.js/docs/index.html
+  // 2. create canvas based on remote video size
+  // 3.
+  detectFace() {
+    const canvasTmp = faceapi.createCanvasFromMedia(this.remoteVideo);
+    const canvasTmp2 = faceapi.createCanvasFromMedia(this.localVideo);
+    console.log("compare", canvasTmp, canvasTmp2);
+    const displaySize = {
+      width: canvasTmp2.width,
+      height: canvasTmp2.height,
+    };
+    faceapi.matchDimensions(this.canvasRef, displaySize);
+    console.log(this.canvasRef.width, this.canvasRef.height);
+
+    return new Promise(
+      function (resolve) {
+        let lose_face_f = false;
+
+        this.faceDetectionInProgress = false;
+
+        // PROBLEM: every second this gets put into a cue while await faceapi.detectSingleFace takes >1 sec to produce result
+        setInterval(async () => {
+          if (!this.faceDetectionInProgress) {
+            console.log("Triggering face detection..");
+            this.faceDetectionInProgress = true;
+
+            this.detections = await faceapi
+              .detectSingleFace(
+                this.remoteVideo,
+                new faceapi.TinyFaceDetectorOptions()
+              )
+              .withFaceLandmarks()
+              .withFaceExpressions();
+            // console.log("detections", this.detections);
+            let utc = new Date().getTime();
+            try {
+              this.faceAttributes = getFeatureAttributes(this.detections);
+              if (!this.state.process) {
+                this.onFaceDetect();
+              }
+              this.losingface = 0;
+              if (lose_face_f) {
+                this.sendData("recover");
+                lose_face_f = false;
+              }
+            } catch (err) {
+              // console.log(err);
+
+              if (this.state.survey_in_progress) {
+                this.losingface += 0.5;
+              } else {
+                this.losingface += 1;
+              }
+              this.losingface %= 22; // why?
+              if (this.losingface >= 10 && this.losingface < 20) {
+                if (this.state.process) {
+                  // Restart whole process
+                  if (!lose_face_f) {
+                    lose_face_f = true;
+                    this.sendData("lose-face");
+                  }
+                } else {
+                  if (!lose_face_f) {
+                    lose_face_f = true;
+                    this.sendData("room-idle");
+                  }
+                }
+
+                console.log(
+                  "WARNING: Lost face tracking for more than 10 secs."
+                );
+              }
+              if (this.losingface >= 20 && this.state.process) {
+                // Restart whole process
+                this.onReset();
+                console.log("WARNING: Your partner seems to have left.");
+              }
+              if (
+                this.losingface >= 20 &&
+                !this.state.process &&
+                !this.state.ready
+              ) {
+                // Restart whole process
+                this.props.socket.emit("room-idle", { room: this.props.room });
+                console.log("The room seems to be idle.");
+              }
+
+              console.log(
+                "WARNING: Can't detect face on remote side",
+                this.losingface
+              );
+            }
+
+            if (this.state.process && !this.state.survey_in_progress) {
+              try {
+                const emo_data = {
+                  timeStamp: utc,
+                  time_slot: this.state.time_slot,
+                  emotion: this.detections.expressions,
+                };
+                this.record.record_detail.push(emo_data);
+                this.record.record_count += 1;
+              } catch (err) {}
+            }
+
+            if (this.props.controlParams.occlusion_mask) this.drawCanvas(true);
+            else this.drawCanvas(false);
+
+            // console.log('setting detection in progress to false');
+            this.faceDetectionInProgress = false;
+          } else {
+            console.log("-- skipped. Face detection in progress");
+          }
+        }, 1000);
+      }.bind(this)
+    );
+  }
   // Draw a mask over face/screen
   drawCanvas(drawable) {
     const ctx = this.canvasRef.getContext("2d");
@@ -754,8 +705,8 @@ class MediaBridge extends Component {
     if (!drawable) {
       ctx.clearRect(0, 0, this.canvasRef.width, this.canvasRef.height);
     } else {
-      // ctx.fillStyle = "black";
-      // ctx.fillRect(0, 0, this.canvasRef.width, this.canvasRef.height);
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, this.canvasRef.width, this.canvasRef.height);
       const {
         leftEyeAttributes,
         rightEyeAttributes,
@@ -1001,18 +952,6 @@ class MediaBridge extends Component {
         this.remoteStream = e.stream;
         this.remoteVideo.srcObject = this.remoteStream = e.stream;
         this.setState({ ...this.state, bridge: "established" });
-        console.log("sending cam");
-        console.log("setting camera");
-        this.camera = new Camera(this.remoteVideo, {
-          onFrame: async () => {
-            await this.faceDetection.send({
-              image: this.remoteVideo,
-            });
-          },
-          width: 1280,
-          height: 720,
-        });
-        this.camera.start();
       };
       this.pc.ondatachannel = (e) => {
         // data channel
