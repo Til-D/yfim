@@ -998,6 +998,11 @@ class MediaBridge extends Component {
         console.log("sending cam");
         console.log("setting camera");
 
+        setInterval(async () => {
+          await this.faceDetection.send({
+            image: this.remoteVideo,
+          });
+        }, 100);
         // this.camera = new Camera(this.remoteVideo, {
         //   onFrame: async () => {
         //     await this.faceDetection.send({
