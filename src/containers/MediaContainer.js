@@ -335,6 +335,10 @@ class MediaBridge extends Component {
             user,
           });
           this.losingface = 0;
+          if (lose_face_f) {
+            this.sendData("recover");
+            lose_face_f = false;
+          }
         }
 
         this.canvasRef.width = 1280;
@@ -1023,6 +1027,7 @@ class MediaBridge extends Component {
             video: this.localStream.getVideoTracks()[0].enabled,
           },
         });
+
         //sendData('hello');
       };
       // attach local media to the peer connection
