@@ -53,10 +53,11 @@ const init_mask = {
 
 class MediaBridge extends Component {
   constructor(props) {
+    console.log("props, ", props);
     super(props);
     this.state = {
       bridge: "",
-      user: props.user,
+      user: props.username,
       recording: false,
       time_slot: 0,
       time_diff: 0,
@@ -177,6 +178,7 @@ class MediaBridge extends Component {
         }
       };
     });
+    console.log("user ", this.state.user);
   }
   componentWillUnmount() {
     this.props.media(null);

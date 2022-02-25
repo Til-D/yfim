@@ -39,7 +39,7 @@ class RoomPage extends Component {
             media={(media) => (this.media = media)}
             socket={this.socket}
             getUserMedia={this.getUserMedia}
-            username={this.props.match.params.room}
+            username={this.props.match.params.user}
           />
           <CommunicationContainer
             socket={this.socket}
