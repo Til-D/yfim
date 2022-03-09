@@ -57,7 +57,7 @@ class MediaBridge extends Component {
     super(props);
     this.state = {
       bridge: "",
-      user: props.user,
+      user: props.username,
       recording: false,
       time_slot: 0,
       time_diff: 0,
