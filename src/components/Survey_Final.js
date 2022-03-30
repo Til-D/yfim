@@ -1,65 +1,172 @@
 export const survey_Final = {
-  pages: [
+  elements: [
     {
-      name: "Final Survey",
-      elements: [
+      type: "imagepicker",
+      name: "question 1.1",
+      title:
+        "How did you overall feel? Please choose the manikin that most describes your feeling",
+      choices: [
         {
-          type: "radiogroup",
-          name: "question1",
-          title: "How did you overall feel?",
-          choices: [
-            {
-              value: "item1",
-              text: "Neutral",
-            },
-            {
-              value: "item2",
-              text: "Happy",
-            },
-            {
-              value: "item3",
-              text: "Sad",
-            },
-            {
-              value: "item4",
-              text: "Angry",
-            },
-            {
-              value: "item5",
-              text: "Surprised",
-            },
-          ],
+          value: "lion",
+          imageLink: "https://files.catbox.moe/by7sxt.png",
         },
         {
-          type: "radiogroup",
-          name: "question2",
-          title: "How do you think your conversation partner felt?",
-          choices: [
-            {
-              value: "item1",
-              text: "Neutral",
-            },
-            {
-              value: "item2",
-              text: "Happy",
-            },
-            {
-              value: "item3",
-              text: "Sad",
-            },
-            {
-              value: "item4",
-              text: "Angry",
-            },
-            {
-              value: "item5",
-              text: "Surprised",
-            },
-          ],
+          value: "giraffe",
+          imageLink: "https://files.catbox.moe/fo4g45.png",
+        },
+        {
+          value: "panda",
+          imageLink: "https://files.catbox.moe/ypc684.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/2pd36z.png",
+        },
+        {
+          value: "item5",
+          imageLink: "https://files.catbox.moe/l4bof3.png",
         },
       ],
-      title: "Question!",
-      description: "",
+    },
+    {
+      type: "imagepicker",
+      name: "question 1.2",
+      title:
+        "How did you overall feel? Please choose the manikin that most describes your feeling",
+      choices: [
+        {
+          value: "lion",
+          imageLink: "https://files.catbox.moe/fmtpyz.png",
+        },
+        {
+          value: "giraffe",
+          imageLink: "https://files.catbox.moe/irsw0c.png",
+        },
+        {
+          value: "panda",
+          imageLink: "https://files.catbox.moe/ydrpec.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/tblr1q.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/a6n3d3.png",
+        },
+      ],
+    },
+    {
+      type: "imagepicker",
+      name: "question 1.3",
+      title:
+        "How did you overall feel? Please choose the manikin that most describes your feeling",
+      choices: [
+        {
+          value: "lion",
+          imageLink: "https://files.catbox.moe/z8frwa.png",
+        },
+        {
+          value: "giraffe",
+          imageLink: "https://files.catbox.moe/qjekj8.png",
+        },
+        {
+          value: "panda",
+          imageLink: "https://files.catbox.moe/wrbn45.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/zmucoy.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/7994b0.png",
+        },
+      ],
+    },
+    {
+      type: "imagepicker",
+      name: "question 2.1",
+      title:
+        "Please choose the manikin that most describes how you think your conversation partner felt",
+      choices: [
+        {
+          value: "lion",
+          imageLink: "https://files.catbox.moe/by7sxt.png",
+        },
+        {
+          value: "giraffe",
+          imageLink: "https://files.catbox.moe/fo4g45.png",
+        },
+        {
+          value: "panda",
+          imageLink: "https://files.catbox.moe/ypc684.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/2pd36z.png",
+        },
+        {
+          value: "item5",
+          imageLink: "https://files.catbox.moe/l4bof3.png",
+        },
+      ],
+    },
+    {
+      type: "imagepicker",
+      name: "question 2.2",
+      title:
+        "Please choose the manikin that most describes how you think your conversation partner felt",
+      choices: [
+        {
+          value: "lion",
+          imageLink: "https://files.catbox.moe/fmtpyz.png",
+        },
+        {
+          value: "giraffe",
+          imageLink: "https://files.catbox.moe/irsw0c.png",
+        },
+        {
+          value: "panda",
+          imageLink: "https://files.catbox.moe/ydrpec.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/tblr1q.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/a6n3d3.png",
+        },
+      ],
+    },
+    {
+      type: "imagepicker",
+      name: "question 2.3",
+      title:
+        "Please choose the manikin that most describes how you think your conversation partner felt",
+      choices: [
+        {
+          value: "lion",
+          imageLink: "https://files.catbox.moe/z8frwa.png",
+        },
+        {
+          value: "giraffe",
+          imageLink: "https://files.catbox.moe/qjekj8.png",
+        },
+        {
+          value: "panda",
+          imageLink: "https://files.catbox.moe/wrbn45.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/zmucoy.png",
+        },
+        {
+          value: "camel",
+          imageLink: "https://files.catbox.moe/7994b0.png",
+        },
+      ],
     },
   ],
 };
