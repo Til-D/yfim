@@ -7,19 +7,19 @@ export const survey_Final = {
         "How did you overall feel? Please choose the manikin that most describes your feeling",
       choices: [
         {
-          value: "lion",
+          value: "item1",
           imageLink: "https://files.catbox.moe/by7sxt.png",
         },
         {
-          value: "giraffe",
+          value: "item2",
           imageLink: "https://files.catbox.moe/fo4g45.png",
         },
         {
-          value: "panda",
+          value: "item3",
           imageLink: "https://files.catbox.moe/ypc684.png",
         },
         {
-          value: "camel",
+          value: "item4",
           imageLink: "https://files.catbox.moe/2pd36z.png",
         },
         {
@@ -35,23 +35,23 @@ export const survey_Final = {
         "How did you overall feel? Please choose the manikin that most describes your feeling",
       choices: [
         {
-          value: "lion",
+          value: "item1",
           imageLink: "https://files.catbox.moe/fmtpyz.png",
         },
         {
-          value: "giraffe",
+          value: "item2",
           imageLink: "https://files.catbox.moe/irsw0c.png",
         },
         {
-          value: "panda",
+          value: "item3",
           imageLink: "https://files.catbox.moe/ydrpec.png",
         },
         {
-          value: "camel",
+          value: "item4",
           imageLink: "https://files.catbox.moe/tblr1q.png",
         },
         {
-          value: "camel",
+          value: "item5",
           imageLink: "https://files.catbox.moe/a6n3d3.png",
         },
       ],
@@ -63,23 +63,23 @@ export const survey_Final = {
         "How did you overall feel? Please choose the manikin that most describes your feeling",
       choices: [
         {
-          value: "lion",
+          value: "item1",
           imageLink: "https://files.catbox.moe/z8frwa.png",
         },
         {
-          value: "giraffe",
+          value: "item2",
           imageLink: "https://files.catbox.moe/qjekj8.png",
         },
         {
-          value: "panda",
+          value: "item3",
           imageLink: "https://files.catbox.moe/wrbn45.png",
         },
         {
-          value: "camel",
+          value: "item4",
           imageLink: "https://files.catbox.moe/zmucoy.png",
         },
         {
-          value: "camel",
+          value: "item5",
           imageLink: "https://files.catbox.moe/7994b0.png",
         },
       ],
@@ -91,19 +91,19 @@ export const survey_Final = {
         "Please choose the manikin that most describes how you think your conversation partner felt",
       choices: [
         {
-          value: "lion",
+          value: "item1",
           imageLink: "https://files.catbox.moe/by7sxt.png",
         },
         {
-          value: "giraffe",
+          value: "item2",
           imageLink: "https://files.catbox.moe/fo4g45.png",
         },
         {
-          value: "panda",
+          value: "item3",
           imageLink: "https://files.catbox.moe/ypc684.png",
         },
         {
-          value: "camel",
+          value: "item4",
           imageLink: "https://files.catbox.moe/2pd36z.png",
         },
         {
@@ -119,23 +119,23 @@ export const survey_Final = {
         "Please choose the manikin that most describes how you think your conversation partner felt",
       choices: [
         {
-          value: "lion",
+          value: "item1",
           imageLink: "https://files.catbox.moe/fmtpyz.png",
         },
         {
-          value: "giraffe",
+          value: "item2",
           imageLink: "https://files.catbox.moe/irsw0c.png",
         },
         {
-          value: "panda",
+          value: "item3",
           imageLink: "https://files.catbox.moe/ydrpec.png",
         },
         {
-          value: "camel",
+          value: "item4",
           imageLink: "https://files.catbox.moe/tblr1q.png",
         },
         {
-          value: "camel",
+          value: "item5",
           imageLink: "https://files.catbox.moe/a6n3d3.png",
         },
       ],
@@ -147,23 +147,23 @@ export const survey_Final = {
         "Please choose the manikin that most describes how you think your conversation partner felt",
       choices: [
         {
-          value: "lion",
+          value: "item1",
           imageLink: "https://files.catbox.moe/z8frwa.png",
         },
         {
-          value: "giraffe",
+          value: "item2",
           imageLink: "https://files.catbox.moe/qjekj8.png",
         },
         {
-          value: "panda",
+          value: "item3",
           imageLink: "https://files.catbox.moe/wrbn45.png",
         },
         {
-          value: "camel",
+          value: "item4",
           imageLink: "https://files.catbox.moe/zmucoy.png",
         },
         {
-          value: "camel",
+          value: "item5",
           imageLink: "https://files.catbox.moe/7994b0.png",
         },
       ],

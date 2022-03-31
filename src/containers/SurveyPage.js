@@ -101,7 +101,7 @@ function SurveyPage(props) {
   // Need to move this to control panel
 
   // Survey.StylesManager.applyTheme("winter");
-  const model = new Survey.Model(surveyJSON);
+  const model = new Survey.Model(survey_Final);
   const final_model = new Survey.Model(survey_Final);
 
   function sendDataToServer(survey) {
