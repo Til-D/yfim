@@ -92,8 +92,8 @@ question_data = {
 };
 record_by_user = {
   //What's this?
-  host: false,
-  guest: false,
+  host: true,
+  guest: true,
 };
 
 const mask_set = ["endWithEyes", "endWithMouth", "opposite"];
@@ -347,7 +347,8 @@ async function storeData(room) {
   };
   const data = {
     _id: startTime.toString(),
-    start_time: sessionId,
+    start_time_stamp: sessionId,
+    start_time: startTime,
     phase_01: phase_result[0],
     phase_02: phase_result[1],
     phase_03: phase_result[2],
