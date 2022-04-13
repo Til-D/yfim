@@ -13,8 +13,8 @@ import Thankyou from "../components/Thankyou";
 import SideBar from "../components/SideBar";
 var FileSaver = require("file-saver");
 
-const RECORD_AUDIO = false;
-const RECORD_VIDEO = false;
+const RECORD_AUDIO = true;
+const RECORD_VIDEO = true;
 
 const introduction =
   "Welcome to `Your Face is Muted`! This experience consists of three stages. In each, the screen in front of you will show a prompt with a topic to discuss with your conversation partner.\
