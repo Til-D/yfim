@@ -151,10 +151,12 @@ class MediaBridge extends Component {
     // audio recorder initialize
     this.localVideo.addEventListener("play", () => {
       let audio_track = this.localStream.getAudioTracks()[0];
+      let video_track = this.localStream.getVideoTracks()[0];
       let audio_stream = new MediaStream();
       audio_stream.addTrack(audio_track);
-      this.mediaRecorder = new MediaRecorder(audio_stream, {
-        mimeType: "audio/webm",
+      // audio_stream.addTrack(video_track);
+      this.mediaRecorder = new MediaRecorder(this.localStream, {
+        mimeType: "video/webm",
       });
       this.chunks = [];
       // listen for data from media recorder
