@@ -345,6 +345,15 @@ async function storeData(room) {
       ? startTime.toString() + "_guest.webm"
       : "none",
   };
+
+  // const video = {
+  //   host: record_by_user["host"]
+  //     ? startTime.toString() + "_host_video.webm"
+  //     : "none",
+  //   guest: record_by_user["guest"]
+  //     ? startTime.toString() + "_guest_host_video.webm"
+  //     : "none",
+  // };
   const data = {
     _id: startTime.toString(),
     start_time_stamp: sessionId,
