@@ -170,7 +170,7 @@ export const survey_Final = {
       name: "question 2.3",
       title:
         "Please choose the manikin that most describes how you think **your conversation partner** felt.  \
-        -After finishing this question, please close your eyes and meditate for 30 seconds before pressing the complete button**",
+        -After finishing this question, please close your eyes and meditate for 30 seconds before pressing the complete button =)",
       choices: [
         {
           value: "item1",
