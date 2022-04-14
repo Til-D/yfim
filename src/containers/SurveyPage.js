@@ -112,6 +112,7 @@ function SurveyPage(props) {
     socket_s.emit("survey-end", {
       room,
       user,
+      survey,
     });
     let submit_time = new Date().getTime();
     let result = {
