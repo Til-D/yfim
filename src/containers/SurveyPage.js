@@ -53,7 +53,6 @@ function SurveyPage(props) {
     socket.on("process-start", () => {
       console.log("process start");
       setReady(false);
-      setAnswer([]);
       setProcess(true);
     });
     socket.on("process-stop", (data) => {
@@ -67,13 +66,13 @@ function SurveyPage(props) {
           user,
           data: answer,
         });
-        // setLoading(true);
-        // setTimeout(() => {
-        //   setLoading(false);
-        // }, 20000);
+        setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+        }, 20000);
       }
 
-      // setAnswer([]);
+      setAnswer([]);
       resetParams();
     });
     socket.on("reset", () => {
