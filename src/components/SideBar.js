@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 const stage_name = {
-  0: "WAITING",
-  1: "ICE BREAKER",
-  2: "WOULD YOU RATHER",
+  1: "DEBATE",
+  2: "DEBATE",
   3: "DEBATE",
 };
 const percentage = {
@@ -16,7 +15,7 @@ export default function SideBar(props) {
     <div className="sidebar_container">
       <p className="sidebar_prompt">{side_prompt}</p>
       <p className="sidebar_foot">
-        PART {stage} OF 3
+        PART {stage} OF 4
         <br />
         {stage_name[stage]}
       </p>

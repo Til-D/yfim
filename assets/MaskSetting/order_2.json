@@ -1,20 +1,20 @@
 {
-  "name": "endWithEyes",
+  "name": "order_2",
   "setting": [
     {
-      "duration": 150
+      "duration": 180
     },
     {
       "host": {
-        "occlusion_mask": false,
+        "occlusion_mask": true,
         "feature_show": {
           "eyes": {
-            "toggle": false,
-            "sliderIndex": 0
+            "toggle": true,
+            "sliderIndex": 5
           },
           "mouth": {
             "toggle": false,
-            "sliderIndex": 0
+            "sliderIndex": 4
           },
           "nose": {
             "toggle": false,
@@ -31,15 +31,15 @@
         "audio": true
       },
       "guest": {
-        "occlusion_mask": false,
+        "occlusion_mask": true,
         "feature_show": {
           "eyes": {
-            "toggle": false,
-            "sliderIndex": 0
+            "toggle": true,
+            "sliderIndex": 5
           },
           "mouth": {
             "toggle": false,
-            "sliderIndex": 0
+            "sliderIndex": 4
           },
           "nose": {
             "toggle": false,
@@ -110,15 +110,67 @@
     },
     {
       "host": {
-        "occlusion_mask": true,
+        "occlusion_mask": false,
         "feature_show": {
           "eyes": {
-            "toggle": true,
+            "toggle": false,
             "sliderIndex": 5
           },
           "mouth": {
             "toggle": false,
+            "sliderIndex": 4
+          },
+          "nose": {
+            "toggle": false,
             "sliderIndex": 0
+          },
+          "bar": {
+            "toggle": false,
+            "direction": false,
+            "sliderIndex": 0,
+            "position": 0
+          }
+        },
+        "video": true,
+        "audio": true
+      },
+      "guest": {
+        "occlusion_mask": false,
+        "feature_show": {
+          "eyes": {
+            "toggle": false,
+            "sliderIndex": 5
+          },
+          "mouth": {
+            "toggle": false,
+            "sliderIndex": 4
+          },
+          "nose": {
+            "toggle": false,
+            "sliderIndex": 0
+          },
+          "bar": {
+            "toggle": false,
+            "direction": false,
+            "sliderIndex": 0,
+            "position": 0
+          }
+        },
+        "video": true,
+        "audio": true
+      }
+    },
+    {
+      "host": {
+        "occlusion_mask": true,
+        "feature_show": {
+          "eyes": {
+            "toggle": false,
+            "sliderIndex": 5
+          },
+          "mouth": {
+            "toggle": true,
+            "sliderIndex": 4
           },
           "nose": {
             "toggle": false,
@@ -138,12 +190,12 @@
         "occlusion_mask": true,
         "feature_show": {
           "eyes": {
-            "toggle": true,
+            "toggle": false,
             "sliderIndex": 5
           },
           "mouth": {
-            "toggle": false,
-            "sliderIndex": 0
+            "toggle": true,
+            "sliderIndex": 4
           },
           "nose": {
             "toggle": false,

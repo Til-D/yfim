@@ -5,7 +5,7 @@ export default function IntroFaceDetect() {
     <div className="topic">
       <p className="topic_head">YOUR FACE IS MUTED</p>
       <p className="topic_text">
-        This is a three-part experience that will take 3 minutes.
+        This is a four-part experience that will take 3 minutes.
         <br />
         <br />
         In each part you will be given a prompt to explore with your

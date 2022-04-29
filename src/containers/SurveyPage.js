@@ -38,13 +38,15 @@ function SurveyPage(props) {
     socket.on("survey-start", (data) => {
       const { stage } = data;
 
-      if (stage == 3 || stage == 4) {
+      if (stage == 4) {
+        console.log("here -- this is the final survey");
         setSurveyOn(true);
         setFinalStage(true);
       } else {
         setSurveyOn(true);
       }
       setStage(stage + 1);
+      console.log("survey -- the current stage is ", stage);
     });
     socket.on("face-detected", () => {
       console.log("face detected");
@@ -60,6 +62,8 @@ function SurveyPage(props) {
       console.log("- process-stop", accident_stop);
       if (!accident_stop) {
         console.log("process-stop", answer);
+        console.log("process-stop", socket);
+
         socket.emit("data-send", {
           data_type: "question",
           room,
@@ -94,7 +98,7 @@ function SurveyPage(props) {
     const { rating, record } = data;
     console.log("select rating, ", rating);
     console.log("select record", record);
-    socket_s.emit("process-ready", { room, user, rating, record });
+    socket.emit("process-ready", { room, user, rating, record });
     setReady(true);
   }
   // socket.join(props.match.params.room);
@@ -109,10 +113,10 @@ function SurveyPage(props) {
 
     setSurveyOn(false);
     setFinalStage(false);
-    socket_s.emit("survey-end", {
+    socket.emit("survey-end", {
       room,
       user,
-      survey,
+      // survey,
     });
     let submit_time = new Date().getTime();
     let result = {

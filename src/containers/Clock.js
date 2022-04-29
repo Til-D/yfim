@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Clock(props) {
+export default function (props) {
   const { end } = props;
   const min = parseInt(props.time_diff / 60);
   const sec = props.time_diff - min * 60;

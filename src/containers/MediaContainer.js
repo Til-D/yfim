@@ -88,7 +88,7 @@ class MediaBridge extends Component {
     this.survey_count = 0;
     this.controlParams = props.controlParams;
     this.detections = null;
-    this.process_duration = 10;
+    this.process_duration = 20;
     this.endTime = 0;
     this.onRemoteHangup = this.onRemoteHangup.bind(this);
     this.onMessage = this.onMessage.bind(this);
@@ -224,29 +224,31 @@ class MediaBridge extends Component {
     });
     let startTime = new Date().getTime();
     if (stage == 1) {
-      this.endTime = startTime + 1000 * 31;
+      this.endTime = startTime + 1000 * 90;
     }
     if (stage == 2) {
-      this.endTime = startTime + 1000 * 60;
+      this.endTime = startTime + 1000 * 90;
     }
     if (stage == 3) {
       this.endTime = startTime + 1000 * 90;
     }
     if (stage == 4) {
-      this.endTime = startTime + 1000 * 0;
+      this.endTime = startTime + 1000 * 90;
     }
 
     const controlData = this.state.controlData.mask;
     const topic = this.state.controlData.topic;
     console.log("print topic", topic);
     let new_topic;
-    if (topic.length == 1) {
-      new_topic = topic[0];
-    } else {
-      new_topic = topic[this.state.user == "host" ? 0 : 1];
-    }
+    // if (topic.length == 1) {
+    //   new_topic = topic[0];
+    // } else {
+    //   new_topic = topic[this.state.user == "host" ? 0 : 1];
+    // }
+    new_topic = topic[this.state.user == "host" ? 0 : 1];
+    console.log("---------new_topic", new_topic);
     console.log("survey-end", stage);
-    if (stage != 4 && this.survey_count < 3) {
+    if (stage != 5 && this.survey_count < 4) {
       this.setState({
         ...this.state,
         side_prompt: new_topic,
@@ -261,24 +263,32 @@ class MediaBridge extends Component {
         attention: loseface_notify,
       });
     }, 5000);
-    if (topic.length == 1) {
-      this.setState({
-        ...this.state,
-        topic: {
-          content: topic[0],
-          visible: true,
-        },
-      });
-    } else {
-      const index = this.state.user == "host" ? 0 : 1;
-      this.setState({
-        ...this.state,
-        topic: {
-          content: topic[index],
-          visible: true,
-        },
-      });
-    }
+    // if (topic.length == 1) {
+    //   this.setState({
+    //     ...this.state,
+    //     topic: {
+    //       content: topic[0],
+    //       visible: true,
+    //     },
+    //   });
+    // } else {
+    //   const index = this.state.user == "host" ? 0 : 1;
+    //   this.setState({
+    //     ...this.state,
+    //     topic: {
+    //       content: topic[index],
+    //       visible: true,
+    //     },
+    //   });
+    // }
+    const index = this.state.user == "host" ? 0 : 1;
+    this.setState({
+      ...this.state,
+      topic: {
+        content: topic[index],
+        visible: true,
+      },
+    });
     this.props.updateAll(controlData);
 
     console.log("survey-end", data, this.endTime);
@@ -335,7 +345,7 @@ class MediaBridge extends Component {
       }
       console.log("process start counting");
       this.process_duration = duration;
-      this.endTime = startTime + 1000 * 31;
+      this.endTime = startTime + 1000 * 150;
 
       // set interval
       this.timmer = setInterval(() => {
@@ -469,23 +479,23 @@ class MediaBridge extends Component {
     // update mask when stage change
     if (this.state.stage == 0) {
       const controlData = mask[this.state.user];
-      if (topic.length == 1) {
+      // if (topic.length == 1) {
+      this.setState({
+        ...this.state,
+        side_prompt: topic[this.state.user == "host" ? 0 : 1],
+        intro: {
+          content: introduction,
+          visible: false,
+        },
+      });
+      setTimeout(() => {
         this.setState({
           ...this.state,
-          side_prompt: topic[0],
-          intro: {
-            content: introduction,
-            visible: false,
-          },
+          visible: false,
+          attention: loseface_notify,
         });
-        setTimeout(() => {
-          this.setState({
-            ...this.state,
-            visible: false,
-            attention: loseface_notify,
-          });
-        }, 5000);
-      }
+      }, 5000);
+      // }
       this.props.updateAll(controlData);
     }
     this.setState({
@@ -494,7 +504,7 @@ class MediaBridge extends Component {
       time_slot: 0,
       controlData: {
         mask: mask[this.state.user],
-        topic: topic,
+        topic: topic[this.state.user == "host" ? 0 : 1],
       },
     });
   }

@@ -16,6 +16,11 @@ const { SingleEntryPlugin } = require("webpack");
 const nano = require("nano")(process.env.COUCHDB_URL);
 const tableName = "occlusion_mask";
 
+const first_round = 40;
+const second_round = 30;
+const third_round = 20;
+const fourth_round = 10;
+
 // const db = nano.db.use(tableName);
 
 nano.db
@@ -96,7 +101,8 @@ record_by_user = {
   guest: true,
 };
 
-const mask_set = ["endWithEyes", "endWithMouth", "opposite"];
+// const mask_set = ["endWithEyes", "endWithMouth", "opposite"];
+const mask_set = ["order_1", "order_2", "order_3", "order_4"];
 
 var sessionId;
 var sessionRev;
@@ -143,11 +149,13 @@ function processStart(room, start_time, cfg) {
   const icebreaker = questionset["icebreaker"];
   const wouldyou = questionset["wouldyou"];
   const quest = [
-    ...questionset["quest"][current_rating],
+    // ...questionset["quest"][current_rating],
     ...questionset["quest"]["general"],
+    ...questionset["quest"]["kids"],
+    ...questionset["quest"]["mature"],
   ];
 
-  let endTime = start_time + 1000 * duration;
+  let endTime = start_time + 1000 * first_round;
   // create a timmer
   if (timmer == undefined || (timmer != undefined && timmer["_destroyed"])) {
     // pick up a questionnaire from the list
@@ -159,24 +167,27 @@ function processStart(room, start_time, cfg) {
       if (survey_in_progress) {
         let extend_time = 0;
         if (stage == 2) {
-          extend_time = 1000 * 150;
+          extend_time = 1000 * second_round;
         }
         if (stage == 3) {
-          extend_time = 1000 * 90;
+          extend_time = 1000 * third_round;
+        }
+        if (stage == 4) {
+          extend_time = 1000 * fourth_round;
         }
         endTime = nowTime + extend_time;
       }
       let time_left = Math.round((endTime - nowTime) / 1000);
 
-      if (time_left > 150) {
+      if (time_left > second_round) {
         //stage1
         if (stage != 1) {
           stage = 1;
           //send mask
           console.log(time_left, "stage 1");
           let mask_setting = cfg["setting"][stage];
-          const rindex = Math.floor(Math.random() * icebreaker.length);
-          let topic = icebreaker[rindex];
+          const rindex = Math.floor(Math.random() * quest.length);
+          let topic = quest[rindex];
 
           topic_selected.push(topic);
           console.log("- sending update to projection in room: " + room);
@@ -191,7 +202,7 @@ function processStart(room, start_time, cfg) {
             stage,
           });
         }
-      } else if (time_left < 150 && time_left > 90) {
+      } else if (time_left < second_round && time_left > third_round) {
         //stage2
         if (stage != 2) {
           // previous stage finish, raise a survey
@@ -209,8 +220,8 @@ function processStart(room, start_time, cfg) {
           //send mask
           console.log(time_left, "stage 2");
           let mask_setting = cfg["setting"][stage];
-          const rindex = Math.floor(Math.random() * wouldyou.length);
-          let topic = wouldyou[rindex];
+          const rindex = Math.floor(Math.random() * quest.length);
+          let topic = quest[rindex];
           topic_selected.push(topic);
           console.log(
             "- sending stage control to room: " +
@@ -225,12 +236,12 @@ function processStart(room, start_time, cfg) {
           );
           chatio.emit("stage-control", {
             mask: mask_setting,
-            topic: [topic],
+            topic: topic,
             stage,
           });
           controlio.emit("stage-control", { stage });
         }
-      } else if (time_left < 90 && time_left > 0) {
+      } else if (time_left < third_round && time_left > fourth_round) {
         //stage3
         if (stage != 3) {
           console.log(
@@ -264,11 +275,47 @@ function processStart(room, start_time, cfg) {
           chatio.emit("stage-control", { mask: mask_setting, topic, stage });
           controlio.emit("stage-control", { stage });
         }
-      }
-
-      if (time_left <= 0) {
+      } else if (time_left < fourth_round && time_left > 0) {
+        //stage3
         if (stage != 4) {
+          console.log(
+            "- sending survey start to room: " +
+              room +
+              " (stage: " +
+              stage +
+              ")"
+          );
+          chatio.emit("survey-start", { stage: stage });
+          controlio.emit("survey-start", { stage: stage });
+          survey_in_progress = true;
           stage = 4;
+          //send mask
+          console.log(time_left, "stage 4");
+          let mask_setting = cfg["setting"][stage];
+          const rindex = Math.floor(Math.random() * quest.length);
+          let topic = quest[rindex];
+          topic_selected.push(topic);
+          console.log(
+            "- sending stage control to room: " +
+              room +
+              " (stage: " +
+              stage +
+              ", mask: " +
+              mask_setting +
+              ", topic: " +
+              topic +
+              ")"
+          );
+          chatio.emit("stage-control", { mask: mask_setting, topic, stage });
+          controlio.emit("stage-control", { stage });
+        }
+      }
+      console.log("the stop is ====", stop);
+      console.log("the survey_in_progress is ====", survey_in_progress);
+      console.log("the stage is ====", stage);
+      if (time_left <= 0) {
+        if (stage != 5) {
+          stage = 5;
           console.log(
             "- sending survey start to room: " +
               room +
@@ -280,6 +327,11 @@ function processStart(room, start_time, cfg) {
           controlio.emit("survey-start", { stage: stage });
           survey_in_progress = true;
         }
+        // survey_in_progress = false;
+        console.log("the stop is ====", stop);
+        console.log("the survey_in_progress is ====", survey_in_progress);
+        console.log("the stage is ====", stage);
+
         if (!stop && !survey_in_progress) {
           count += 1;
           console.log("stop count ", count);
@@ -323,7 +375,7 @@ async function storeData(room) {
     host: question_data["host"],
   };
   let phase_result = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     const data = {
       topic: topic_selected[i],
       mask_setting: current_cfg["setting"][i + 1],
@@ -361,6 +413,7 @@ async function storeData(room) {
     phase_01: phase_result[0],
     phase_02: phase_result[1],
     phase_03: phase_result[2],
+    phase_04: phase_result[3],
     audio: audio,
   };
   topic_selected = [];
@@ -524,10 +577,13 @@ chatio.on("connection", (socket) => {
       let stage_startTime = new Date().getTime();
       let extend_time = 0;
       if (stage == 2) {
-        extend_time = 150;
+        extend_time = second_round;
       }
       if (stage == 3) {
-        extend_time = 90;
+        extend_time = third_round;
+      }
+      if (stage == 4) {
+        extend_time = fourth_round;
       }
       let duration = extend_time;
       console.log("moving on: after", duration);
@@ -586,7 +642,7 @@ chatio.on("connection", (socket) => {
 
           sessionId = generateId(new Date(startTime));
 
-          let mask_id = Math.floor(Math.random() * 3);
+          let mask_id = Math.floor(Math.random() * 4);
           current_cfg = require("./assets/MaskSetting/" +
             mask_set[mask_id] +
             ".json");
@@ -742,10 +798,10 @@ controlio.on("connection", (socket) => {
       let stage_startTime = new Date().getTime();
       let extend_time = 0;
       if (stage == 2) {
-        extend_time = 150;
+        extend_time = second_round;
       }
       if (stage == 3) {
-        extend_time = 90;
+        extend_time = third_round;
       }
       let duration = extend_time;
       console.log("moving on: after", duration);
@@ -804,7 +860,9 @@ controlio.on("connection", (socket) => {
 
           sessionId = generateId(new Date(startTime));
 
-          let mask_id = Math.floor(Math.random() * 3);
+          // let mask_id = Math.floor(Math.random() * 3);
+          let mask_id = Math.floor(Math.random() * 4);
+
           current_cfg = require("./assets/MaskSetting/" +
             mask_set[mask_id] +
             ".json");
