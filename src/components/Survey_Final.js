@@ -169,8 +169,7 @@ export const survey_Final = {
       type: "imagepicker",
       name: "question 2.3",
       title:
-        "Please choose the manikin that most describes how you think **your conversation partner** felt.  \
-        -After finishing this question, please close your eyes and meditate for 30 seconds before pressing the complete button =)",
+        "Please choose the manikin that most describes how you think **your conversation partner** felt.",
       choices: [
         {
           value: "item1",
